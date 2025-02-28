@@ -1,0 +1,49 @@
+# Project Intelligence
+
+## Key Patterns
+1. **Strava Sync Architecture**
+   - Background jobs handle API synchronization
+   - Rate limits tracked in .strava_rate_limits.json
+   - Sync operations separated into discrete jobs
+   - Error handling implemented at job level
+
+2. **Training Load Calculations**
+   - CTL/ATL/TSB calculated daily
+   - Historical data processed in batches
+   - Calculations optimized for performance
+   - Data validation implemented
+
+3. **Visualization System**
+   - Chart.js used for rendering
+   - Fitness/fatigue charts implemented
+   - Responsive design patterns
+   - Data point accuracy optimized
+
+4. **Error Handling**
+   - Basic error recovery implemented
+   - Rate limit tracking
+   - Job retry mechanism
+   - Error logging
+
+## Technical Decisions
+- Flask framework for web application
+- SQLAlchemy for database operations
+- Background jobs for async processing
+- Chart.js for visualizations
+- JSON files for rate limit tracking
+- Modular architecture with clear separation of concerns
+
+## Implementation Insights
+- Sync jobs should implement exponential backoff
+- Visualizations benefit from data point caching
+- Training load calculations should be batched
+- Error recovery should be comprehensive
+- Rate limit handling should be robust
+
+## Best Practices
+- Modular code organization
+- Clear separation of concerns
+- Comprehensive error handling
+- Performance optimizations
+- Data validation
+- Detailed logging

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Yearly Distance Progression{% endblock %}
+{% block content %}
+<h2>Yearly Distance Progression (Overlaid)</h2>
+
+<!-- Unit Toggle Form -->
+<form method="GET" action="{{ url_for('main.year_progression') }}" class="mb-3">
+    <label for="unit">Units:</label>
+    <select name="unit" id="unit">
+        <option value="miles" {% if unit == 'miles' %}selected{% endif %}>Miles</option>
+        <option value="km" {% if unit == 'km' %}selected{% endif %}>Kilometers</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>
+
+<div>{{ graph_html|safe }}</div>
+{% endblock %}
