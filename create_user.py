@@ -1,5 +1,5 @@
 from __init__ import create_app
-from models import db, User
+from strava.models import db, User
 
 app = create_app()
 
