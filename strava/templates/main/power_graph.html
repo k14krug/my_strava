@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Power Graph{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h1>Power Graph</h1>
+  <form method="get" action="{{ url_for('main.power_graph') }}">
+    <div class="row mb-3">
+      <div class="col">
+        <label for="date_range" class="form-label">Date Range</label>
+        <select class="form-select" id="date_range" name="date_range">
+          <option value="1m" {% if date_range == '1m' %}selected{% endif %}>Last Month</option>
+          <option value="3m" {% if date_range == '3m' %}selected{% endif %}>Last 3 Months</option>
+          <option value="6m" {% if date_range == '6m' %}selected{% endif %}>Last 6 Months</option>
+          <option value="1y" {% if date_range == '1y' %}selected{% endif %}>Last Year</option>
+          <option value="2y" {% if date_range == '2y' %}selected{% endif %}>Last 2 Years</option>
+          <option value="all" {% if date_range == 'all' %}selected{% endif %}>All Time</option>
+        </select>
+      </div>
+      <div class="col">
+        <label for="power_metric" class="form-label">Power Metric</label>
+        <select class="form-select" id="power_metric" name="power_metric">
+          <option value="best_10m_power" {% if power_metric == 'best_10m_power' %}selected{% endif %}>Best 10 Min Power</option>
+          <option value="best_20m_power" {% if power_metric == 'best_20m_power' %}selected{% endif %}>Best 20 Min Power</option>
+          <option value="best_30m_power" {% if power_metric == 'best_30m_power' %}selected{% endif %}>Best 30 Min Power</option>
+          <option value="best_45m_power" {% if power_metric == 'best_45m_power' %}selected{% endif %}>Best 45 Min Power</option>
+          <option value="best_60m_power" {% if power_metric == 'best_60m_power' %}selected{% endif %}>Best 60 Min Power</option>
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </form>
+  <div class="mt-4">
+    {{ graph_html|safe }}
+  </div>
+</div>
+{% endblock %}

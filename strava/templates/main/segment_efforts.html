@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Segment Efforts - {{ segment.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Segment Efforts for "{{ segment.name }}"</h2>
+  
+  <!-- Segment Details in a Card -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <strong>Segment Information</strong>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-3">
+          <p>
+            <strong>Country:</strong>
+            {{ "Watopia" if segment.country == "Solomon Islands" else segment.country }}
+          </p>
+        </div>
+        <div class="col-md-3"><p><strong>Favorite:</strong> {% if segment.favorite %}Yes{% else %}No{% endif %}</p></div>
+        <div class="col-md-3"><p><strong>Distance:</strong> {{ (segment.distance * 0.000621371)|round(2) }} miles</p></div>
+        <div class="col-md-3"><p><strong>Average Grade:</strong> {{ segment.average_grade }}</p></div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Link back to My Segments -->
+  <div class="mb-3">
+    <a class="btn btn-secondary" href="{{ url_for('main.my_segments') }}">Back to My Segments</a>
+  </div>
+
+  <!-- Plotly chart: "Your Recent Efforts" -->
+  <h4>Your Recent Efforts</h4>
+  <div>
+    {{ graph_html|safe }}
+  </div>
+
+  <!-- Efforts Table with server-side sortable headers -->
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>
+          <a href="?sort=start_date&order={{ 'asc' if sort=='start_date' and order=='desc' else 'desc' }}">
+            Start Date
+          </a>
+        </th>
+        <th>
+          <a href="?sort=elapsed&order={{ 'asc' if sort=='elapsed' and order=='desc' else 'desc' }}">
+            Elapsed Time (mm:ss)
+          </a>
+        </th>
+        <th>
+          <a href="?sort=avg_watts&order={{ 'asc' if sort=='avg_watts' and order=='desc' else 'desc' }}">
+            Avg Watts
+          </a>
+        </th>
+        <th>Max Heart Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for effort in efforts %}
+      <tr>
+        <td>{{ effort.start_date.strftime('%Y-%m-%d') if effort.start_date else 'N/A' }}</td>
+        {% set et = effort.elapsed_time or 0 %}
+        {% set minutes = (et // 60)|int %}
+        {% set seconds = (et % 60)|int %}
+        <td>{{ "%02d:%02d"|format(minutes, seconds) }}</td>
+        <td>{{ effort.average_watts or 'N/A' }}</td>
+        <td>{{ effort.max_heartrate or 'N/A' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

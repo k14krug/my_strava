@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Fitness & Fatigue{% endblock %}
+{% block content %}
+<h2>Fitness & Fatigue Tracking</h2>
+
+<!-- New: Select Lines to Display -->
+<form method="GET" action="{{ url_for('main.dynamic_fitness_fatigue') }}" class="mb-3">
+    <input type="hidden" name="date_range" value="{{ date_range }}">
+    <input type="hidden" name="update_lines" value="1">
+    <label>
+        <input type="checkbox" name="lines" value="ctl" {% if selected_lines.ctl %}checked{% endif %}>
+        CTL (Fitness)
+    </label>
+    <label>
+        <input type="checkbox" name="lines" value="atl" {% if selected_lines.atl %}checked{% endif %}>
+        ATL (Fatigue)
+    </label>
+    <label>
+        <input type="checkbox" name="lines" value="tsb" {% if selected_lines.tsb %}checked{% endif %}>
+        TSB (Form)
+    </label>
+    <label>
+        <input type="checkbox" name="lines" value="ftp" {% if selected_lines.ftp %}checked{% endif %}>
+        FTP History
+    </label>
+    <button type="submit" class="btn btn-primary">Update Graph</button>
+</form>
+
+<!-- Filter Option: Use dropdown or specify custom date range -->
+<form method="GET" action="{{ url_for('main.dynamic_fitness_fatigue') }}" class="mb-3">
+    <label for="date_range">Select Cutoff:</label>
+    <select name="date_range" id="date_range">
+        <option value="3m">Last 3 Months</option>
+        <option value="6m">Last 6 Months</option>
+        <option value="1y">Last Year</option>
+        <option value="2y">Two Years</option>
+        <option value="all">All Time</option>
+    </select>
+    <!-- Custom Date Range -->
+    <label for="start_date">Start Date:</label>
+    <input type="date" name="start_date" id="start_date" value="{{ request.args.get('start_date','') }}">
+    <label for="end_date">End Date:</label>
+    <input type="date" name="end_date" id="end_date" value="{{ request.args.get('end_date','') }}">
+    <button type="submit" class="btn btn-primary">Update Graph</button>
+</form>
+
+<!-- Debug Message -->
+<p>Graph HTML Content Below:</p>
+<p>{{ graph_html|length }}</p>
+
+<div>{{ graph_html|safe }}</div>
+{% endblock %}

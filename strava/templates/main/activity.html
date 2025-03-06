@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ activity.name }}</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Activity Details
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">Date</dt>
+                        <dd class="col-sm-8">{{ activity.start_date.strftime('%Y-%m-%d %H:%M') }}</dd>
+
+                        <dt class="col-sm-4">Distance</dt>
+                        <dd class="col-sm-8">{{ "%.2f miles"|format(activity.distance * 0.621371) }}</dd>
+
+                        <dt class="col-sm-4">Moving Time</dt>
+                        <dd class="col-sm-8">{{ activity.moving_time // 60 }} minutes</dd>
+
+                        <dt class="col-sm-4">Elevation Gain</dt>
+                        <dd class="col-sm-8">{{ "%.0f ft"|format(activity.total_elevation_gain * 3.28084) }}</dd>
+
+                        <dt class="col-sm-4">Average Speed</dt>
+                        <dd class="col-sm-8">{{ "%.2f mph"|format(activity.average_speed * 3.6 * 0.621371) }}</dd>
+
+                        <dt class="col-sm-4">Max Speed</dt>
+                        <dd class="col-sm-8">{{ "%.2f mph"|format(activity.max_speed * 3.6 * 0.621371) }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    Training Load
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">NP (Normalized Power)</dt>
+                        <dd class="col-sm-8">{{ activity.normalized_power or "N/A" }}</dd>
+                        
+                        <dt class="col-sm-4">IF (Intensity Factor)</dt>
+                        <dd class="col-sm-8">{{ activity.intensity_factor or "N/A" }}</dd>
+                        
+                        <dt class="col-sm-4">Best 10m Power</dt>
+                        <dd class="col-sm-8">{{ activity.best_10m_power or "N/A" }}</dd>
+                        
+                        <dt class="col-sm-4">Best 20m Power</dt>
+                        <dd class="col-sm-8">{{ activity.best_20m_power or "N/A" }}</dd>
+                        
+                        <dt class="col-sm-4">Best 30m Power</dt>
+                        <dd class="col-sm-8">{{ activity.best_30m_power or "N/A" }}</dd>
+                        
+                        <dt class="col-sm-4">Best 45m Power</dt>
+                        <dd class="col-sm-8">{{ activity.best_45m_power or "N/A" }}</dd>
+                        
+                        <dt class="col-sm-4">Best 60m Power</dt>
+                        <dd class="col-sm-8">{{ activity.best_60m_power or "N/A" }}</dd>
+                        
+                        <dt class="col-sm-4">Max Heart Rate</dt>
+                        <dd class="col-sm-8">{{ activity.max_heartrate or "N/A" }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h3>Segment Efforts for This Ride</h3>
+    {% if segment_details %}
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Segment Name</th>
+            <th>Distance (miles)</th>        <!-- New column -->
+            <th>Effort Power (Watts)</th>
+            <th>Effort Time (hh:mm)</th>
+            <th>Rank (by Power)</th>
+            <th>Total Efforts</th>
+            <th>Fastest Effort (hh:mm, Date)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for seg in segment_details %}
+          <tr>
+            <td>
+              <a href="/my_segments?search={{ seg.segment_name | urlencode }}">
+                {{ seg.segment_name }}{% if seg.favorite %}(Fav){% endif %}
+              </a>
+            </td>
+            <td>
+              {% if seg.distance_miles %}
+                {{ seg.distance_miles | round(2) }}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+            <td>{{ seg.power }}</td>
+            <td>{{ seg.time // 3600 }}:{{ "%02d"|format((seg.time % 3600) // 60) }}</td>
+            <td>{{ seg.rank }}</td>
+            <td>{{ seg.total_efforts }}</td>
+            <td>
+              {{ seg.fastest_time // 3600 }}:{{ "%02d"|format((seg.fastest_time % 3600) // 60) }},
+              {% if seg.fastest_date %}
+                {{ seg.fastest_date.strftime("%Y-%m-%d") }}
+              {% else %}
+                N/A
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No segment efforts recorded for this ride.</p>
+    {% endif %}
+
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Back to Activities</a>
+</div>
+{% endblock %}

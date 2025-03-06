@@ -14,8 +14,8 @@
         {% for activity in activities %}
         <tr>
             <td>{{ activity.start_date.strftime("%Y-%m-%d") }}</td>
-            <td>{{ activity.name }}</td>
-            <td>{{ (activity.distance / 1000)|round(2) }} km</td>
+            <td><a href="{{ url_for('main.activity_detail', activity_id=activity.id) }}">{{ activity.name }}</a></td>
+            <td>{{ (activity.distance * 0.621371)|round(2) }} km</td>
             <td>{{ activity.moving_time // 60 }} min</td>
         </tr>
         {% endfor %}

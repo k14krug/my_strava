@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}My Segments{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>My Segments</h2>
+  <div class="mb-3">
+    <button class="btn btn-secondary" onclick="history.back()">Go Back</button>
+  </div>
+  <!-- Search, country drop-down, and favorite filter form -->
+  <form method="get" action="/my_segments" class="mb-3">
+    <div class="row g-2 align-items-end">
+      <div class="col-auto">
+        <label for="search">Name</label>
+        <input type="text" name="search" id="search" class="form-control" placeholder="Search by Name" value="{{ search }}">
+      </div>
+      <div class="col-auto">
+        <label for="country">Country</label>
+        <select name="country" id="country" class="form-select">
+          <option value="">All</option>
+          {% for c in available_countries %}
+          <option value="{{ c }}" {% if country == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto form-check">
+        <input class="form-check-input" type="checkbox" name="only_favorites" value="1" id="only_favorites" {% if only_favorites == "1" %}checked{% endif %}>
+        <label class="form-check-label" for="only_favorites">Only Favorites</label>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Apply</button>
+      </div>
+    </div>
+    <!-- Sorting hidden inputs to retain current sort if needed -->
+    <input type="hidden" name="sort_by" value="{{ sort_by }}">
+    <input type="hidden" name="sort_order" value="{{ sort_order }}">
+  </form>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Favorite</th>
+        <th>Country</th>
+        <th>Mystrava seg page</th>
+        <th>Name</th>
+        <th>Climb Category</th>
+        <th><a href="?sort_by=distance&sort_order={% if sort_by=='distance' and sort_order=='asc' %}desc{% else %}asc{% endif %}">Distance (miles)</a></th>
+        <th>Average Grade</th>
+        <th><a href="?sort_by=total_efforts&sort_order={% if sort_by=='total_efforts' and sort_order=='asc' %}desc{% else %}asc{% endif %}">Total Efforts</a></th>
+        <th>Best Effort Power (Date)</th>
+        <th>Fastest Effort (Time [hh:mm], Power, Date)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for seg in segments %}
+      <tr>
+        <td>
+          <form method="post" action="/toggle_favorite" class="d-inline favorite-form">
+            <input type="hidden" name="segment_id" value="{{ seg.id }}">
+            <input type="hidden" name="favorite" value="{% if seg.favorite %}0{% else %}1{% endif %}">
+            <button type="submit" class="btn btn-sm {% if seg.favorite %}btn-success{% else %}btn-outline-secondary{% endif %}">
+              {% if seg.favorite %}★{% else %}☆{% endif %}
+            </button>
+          </form>
+        </td>
+        <td>{{ seg.country }}</td>
+        <td>
+          <a href="{{ url_for('main.segment_efforts', segment_id=seg.id) }}">
+            View Local Efforts
+          </a>
+        <td>
+          <a href="https://www.strava.com/segments/{{ seg.strava_id }}?filter=my_results&gender=all" target="_blank">
+            {{ seg.name }}
+          </a>
+        </td>
+        <td>{{ seg.climb_category }}</td>
+        <td>{{ seg.distance|round(2) }}</td>
+        <td>{{ seg.average_grade }}</td>
+        <td>{{ seg.total_efforts }}</td>
+        <td>
+          {% if seg.best_power %}
+            {{ seg.best_power }}<br>
+            {{ seg.best_power_date.strftime("%Y-%m-%d") if seg.best_power_date }}
+          {% else %}
+            N/A
+          {% endif %}
+        </td>
+        <td>
+          {% if seg.fastest_hhmm %}
+            {{ seg.fastest_hhmm }}<br>
+            {{ seg.fastest_effort_power }} watts,<br>
+            {{ seg.fastest_effort_date.strftime("%Y-%m-%d") if seg.fastest_effort_date }}
+          {% else %}
+            N/A
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+// Simple AJAX for the favorite button
+document.querySelectorAll('.favorite-form').forEach(form => {
+    form.addEventListener('submit', function(e){
+        e.preventDefault();
+        fetch(form.action, {
+            method: 'POST',
+            body: new URLSearchParams(new FormData(form))
+        }).then(response => {
+            if(response.ok){
+                // Toggle button appearance immediately
+                let btn = form.querySelector('button');
+                if (btn.classList.contains('btn-success')) {
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-secondary');
+                    btn.textContent = '☆';
+                } else {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-success');
+                    btn.textContent = '★';
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

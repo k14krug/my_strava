@@ -1,7 +1,7 @@
 # auth/routes.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required
-from models import db, User
+from ..models import db, User
 from werkzeug.security import check_password_hash
 
 auth_bp = Blueprint("auth", __name__)

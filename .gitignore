@@ -6,3 +6,5 @@ curl.txt
 strava_debug.py
 *.__pycache__
 memory-bank/
+junk*
+strava_app_db.sql
