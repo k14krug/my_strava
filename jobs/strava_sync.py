@@ -50,7 +50,7 @@ from datetime import datetime
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Import the modules
-from jobs.config import create_app
+from jobs.jobs_config import create_app
 from jobs.activity_loader import ActivityLoader
 from jobs.stream_loader import StreamLoader
 from jobs.training_load import TrainingLoadCalculator

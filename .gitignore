@@ -1,5 +1,8 @@
 venv/
 __pycache__/
 .env
+.envrc
 curl.txt
-strava_debug.__pycache__
+strava_debug.py
+*.__pycache__
+memory-bank/

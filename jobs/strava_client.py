@@ -3,7 +3,7 @@
 import time
 import requests
 import os
-from .config import CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN, STRAVA_AUTH_URL, STRAVA_API_URL
+from .jobs_config import CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN, STRAVA_AUTH_URL, STRAVA_API_URL
 from dotenv import load_dotenv, set_key
 from datetime import datetime, timedelta, timezone
 

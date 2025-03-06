@@ -1,29 +1,36 @@
 import os
 
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-123'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql+pymysql://root:password@localhost/strava'
+    """Base configuration shared across environments."""
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key-123')
+    DB_NAME = os.getenv('DB_NAME', 'x')  # Default to dev
+    DB_USER = os.getenv('DB_USER', 'x')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', 'x')
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+
+    SQLALCHEMY_DATABASE_URI = f"mariadb+mariadbconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-# filepath: /home/kkrug/projects/strava/config.py
-import os
+class DevelopmentConfig(Config):
+    """Development-specific configuration."""
+    DEBUG = True
 
-class DevelopmentConfig:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-key-123'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mariadb+mariadbconnector://strava_user:admin14@localhost/strava_app_db'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-class ProductionConfig:
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+class ProductionConfig(Config):
+    """Production-specific configuration."""
+    DEBUG = False
+    TESTING = False
 
     @classmethod
     def init_app(cls, app):
-        # Actually read env variables here
-        cls.SECRET_KEY = os.environ.get('SECRET_KEY')
-        cls.SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-        if not cls.SECRET_KEY:
+        """Ensure required environment variables are set for production."""
+        if not os.getenv('SECRET_KEY'):
             raise ValueError("No SECRET_KEY set for production")
-        if not cls.SQLALCHEMY_DATABASE_URI:
-            raise ValueError("No DATABASE_URL set for production")
+        if not os.getenv('DB_NAME'):
+            raise ValueError("No DB_NAME set for production")
+
+# Dictionary to easily load configurations
+config = {
+    'development': DevelopmentConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig  # Default to development
+}

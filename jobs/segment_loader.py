@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from strava.models import db, Segment, Activity, SegmentEffort
 from jobs.strava_client import StravaClient
-from jobs.config import create_app
+from jobs.jobs_config import create_app
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
