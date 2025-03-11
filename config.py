@@ -11,6 +11,11 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f"mariadb+mariadbconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_recycle": 3600,  # Recycle connections after 1 hour
+        "pool_pre_ping": True  # Check if connection is still alive before using
+    }
+
 class DevelopmentConfig(Config):
     """Development-specific configuration."""
     DEBUG = True
@@ -23,10 +28,10 @@ class ProductionConfig(Config):
     @classmethod
     def init_app(cls, app):
         """Ensure required environment variables are set for production."""
-        if not os.getenv('SECRET_KEY'):
-            raise ValueError("No SECRET_KEY set for production")
-        if not os.getenv('DB_NAME'):
-            raise ValueError("No DB_NAME set for production")
+        required_vars = ['SECRET_KEY', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_HOST']
+        for var in required_vars:
+            if not os.getenv(var):
+                raise ValueError(f"Missing required environment variable: {var}")
 
 # Dictionary to easily load configurations
 config = {
