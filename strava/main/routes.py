@@ -27,14 +27,22 @@ def year_progression():
 
     # Get unit preference (default: miles)
     unit = request.args.get("unit", "miles")
-    conversion_factor = 1609.34 if unit == "miles" else 1000  # Convert meters to miles or km
 
     # Query activities from the database
-    activities = Activity.query.with_entities(
-        func.date(Activity.start_date).label("ride_date"),
-        func.year(Activity.start_date).label("year"),
-        func.sum(Activity.distance / conversion_factor).label("distance")
-    ).group_by("ride_date", "year").order_by("ride_date").all()
+    if unit == "miles":
+        # If showing miles, use the distance directly (already in miles)
+        activities = Activity.query.with_entities(
+            func.date(Activity.start_date).label("ride_date"),
+            func.year(Activity.start_date).label("year"),
+            func.sum(Activity.distance).label("distance")
+        ).group_by("ride_date", "year").order_by("ride_date").all()
+    else:
+        # If showing kilometers, convert miles to km (1 mile = 1.60934 km)
+        activities = Activity.query.with_entities(
+            func.date(Activity.start_date).label("ride_date"),
+            func.year(Activity.start_date).label("year"),
+            func.sum(Activity.distance * 1.60934).label("distance")
+        ).group_by("ride_date", "year").order_by("ride_date").all()
 
     # Convert to DataFrame
     df = pd.DataFrame(activities, columns=["ride_date", "year", "distance"])
@@ -360,7 +368,7 @@ def power_graph():
     )
 
     # For debugging, you can print the peaks:
-    print(df_peaks[["date", "power", "ftp_est_95pct"]])
+    #print(df_peaks[["date", "power", "ftp_est_95pct"]])
     
     graph_html = fig.to_html(full_html=False)
     return render_template("main/power_graph.html", graph_html=graph_html, date_range=date_range, power_metric=power_metric)
@@ -656,4 +664,170 @@ def my_segments():
     return render_template("main/my_segments.html", segments=segment_data, search=search,
                            only_favorites=only_favorites, country=country_filter,
                            sort_by=sort_by, sort_order=sort_order, available_countries=available_countries)
+
+@main_bp.route("/heart_rate_graph", methods=["GET"])
+@login_required
+def heart_rate_graph():
+    """Generate a graph of maximum heart rate over time using the highest value in 6-month windows."""
+    
+    # Get selected date range from the form (default: 1 year)
+    date_range = request.args.get("date_range", "1y")
+    
+    # Import the SegmentEffort model
+    from ..models import SegmentEffort
+    import json
+    import os
+    
+    # Load exclusion list if file exists
+    exclusion_file = os.path.join(current_app.root_path, '..', 'config', 'hr_exclusions.json')
+    excluded_activities = []
+    
+    try:
+        if os.path.exists(exclusion_file):
+            with open(exclusion_file, 'r') as f:
+                exclusion_data = json.load(f)
+                excluded_activities = [entry["id"] for entry in exclusion_data.get("excluded_activities", [])]
+                print(f"Loaded {len(excluded_activities)} excluded activities")
+    except Exception as e:
+        print(f"Error loading HR exclusions: {str(e)}")
+
+    # print the activities that are excluded
+    print(f"🔍 Excluded activities: {excluded_activities}" )
+    
+    # Query segment efforts with filtering
+    today = date.today()
+    query = SegmentEffort.query.filter(SegmentEffort.max_heartrate.isnot(None))
+    
+    # Apply exclusions if any were loaded - filter by activity_id instead of segment effort id
+    print(f"🔍 Found {query.count()} segment efforts in the database")
+    if excluded_activities:
+        query = query.filter(~SegmentEffort.activity_id.in_(excluded_activities))
+    print(f"🔍 After filtering excluded activities, found {query.count()} segment efforts")
+    
+    query = query.order_by(SegmentEffort.start_date)
+    
+    if date_range == "6m":
+        cutoff_date = today - timedelta(days=180)
+    elif date_range == "1y":
+        cutoff_date = today - timedelta(days=365)
+    elif date_range == "2y":
+        cutoff_date = today - timedelta(days=730)
+    else:
+        cutoff_date = None  # No filter, show all data
+    
+    if cutoff_date:
+        query = query.filter(SegmentEffort.start_date >= cutoff_date)
+    
+    segment_efforts = query.all()
+    
+    if not segment_efforts:
+        return "<p>No segment efforts found with heart rate data for the selected period.</p>"
+    
+    # Create a DataFrame for heart rate data
+    df = pd.DataFrame(
+        [(effort.start_date.date(), effort.max_heartrate, effort.segment.name if effort.segment else "Unknown Segment") 
+         for effort in segment_efforts if effort.max_heartrate],
+        columns=["date", "max_hr", "segment_name"]
+    )
+    
+    # Sort by date
+    df = df.sort_values("date")
+    
+    # Find the start and end dates for the entire period
+    start_date = df["date"].min()
+    end_date = df["date"].max()
+    
+    # Create 6-month windows (approximately 180 days)
+    window_size = 180  # days (changed from 30 to 180)
+    current_date = start_date
+    max_hr_data = []
+    
+    while current_date <= end_date:
+        window_end = current_date + timedelta(days=window_size)
+        
+        # Get data points in this window
+        mask = (df["date"] >= current_date) & (df["date"] < window_end)
+        window_data = df[mask]
+        
+        if not window_data.empty:
+            # Find the highest heart rate in this window
+            max_hr_index = window_data["max_hr"].idxmax()
+            max_hr_date = window_data.loc[max_hr_index, "date"]
+            max_hr_value = window_data.loc[max_hr_index, "max_hr"]
+            segment_name = window_data.loc[max_hr_index, "segment_name"]
+            
+            # Format the date as a string for display
+            formatted_date = max_hr_date.strftime("%Y-%m-%d")
+            
+            max_hr_data.append({
+                "date": max_hr_date,
+                "max_hr": max_hr_value,
+                "formatted_date": formatted_date,
+                "segment_name": segment_name
+            })
+        
+        # Move to the next window
+        current_date = window_end
+    
+    # Create a new DataFrame with only the maximum values for each window
+    df_max = pd.DataFrame(max_hr_data)
+    
+    if df_max.empty:
+        return "<p>No maximum heart rate data could be calculated for the selected period.</p>"
+    
+    # Calculate the rolling average (optional, but can help show trend)
+    # Using a window of 2 since we're now using 6-month windows for the data points
+    if len(df_max) >= 2:
+        df_max['trend_line'] = df_max['max_hr'].rolling(window=2, min_periods=1).mean()
+    else:
+        df_max['trend_line'] = df_max['max_hr']
+    
+    # Create the Plotly figure
+    fig = go.Figure()
+    
+    # Add the maximum heart rate points with custom hover template
+    fig.add_trace(go.Scatter(
+        x=df_max["date"], 
+        y=df_max["max_hr"], 
+        mode="markers+lines",
+        name="Max Heart Rate (6-month window)",
+        text=[f"Date: {row['formatted_date']}<br>Max HR: {row['max_hr']}<br>Segment: {row['segment_name']}" 
+              for _, row in df_max.iterrows()],
+        hoverinfo="text+name",
+        line=dict(color="red", width=1),
+        marker=dict(size=8, symbol="circle")
+    ))
+    
+    # Add the trend line
+    fig.add_trace(go.Scatter(
+        x=df_max["date"],
+        y=df_max["trend_line"],
+        mode="lines",
+        name="Trend",
+        line=dict(color="blue", width=2)
+    ))
+    
+    # Add annotations for all points as there will be fewer with 6-month windows
+    for i, row in df_max.iterrows():
+        fig.add_annotation(
+            x=row["date"],
+            y=row["max_hr"],
+            text=f"{row['max_hr']} bpm<br>{row['formatted_date']}",
+            showarrow=True,
+            arrowhead=1,
+            ax=0,
+            ay=-40
+        )
+    
+    fig.update_layout(
+        title="Maximum Heart Rate Over Time (Highest in 6-month Windows)",
+        xaxis_title="Date",
+        yaxis_title="Heart Rate (bpm)",
+        hovermode="closest",
+        height=600,
+        template="plotly_white"
+    )
+    
+    graph_html = fig.to_html(full_html=False)
+    return render_template("main/heart_rate_graph.html", graph_html=graph_html, date_range=date_range)
 

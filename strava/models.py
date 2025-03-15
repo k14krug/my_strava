@@ -26,7 +26,7 @@ class Activity(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     strava_id = db.Column(db.BigInteger, unique=True, nullable=False)  # Strava activity ID
     name = db.Column(db.String(200))
-    distance = db.Column(db.Float)  
+    distance = db.Column(db.Float)  # In Miles
     moving_time = db.Column(db.Integer)  
     elapsed_time = db.Column(db.Integer) 
     total_elevation_gain = db.Column(db.Float) 

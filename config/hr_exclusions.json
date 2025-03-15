@@ -1,0 +1,12 @@
+{
+  "excluded_activities": [
+    {
+      "id": 5144,
+      "reason": "Equipment malfunction - HR spike"
+    },
+    {
+      "id": 5068,
+      "reason": "Heart rate strap misreading"
+    }
+  ]
+}
