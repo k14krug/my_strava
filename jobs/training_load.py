@@ -77,8 +77,8 @@ class TrainingLoadCalculator:
             
             for act in activities:
                 activity_count += 1
-                if activity_count % 50 == 0:
-                    print(f"Processing activity {activity_count}/{len(activities)}...")
+                #if activity_count % 50 == 0:
+                #    print(f"Processing activity {activity_count}/{len(activities)}...")
                 
                 # Calculate FTP for this date
                 ftp = self.get_ftp_for_date(act.start_date.date())

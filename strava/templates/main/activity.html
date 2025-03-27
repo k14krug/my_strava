@@ -16,19 +16,19 @@
                         <dd class="col-sm-8">{{ activity.start_date.strftime('%Y-%m-%d %H:%M') }}</dd>
 
                         <dt class="col-sm-4">Distance</dt>
-                        <dd class="col-sm-8">{{ "%.2f miles"|format(activity.distance * 0.621371) }}</dd>
+                        <dd class="col-sm-8">{{ "%.2f Miles"|format(activity.distance) }}</dd>
 
                         <dt class="col-sm-4">Moving Time</dt>
-                        <dd class="col-sm-8">{{ activity.moving_time // 60 }} minutes</dd>
+                        <dd class="col-sm-8">{{ activity.moving_time // 60 }} Minutes</dd>
 
                         <dt class="col-sm-4">Elevation Gain</dt>
                         <dd class="col-sm-8">{{ "%.0f ft"|format(activity.total_elevation_gain * 3.28084) }}</dd>
 
                         <dt class="col-sm-4">Average Speed</dt>
-                        <dd class="col-sm-8">{{ "%.2f mph"|format(activity.average_speed * 3.6 * 0.621371) }}</dd>
+                        <dd class="col-sm-8">{{ "%.2f mph"|format(activity.average_speed) }}</dd>
 
                         <dt class="col-sm-4">Max Speed</dt>
-                        <dd class="col-sm-8">{{ "%.2f mph"|format(activity.max_speed * 3.6 * 0.621371) }}</dd>
+                        <dd class="col-sm-8">{{ "%.2f mph"|format(activity.max_speed) }}</dd>
                     </dl>
                 </div>
             </div>
