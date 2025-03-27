@@ -15,15 +15,17 @@ logging.basicConfig(level=logging.INFO)
 class SegmentLoader:
     """Loader for fetching and processing Strava segment data."""
 
-    def __init__(self, app, strava_client: StravaClient):
+    def __init__(self, app, strava_client: StravaClient, job_id: str):
         """Initialize the segment loader.
         
         Args:
             app: Flask application instance
             strava_client: Strava API client
+            job_id: ID of the current sync job
         """
         self.app = app
         self.strava_client = strava_client
+        self.job_id = job_id
 
     def load_missing_segments(
         self,
@@ -41,7 +43,8 @@ class SegmentLoader:
         Returns:
             bool: True if any segments were loaded, False otherwise
         """
-        print(f"Loading missing segments for data range after {after_date}")
+        print(f"🔄 Loading missing segments (Job ID: {self.job_id})...")
+        self.strava_client.update_job_progress(self.job_id, "Finding activities needing segments")
         with self.app.app_context():
             loaded = False
             
@@ -63,7 +66,8 @@ class SegmentLoader:
             activities = query.all()
             
             if not activities:
-                logger.info("No activities found for segment processing")
+                logger.info(f"❌ No activities found for segment processing (Job ID: {self.job_id})")
+                self.strava_client.update_job_progress(self.job_id, "No activities need segments")
                 return False
                 
             # Process each activity
@@ -82,7 +86,8 @@ class SegmentLoader:
         Returns:
             bool: True if segments were processed, False otherwise
         """
-        logger.info(f"Processing segments for activity {activity.strava_id} {activity.start_date} ({activity.name})")
+        logger.info(f"Processing segments for activity {activity.strava_id} {activity.start_date} ({activity.name}) (Job ID: {self.job_id})")
+        self.strava_client.update_job_progress(self.job_id, f"Processing activity {activity.strava_id}")
         
         # Check if the activity already has segment efforts in the database
         existing_effort = db.session.query(SegmentEffort).filter_by(activity_id=activity.id).first()
@@ -97,7 +102,8 @@ class SegmentLoader:
                 logger.info(f"No segment efforts found for activity {activity.strava_id}")
                 return False
 
-            logger.info(f"Found {len(segment_efforts)} segment efforts for activity {activity.strava_id}")
+            logger.info(f"✅ Found {len(segment_efforts)} segment efforts for activity {activity.strava_id} (Job ID: {self.job_id})")
+            self.strava_client.update_job_progress(self.job_id, f"Found {len(segment_efforts)} segments")
 
             # Process each segment effort
             for effort in segment_efforts:

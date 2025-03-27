@@ -26,10 +26,10 @@ def get_s():
 
 def get_engine_url():
     try:
-        return get_engine().url.render_as_string(hide_password=False).replace(
+        return get_s().url.render_as_string(hide_password=False).replace(
             '%', '%%')
     except AttributeError:
-        return str(get_engine().url).replace('%', '%%')
+        return str(get_s().url).replace('%', '%%')
 
 
 # add your model's MetaData object here
@@ -94,7 +94,7 @@ def run_migrations_online():
     if conf_args.get("process_revision_directives") is None:
         conf_args["process_revision_directives"] = process_revision_directives
 
-    connectable = get_engine()
+    connectable = get_s()
 
     with connectable.connect() as connection:
         context.configure(

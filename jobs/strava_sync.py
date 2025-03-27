@@ -85,6 +85,9 @@ def main():
     segments_parser.add_argument("--after-date", help="Load segments for activities after this date (YYYY-MM-DD)")
     segments_parser.add_argument("--activity-type", help="Only process segments from activities with names containing this text")
     
+    # Add job-id parameter to the main parser so it's available for all commands
+    parser.add_argument("--job-id", help="Job ID for tracking progress (if not provided, a new job will be created)")
+    
     # Initialize the system
     args = parser.parse_args()
     app = create_app()
@@ -93,66 +96,88 @@ def main():
         parser.print_help()
         return
     
-    strava_client = StravaClient()
-    # Process the command
-    if args.command == "activities":
-        after_timestamp = 0
-        if args.after_date:
-            after_date = datetime.strptime(args.after_date, "%Y-%m-%d")
-            after_timestamp = int(after_date.timestamp())
-            print(f"🔍 Loading activities after {args.after_date}")
-        else:
-            print("🔍 Loading activities using the default activity")
+    # Run within application context
+    with app.app_context():
+        strava_client = StravaClient()
         
-        # Create activity loader and run it
-        activity_loader = ActivityLoader(app, strava_client)
-        loaded = activity_loader.load_activities(after_timestamp)
+        # Use provided job ID or create new one
+        job_id = args.job_id if args.job_id else strava_client.start_job(args.command)
+        print(f"🚀 Starting {args.command} job (ID: {job_id})")
         
-        # Update training load if requested
-        if loaded and args.update_training:
-            print("🔄 Updating training load metrics...")
-            training_calc = TrainingLoadCalculator(app)
-            training_calc.sync_training_load()
+        try:
+            # Process the command
+            if args.command == "activities":
+                after_timestamp = 0
+                if args.after_date:
+                    after_date = datetime.strptime(args.after_date, "%Y-%m-%d")
+                    after_timestamp = int(after_date.timestamp())
+                    print(f"🔍 Loading activities after {args.after_date}")
+                else:
+                    print("🔍 Loading activities using the default activity")
+                
+                # Create activity loader and run it
+                activity_loader = ActivityLoader(app, strava_client, job_id)
+                loaded = activity_loader.load_activities(after_timestamp)
+                
+                # Update training load if requested
+                if loaded and args.update_training:
+                    print("🔄 Updating training load metrics...")
+                    training_calc = TrainingLoadCalculator(app)
+                    training_calc.sync_training_load()
             
-    elif args.command == "streams":
-        # Create stream loader and run it
-        after_date = None
-        if args.after_date:
-            after_date = datetime.strptime(args.after_date, "%Y-%m-%d").date()
-            print(f"🔍 Loading streams for activities after {args.after_date}")
+            elif args.command == "streams":
+                # Create stream loader and run it
+                after_date = None
+                if args.after_date:
+                    after_date = datetime.strptime(args.after_date, "%Y-%m-%d").date()
+                    print(f"🔍 Loading streams for activities after {args.after_date}")
+                    
+                stream_loader = StreamLoader(app, strava_client, job_id)
+                loaded = stream_loader.load_missing_streams(limit=args.limit, activity_type=args.activity_type, after_date=after_date)
+                
+                # Update training load if requested
+                if loaded and args.update_training:
+                    print("🔄 Updating training load metrics...")
+                    training_calc = TrainingLoadCalculator(app)
+                    training_calc.sync_training_load()
             
-        stream_loader = StreamLoader(app, strava_client)
-        loaded = stream_loader.load_missing_streams(limit=args.limit, activity_type=args.activity_type, after_date=after_date)
-        
-        # Update training load if requested
-        if loaded and args.update_training:
-            print("🔄 Updating training load metrics...")
-            training_calc = TrainingLoadCalculator(app)
-            training_calc.sync_training_load()
+            elif args.command == "training":
+                # Recalculate training load metrics
+                print("🔄 Recalculating training load metrics...")
+                training_calc = TrainingLoadCalculator(app)
+                training_calc.sync_training_load()
             
-    elif args.command == "training":
-        # Recalculate training load metrics
-        print("🔄 Recalculating training load metrics...")
-        training_calc = TrainingLoadCalculator(app)
-        training_calc.sync_training_load()
+            elif args.command == "segments":
+                # Create segment loader and run it
+                after_date = None
+                if args.after_date:
+                    after_date = datetime.strptime(args.after_date, "%Y-%m-%d").date()
+                    print(f"🔍 Loading segments for activities after {args.after_date}")
+                    
+                segment_loader = SegmentLoader(app, strava_client, job_id)
+                loaded = segment_loader.load_missing_segments(limit=args.limit, activity_type=args.activity_type, after_date=after_date)
+                
+                # Update training load if requested
+                if loaded and args.update_training:
+                    print("🔄 Updating training load metrics...")
+                    training_calc = TrainingLoadCalculator(app)
+                    training_calc.sync_training_load()
         
-    elif args.command == "segments":
-        # Create segment loader and run it
-        after_date = None
-        if args.after_date:
-            after_date = datetime.strptime(args.after_date, "%Y-%m-%d").date()
-            print(f"🔍 Loading segments for activities after {args.after_date}")
+            # Report API usage
+            usage = strava_client.get_api_usage()
+            print(f"📊 API Usage: {usage['short_term']['used']}/{usage['short_term']['limit']} (15-min), {usage['daily']['used']}/{usage['daily']['limit']} (daily)")
             
-        segment_loader = SegmentLoader(app, strava_client)
-        loaded = segment_loader.load_missing_segments(limit=args.limit, activity_type=args.activity_type, after_date=after_date)
-        
-        # Update training load if requested
-        if loaded and args.update_training:
-            print("🔄 Updating training load metrics...")
-            training_calc = TrainingLoadCalculator(app)
-            training_calc.sync_training_load()
-    
-    print("✅ Operation completed successfully")
+            # Only update job status if we didn't receive a job ID (we created it here)
+            if not args.job_id:
+                strava_client.end_job(job_id, True, message=f"Completed {args.command} sync")
+            print(f"✅ {args.command} job completed successfully (ID: {job_id})")
+            
+        except Exception as e:
+            # Only update job status if we didn't receive a job ID (we created it here)
+            if not args.job_id:
+                strava_client.end_job(job_id, False, str(e), "Job failed")
+            print(f"❌ Job {job_id} failed: {str(e)}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":

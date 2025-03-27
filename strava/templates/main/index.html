@@ -1,6 +1,30 @@
-{% extends "base.html" %}
+    {% extends "base.html" %}
 {% block content %}
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 11"></div>
 <h2>My Strava Activities</h2>
+
+<div class="card mb-4">
+    <div class="card-header">Sync Jobs</div>
+    <div class="card-body">
+        <form id="syncJobForm">
+            <div class="form-group">
+                <label for="jobType">Sync Type:</label>
+                <select class="form-control" id="jobType" name="job_type">
+                    <option value="activities">Activities</option>
+                    <option value="segments">Segments</option>
+                    <option value="streams">Streams</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Sync Job</button>
+        </form>
+        <div id="syncStatus" class="mt-3"></div>
+        <div class="mt-4">
+            <h5>Recent Job History</h5>
+            <div id="jobHistory"></div>
+        </div>
+    </div>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -21,4 +45,93 @@
         {% endfor %}
     </tbody>
 </table>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Toast notification function
+function showToast(message, type='info') {
+    const toast = document.createElement('div');
+    toast.className = `toast show align-items-center text-white bg-${type}`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    const toastContainer = document.getElementById('toastContainer');
+    toastContainer.appendChild(toast);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 150);
+    }, 5000);
+}
+
+document.getElementById('syncJobForm').addEventListener('submit', function(e) {
+    console.log('Form submitted'); // for debug - remove in production
+    e.preventDefault();
+    const form = e.target;
+    const statusDiv = document.getElementById('syncStatus');
+    statusDiv.innerHTML = '<div class="alert alert-info">Submitting job...</div>';
+    
+    fetch("{{ url_for('main.submit_sync_job') }}", {
+        method: 'POST',
+        body: new FormData(form),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data); // for debug - remove in production
+        if (data.status === 'success') {
+            const jobId = data.job_id;
+            statusDiv.innerHTML = `<div class="alert alert-info">Job ${jobId} started</div>`;
+            showToast(`Sync job ${jobId} started`, 'info');
+            
+            // Poll for job completion
+            const pollInterval = setInterval(() => {
+                fetch(`{{ url_for('main.get_job_status') }}?job_id=${jobId}`)
+                .then(response => response.json())
+                .then(status => {
+                    if (status.completed) {
+                        clearInterval(pollInterval);
+                        const resultClass = status.success ? 'alert-success' : 'alert-danger';
+                        const resultEmoji = status.success ? '✅' : '❌';
+                        statusDiv.innerHTML = `
+                            <div class="alert ${resultClass}">
+                                ${resultEmoji} Job ${jobId} completed ${status.success ? 'successfully' : 'with errors'}
+                            </div>
+                        `;
+                        showToast(
+                            `Job ${jobId} completed ${status.success ? 'successfully' : 'with errors'}`,
+                            status.success ? 'success' : 'danger'
+                        );
+                        // Add simplified job history entry
+                        const historyItem = document.createElement('div');
+                        historyItem.className = `alert ${resultClass} mt-2`;
+                        historyItem.innerHTML = `
+                            ${new Date().toLocaleString()}: Job ${jobId} ${status.success ? 'completed' : 'failed'}
+                        `;
+                        document.getElementById('jobHistory').prepend(historyItem);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error); // for debug - remove in production
+                    clearInterval(pollInterval);
+                    statusDiv.innerHTML = `<div class="alert alert-danger">Error checking job status: ${error.message}</div>`;
+                });
+            }, 2000);
+        } else {
+            statusDiv.innerHTML = `<div class="alert alert-danger">${data.message}</div>`;
+        }
+    })
+    .catch(error => {
+        statusDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+    });
+});
+</script>
 {% endblock %}

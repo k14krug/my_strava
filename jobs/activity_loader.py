@@ -13,16 +13,18 @@ from strava.models import db, Activity
 class ActivityLoader:
     """Handles loading basic activity data from Strava."""
     
-    def __init__(self, app, strava_client):
+    def __init__(self, app, strava_client, job_id):
         """
         Initialize the activity loader.
         
         Args:
             app: Flask application instance
             strava_client: StravaClient instance
+            job_id: ID of the current sync job
         """
         self.app = app
         self.strava_client = strava_client
+        self.job_id = job_id
         
     def load_activities(self, after_timestamp=0):
         """
@@ -35,7 +37,8 @@ class ActivityLoader:
             bool: True if successful, False otherwise
         """
         with self.app.app_context():
-            print("🔄 Loading activities from Strava...")
+            print(f"🔄 Loading activities from Strava (Job ID: {self.job_id})...")
+            self.strava_client.update_job_progress(self.job_id, "Fetching activities")
             
             # Fetch activities from Strava API
             activities = self.strava_client.fetch_activities(after_timestamp)
@@ -44,7 +47,8 @@ class ActivityLoader:
                 print("❌ No activities found")
                 return False
                 
-            print(f"✅ Found {len(activities)} activities")
+            print(f"✅ Found {len(activities)} activities (Job ID: {self.job_id})")
+            self.strava_client.update_job_progress(self.job_id, f"Processing {len(activities)} activities")
             
             # Save activities to database
             return self.save_activities(activities)
@@ -118,12 +122,14 @@ class ActivityLoader:
                             db.session.add(activity)
                             
                         db.session.commit()
-                        print(f"✅ Saved {len(new_activities)} new activities")
-                        print(f"  Skipped {skipped_count} existing activities")
+                        print(f"✅ Saved {len(new_activities)} new activities (Job ID: {self.job_id})")
+                        print(f"  Skipped {skipped_count} existing activities (Job ID: {self.job_id})")
+                        self.strava_client.update_job_progress(self.job_id, f"Saved {len(new_activities)} new activities")
                         return True
                     else:
-                        print(f"✅ No new activities to save")
-                        print(f"  Skipped {skipped_count} existing activities")
+                        print(f"✅ No new activities to save (Job ID: {self.job_id})")
+                        print(f"  Skipped {skipped_count} existing activities (Job ID: {self.job_id})")
+                        self.strava_client.update_job_progress(self.job_id, "No new activities found")
                         return False
                         
                 except Exception as db_error:

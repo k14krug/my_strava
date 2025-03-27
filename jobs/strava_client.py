@@ -3,6 +3,7 @@
 import time
 import requests
 import os
+import threading
 from .jobs_config import CLIENT_ID, CLIENT_SECRET, REFRESH_TOKEN, STRAVA_AUTH_URL, STRAVA_API_URL
 from dotenv import load_dotenv, set_key
 from datetime import datetime, timedelta, timezone
@@ -20,6 +21,14 @@ class StravaClient:
         self.client_id = os.getenv("STRAVA_CLIENT_ID")
         self.client_secret = os.getenv("STRAVA_CLIENT_SECRET")
         self.refresh_token = os.getenv("STRAVA_REFRESH_TOKEN")
+        
+        # Job tracking state
+        self._jobs = {}
+        self._api_usage = {
+            'short_term': {'used': 0, 'limit': 100},
+            'daily': {'used': 0, 'limit': 1000}
+        }
+        self._lock = threading.Lock()
         
         # Ensure environment variables are loaded correctly
         if not self.client_id or not self.client_secret or not self.refresh_token:
@@ -88,8 +97,6 @@ class StravaClient:
     def check_rate_limits(self, headers):
         """Check API rate limits and wait if necessary."""
         try:
-            #print("Rate limit headers received:", headers)
-            
             # Default values if headers are missing or invalid
             default_limits = {
                 'usage_short': 0,
@@ -101,6 +108,13 @@ class StravaClient:
                 'read_usage_daily': 0,
                 'read_limit_daily': 1000
             }
+            
+            # Update API usage tracking
+            with self._lock:
+                usage = self._parse_rate_limit_header(headers.get("X-RateLimit-Usage"))
+                if usage:
+                    self._api_usage['short_term']['used'] = usage[0]
+                    self._api_usage['daily']['used'] = usage[1]
             
             # Parse rate limit headers with validation
             def parse_header(header, default):
@@ -310,6 +324,177 @@ class StravaClient:
                     return None
         
         return None
+
+    def start_job(self, job_type):
+        """Start tracking a new job."""
+        from strava.models import Job, db
+        from datetime import datetime
+        import uuid
+        
+        # Generate a job ID
+        job_id = f"{job_type}_{int(time.time())}"
+        
+        try:
+            # Create a new job record in the database
+            job = Job(
+                id=job_id,
+                job_type=job_type,
+                status="running",
+                start_time=datetime.utcnow(),
+                message="Job started"
+            )
+            db.session.add(job)
+            db.session.commit()
+            
+            # Also keep in memory for backward compatibility
+            with self._lock:
+                self._jobs[job_id] = {
+                    'type': job_type,
+                    'status': 'running',
+                    'start_time': time.time(),
+                    'end_time': None,
+                    'success': None,
+                    'error': None,
+                    'message': None
+                }
+                
+            return job_id
+        except Exception as e:
+            print(f"❌ Error creating job: {str(e)}")
+            # Fallback to in-memory only
+            with self._lock:
+                self._jobs[job_id] = {
+                    'type': job_type,
+                    'status': 'running',
+                    'start_time': time.time(),
+                    'end_time': None,
+                    'success': None,
+                    'error': None,
+                    'message': None
+                }
+            return job_id
+
+    def end_job(self, job_id, success, error=None, message=None):
+        """Mark a job as completed."""
+        from strava.models import Job, db
+        from datetime import datetime
+        
+        try:
+            # Update the job record in the database
+            job = Job.query.get(job_id)
+            if job:
+                job.status = "completed"
+                job.end_time = datetime.utcnow()
+                job.success = success
+                job.message = message
+                db.session.commit()
+                print(f"✅ Updated job {job_id} status in database")
+            else:
+                print(f"❌ Job {job_id} not found in database")
+                
+            # Also update in-memory for backward compatibility
+            with self._lock:
+                if job_id in self._jobs:
+                    self._jobs[job_id].update({
+                        'status': 'completed',
+                        'end_time': time.time(),
+                        'success': success,
+                        'error': error,
+                        'message': message
+                    })
+        except Exception as e:
+            print(f"❌ Error updating job: {str(e)}")
+            # Fallback to in-memory only
+            with self._lock:
+                if job_id in self._jobs:
+                    self._jobs[job_id].update({
+                        'status': 'completed',
+                        'end_time': time.time(),
+                        'success': success,
+                        'error': error,
+                        'message': message
+                    })
+
+    def get_job_status(self, job_id):
+        """Get the current status of a job."""
+        from strava.models import Job
+        
+        try:
+            # Get the job record from the database
+            job = Job.query.get(job_id)
+            if job:
+                # Convert database record to dictionary format
+                return {
+                    'type': job.job_type,
+                    'status': job.status,
+                    'start_time': job.start_time.timestamp() if job.start_time else None,
+                    'end_time': job.end_time.timestamp() if job.end_time else None,
+                    'success': job.success,
+                    'message': job.message
+                }
+            
+            # Fallback to in-memory job tracking if not in database
+            with self._lock:
+                return self._jobs.get(job_id)
+        except Exception as e:
+            print(f"❌ Error getting job status: {str(e)}")
+            # Fallback to in-memory job tracking
+            with self._lock:
+                return self._jobs.get(job_id)
+
+    def update_job_progress(self, job_id, progress, message=None):
+        """Update the progress of a job."""
+        from strava.models import Job, db
+        
+        try:
+            # Update the job record in the database
+            job = Job.query.get(job_id)
+            if job and message:
+                job.message = message
+                db.session.commit()
+                
+            # Also update in-memory for backward compatibility
+            with self._lock:
+                if job_id in self._jobs:
+                    self._jobs[job_id]['progress'] = progress
+                    if message:
+                        self._jobs[job_id]['message'] = message
+                    return True
+            return False
+        except Exception as e:
+            print(f"❌ Error updating job progress: {str(e)}")
+            # Fallback to in-memory only
+            with self._lock:
+                if job_id in self._jobs:
+                    self._jobs[job_id]['progress'] = progress
+                    if message:
+                        self._jobs[job_id]['message'] = message
+                    return True
+                return False
+
+    def get_api_usage(self):
+        """Get current API usage statistics.
+        
+        Returns:
+            Dictionary with short_term and daily usage stats
+        """
+        with self._lock:
+            return {
+                'short_term': dict(self._api_usage['short_term']),
+                'daily': dict(self._api_usage['daily'])
+            }
+
+    def _parse_rate_limit_header(self, header):
+        """Parse rate limit header into used/limit values."""
+        try:
+            if not header or not isinstance(header, str):
+                return None
+            parts = header.split(",")
+            if len(parts) != 2:
+                return None
+            return [int(part) for part in parts]
+        except (ValueError, TypeError):
+            return None
 
     def fetch_activity_stream(self, activity_id):
         """Fetch activity stream data from Strava."""

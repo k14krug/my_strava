@@ -124,3 +124,14 @@ class TrainingLoad(db.Model):
     max_daily_power = db.Column(db.Integer)
     power_balance = db.Column(db.Float)
     power_tss = db.Column(db.Float)
+
+class Job(db.Model):
+    __tablename__ = "jobs"
+    id = db.Column(db.String(36), primary_key=True)  # UUID as string
+    job_type = db.Column(db.String(20), nullable=False)  # 'activities', 'streams', etc.
+    status = db.Column(db.String(20), nullable=False)  # 'pending', 'running', 'completed', 'failed'
+    start_time = db.Column(db.DateTime, nullable=False)
+    end_time = db.Column(db.DateTime, nullable=True)
+    success = db.Column(db.Boolean, nullable=True)
+    message = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

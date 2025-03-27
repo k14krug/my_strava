@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, abort, current_app, session
+from flask import Blueprint, render_template, request, abort, current_app, session, flash
 from flask_login import login_required
 from ..models import Activity, TrainingLoad, FTPHistory
 import plotly.express as px
@@ -18,6 +18,7 @@ main_bp = Blueprint("main", __name__)
 @login_required
 def index():
     activities = Activity.query.order_by(Activity.start_date.desc()).all()
+    print(f"🔍 Found {len(activities)} activities in the database")
     return render_template("main/index.html", activities=activities)
 
 @main_bp.route("/year_progression", methods=["GET"])
@@ -665,6 +666,186 @@ def my_segments():
                            only_favorites=only_favorites, country=country_filter,
                            sort_by=sort_by, sort_order=sort_order, available_countries=available_countries)
 
+@main_bp.route("/submit_sync_job", methods=["POST"])
+@login_required
+def submit_sync_job():
+    """Submit a Strava sync job with detailed status tracking."""
+    from jobs.strava_client import StravaClient
+    from datetime import datetime, timedelta
+    import subprocess
+    import threading
+    import os
+    
+    print("🔍 [DEBUG] Received job submission request")
+    job_type = request.form.get("job_type")
+    print(f"🔍 [JOB SUBMIT] Received request for job type: {job_type}")
+    
+    if job_type not in ["activities", "streams", "segments", "training"]:
+        return {"status": "error", "message": "Invalid job type"}, 400
+    
+    # Calculate date 3 days ago in YYYY-MM-DD format
+    after_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
+    print(f"🔍 Syncing data after date: {after_date}")
+    
+    # Initialize status tracking
+    client = StravaClient()
+    job_id = client.start_job(job_type)
+    print(f"✅ [JOB SUBMIT] Created job with ID: {job_id}")
+    
+    # Build command with additional parameters
+    cmd = [
+        "python", "jobs/strava_sync.py",
+        "--job-id", job_id,  # Job ID must come BEFORE the command
+        job_type,            # Command comes after global arguments
+        "--after-date", after_date,
+        "--update-training"
+    ]
+    print(f"🔍 [JOB SUBMIT] Command to execute: {' '.join(cmd)}")
+
+    # Create a copy of the app for the background thread
+    app = current_app._get_current_object()
+    
+    def run_job():
+        print(f"🚀 [JOB RUNNER] Starting job {job_id} in background thread")
+        try:
+            # Create a proper application context that the thread can use
+            with app.app_context():
+                # Use the correct environment variables for the subprocess
+                env = os.environ.copy()
+                env['FLASK_APP'] = 'run.py'
+                env['FLASK_ENV'] = 'production'
+                
+                # Run the command as a subprocess
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    cwd=os.path.abspath(os.path.join(app.root_path, '..')),
+                    env=env
+                )
+                
+                # Process results
+                output = result.stdout
+                error = result.stderr
+                
+                # Log the full output
+                print(f"📝 [JOB RUNNER] Job {job_id} output:\n{output}")
+                if error:
+                    print(f"❌ [JOB RUNNER] Job {job_id} errors:\n{error}")
+                    
+                # Parse output for detailed status
+                success = result.returncode == 0
+                message = "Job completed successfully" if success else f"Job failed with return code {result.returncode}"
+                
+                if output:
+                    # Extract last line of output as additional message
+                    last_line = output.strip().split('\n')[-1] if output else ""
+                    message = f"{message}. {last_line}"
+                
+                print(f"✅ [JOB RUNNER] Job {job_id} completed with success: {success}")
+                print(f"✅ [JOB RUNNER] Job {job_id} message: {message}")
+                
+                # Update job status (now inside the app context)
+                client.end_job(job_id, success, message=message)
+                
+        except Exception as e:
+            print(f"💥 [JOB RUNNER] Job {job_id} exception: {str(e)}")
+            try:
+                with app.app_context():
+                    client.end_job(job_id, False, message=str(e))
+            except Exception as inner_e:
+                print(f"💥 [JOB RUNNER] Failed to update job status: {str(inner_e)}")
+    
+    # Run job in background thread
+    thread = threading.Thread(target=run_job)
+    thread.daemon = True
+    thread.start()
+    print(f"✅ [JOB SUBMIT] Job {job_id} started in background thread")
+    
+    return {
+        "status": "success",
+        "message": "Job started in background",
+        "job_id": job_id,
+        "api_usage": client.get_api_usage()
+    }
+
+@main_bp.route("/get_job_status", methods=["GET"])
+@login_required
+def get_job_status():
+    """Get the current status of a sync job with detailed progress."""
+    from jobs.strava_client import StravaClient
+    from strava.models import Job
+    import time
+    
+    job_id = request.args.get("job_id")
+    print(f"🔍 [JOB STATUS] Polling status for job: {job_id}")
+    
+    if not job_id:
+        return {"status": "error", "message": "Missing job_id parameter"}, 400
+    
+    # Try to get job directly from database first
+    job = Job.query.get(job_id)
+    if job:
+        client = StravaClient()
+        print(f"🔍 [JOB STATUS] Retrieved status from DB: {job.status}")
+        
+        # Calculate progress percentage if job is running
+        progress = 0
+        if job.status == "running":
+            # Calculate elapsed time
+            if job.start_time:
+                elapsed = (datetime.utcnow() - job.start_time).total_seconds()
+                # Estimate progress based on job type (very rough estimate)
+                if job.job_type == "activities":
+                    progress = min(90, elapsed / 300 * 100)  # Max 90% until complete
+                elif job.job_type == "streams":
+                    progress = min(90, elapsed / 600 * 100)
+                else:
+                    progress = min(90, elapsed / 120 * 100)
+        
+        return {
+            "status": "success",
+            "completed": job.status == "completed",
+            "success": job.success if job.success is not None else False,
+            "message": job.message or "Job in progress",
+            "api_usage": client.get_api_usage(),
+            "job_id": job_id,
+            "progress": round(progress),
+            "job_type": job.job_type
+        }
+    
+    # Fallback to StravaClient in-memory tracking
+    client = StravaClient()
+    status = client.get_job_status(job_id)
+    print(f"🔍 [JOB STATUS] Retrieved status: {status}")
+    
+    if not status:
+        return {"status": "error", "message": "Job not found"}, 404
+    
+    # Calculate progress percentage if job is running
+    progress = 0
+    if status["status"] == "running":
+        elapsed = time.time() - status["start_time"]
+        # Estimate progress based on job type (very rough estimate)
+        if status["type"] == "activities":
+            progress = min(90, elapsed / 300 * 100)  # Max 90% until complete
+        elif status["type"] == "streams":
+            progress = min(90, elapsed / 600 * 100)
+        else:
+            progress = min(90, elapsed / 120 * 100)
+    
+    return {
+        "status": "success",
+        "completed": status["status"] == "completed",
+        "success": status.get("success", False),
+        "message": status.get("message", "Job in progress"),
+        "api_usage": client.get_api_usage(),
+        "job_id": job_id,
+        "progress": round(progress),
+        "job_type": status["type"]
+    }
+
+
 @main_bp.route("/heart_rate_graph", methods=["GET"])
 @login_required
 def heart_rate_graph():
@@ -683,7 +864,7 @@ def heart_rate_graph():
     excluded_activities = []
     
     try:
-        if os.path.exists(exclusion_file):
+        if (os.path.exists(exclusion_file)):
             with open(exclusion_file, 'r') as f:
                 exclusion_data = json.load(f)
                 excluded_activities = [entry["id"] for entry in exclusion_data.get("excluded_activities", [])]
@@ -830,4 +1011,3 @@ def heart_rate_graph():
     
     graph_html = fig.to_html(full_html=False)
     return render_template("main/heart_rate_graph.html", graph_html=graph_html, date_range=date_range)
-

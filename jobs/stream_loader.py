@@ -14,16 +14,18 @@ from power_metrics import PowerCalculator
 class StreamLoader:
     """Handles loading activity stream data from Strava."""
     
-    def __init__(self, app, strava_client):
+    def __init__(self, app, strava_client, job_id):
         """
         Initialize the stream loader.
         
         Args:
             app: Flask application instance
             strava_client: StravaClient instance
+            job_id: ID of the current sync job
         """
         self.app = app
         self.strava_client = strava_client
+        self.job_id = job_id
     
     def load_missing_streams(self, limit=0, activity_type=None, after_date=None):
         """
@@ -37,7 +39,8 @@ class StreamLoader:
             bool: True if successful, False otherwise
         """
         with self.app.app_context():
-            print("🔄 Loading missing streams...")
+            print(f"🔄 Loading missing streams (Job ID: {self.job_id})...")
+            self.strava_client.update_job_progress(self.job_id, "Finding activities needing streams")
             
             ## Query for activities without power data
             #query = Activity.query.filter(Activity.normalized_power.is_(None))
@@ -74,7 +77,8 @@ class StreamLoader:
                 print("❌ No activities found that need streams")
                 return False
                 
-            print(f"✅ Found {len(activities)} activities that need streams")
+            print(f"✅ Found {len(activities)} activities that need streams (Job ID: {self.job_id})")
+            self.strava_client.update_job_progress(self.job_id, f"Processing {len(activities)} activities")
             
             # Process activities
             updated_count = 0
@@ -137,10 +141,11 @@ class StreamLoader:
                 if updated_count % 5 != 0 and updated_count > 0:
                     db.session.commit()
                 
-                print(f"✅ Stream loading completed")
+                print(f"✅ Stream loading completed (Job ID: {self.job_id})")
                 print(f"  Updated: {updated_count} activities")
                 print(f"  Skipped: {skipped_count} activities")
                 print(f"  Errors: {error_count} activities")
+                self.strava_client.update_job_progress(self.job_id, f"Updated {updated_count} activities")
                 return updated_count > 0
                 
             except Exception as e:
