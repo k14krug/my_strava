@@ -43,7 +43,7 @@ python strava_sync.py training
 
 import argparse
 import os
-import sys
+import sys; print("PY:", sys.executable, flush=True)
 from datetime import datetime
 
 # Add the project root to the Python path

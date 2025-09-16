@@ -10,8 +10,30 @@ from sqlalchemy import func
 from datetime import datetime
 from datetime import date, timedelta
 from jobs.training_load import TrainingLoadCalculator
+from pathlib import Path
+import sys
 
 main_bp = Blueprint("main", __name__)
+
+
+def get_admin_settings():
+    """Helper function to load admin settings from JSON file."""
+    import json
+    import os
+    
+    config_file = os.path.join(current_app.root_path, '..', 'config', 'admin_settings.json')
+    default_settings = {'sync_days': 3}
+    
+    try:
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as f:
+                settings = json.load(f)
+                return settings
+        else:
+            return default_settings
+    except Exception as e:
+        print(f"Error loading admin settings: {e}")
+        return default_settings
 
 
 @main_bp.route("/")
@@ -683,24 +705,28 @@ def submit_sync_job():
     if job_type not in ["activities", "streams", "segments", "training"]:
         return {"status": "error", "message": "Invalid job type"}, 400
     
-    # Calculate date 3 days ago in YYYY-MM-DD format
-    after_date = (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d")
-    print(f"🔍 Syncing data after date: {after_date}")
+    # Get sync days from admin settings
+    admin_settings = get_admin_settings()
+    sync_days = admin_settings.get('sync_days', 3)
+    
+    # Calculate date N days ago in YYYY-MM-DD format using configured days
+    after_date = (datetime.now() - timedelta(days=sync_days)).strftime("%Y-%m-%d")
+    print(f"🔍 Syncing data after date: {after_date} (using {sync_days} days from admin settings)")
     
     # Initialize status tracking
     client = StravaClient()
     job_id = client.start_job(job_type)
     print(f"✅ [JOB SUBMIT] Created job with ID: {job_id}")
-    
     # Build command with additional parameters
     cmd = [
-        "python", "jobs/strava_sync.py",
+        "/home/kkrug/.virtualenvs/strava-prod/bin/python",  # Use full path to venv python
+        "jobs/strava_sync.py",
         "--job-id", job_id,  # Job ID must come BEFORE the command
         job_type,            # Command comes after global arguments
         "--after-date", after_date,
         "--update-training"
     ]
-    print(f"🔍 [JOB SUBMIT] Command to execute: {' '.join(cmd)}")
+    print(f"🔍 [JOB SUBMIT] Command to execute: {cmd}")
 
     # Create a copy of the app for the background thread
     app = current_app._get_current_object()
@@ -1011,3 +1037,56 @@ def heart_rate_graph():
     
     graph_html = fig.to_html(full_html=False)
     return render_template("main/heart_rate_graph.html", graph_html=graph_html, date_range=date_range)
+
+
+@main_bp.route("/admin", methods=["GET", "POST"])
+@login_required
+def admin():
+    """Admin page for configuring application settings."""
+    import json
+    import os
+    
+    config_file = os.path.join(current_app.root_path, '..', 'config', 'admin_settings.json')
+    
+    # Ensure config directory exists
+    config_dir = os.path.dirname(config_file)
+    if not os.path.exists(config_dir):
+        os.makedirs(config_dir)
+    
+    # Load current settings
+    default_settings = {'sync_days': 3}
+    
+    try:
+        if os.path.exists(config_file):
+            with open(config_file, 'r') as f:
+                settings = json.load(f)
+        else:
+            settings = default_settings
+    except Exception as e:
+        print(f"Error loading admin settings: {e}")
+        settings = default_settings
+    
+    if request.method == "POST":
+        try:
+            # Get the new sync days value
+            sync_days = int(request.form.get("sync_days", 3))
+            
+            # Validate the input
+            if sync_days < 1 or sync_days > 365:
+                flash("Sync days must be between 1 and 365", "danger")
+            else:
+                # Update settings
+                settings['sync_days'] = sync_days
+                
+                # Save to file
+                with open(config_file, 'w') as f:
+                    json.dump(settings, f, indent=2)
+                
+                flash(f"Settings updated successfully! Sync days set to {sync_days}", "success")
+                
+        except ValueError:
+            flash("Invalid sync days value. Please enter a number.", "danger")
+        except Exception as e:
+            flash(f"Error saving settings: {str(e)}", "danger")
+    
+    return render_template("main/admin.html", settings=settings)
