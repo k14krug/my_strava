@@ -10,16 +10,18 @@
 
 **Current implementation/research task:** STRAVA-003 — Historical data-coverage census
 
-**Task state:** pending
+**Task state:** done
 
 **JIT:** `docs/tasks/STRAVA-003.md`
 
-**Branch:** none yet; Dex creates the task branch after refreshing `main`
+**Branch:** `strava-003-census`
 
-**PR:** none
+**PR:** https://github.com/k14krug/my_strava/pull/7
+
+**Verification:** 17 tests passed. All 1,434 CSV rows accounted for; 1,421/1,421 referenced files parsed. Two unchanged full-export runs produced byte-identical JSON and Markdown reports. Analyst review accepted.
+
+**Blockers:** none
 
 ## Next action
 
-Review and merge the Analyst-authored STRAVA-003 JIT. After it is on `main`, Ken may invoke `/TASK` for Dex.
-
-STRAVA-003 is the final planned broad archive-discovery experiment. Do not begin historical-data architecture/design implementation as part of this task.
+None for STRAVA-003. Broad archive discovery is complete unless a later design question identifies a specific unanswered evidence need. Do not automatically begin the historical-data design task.
