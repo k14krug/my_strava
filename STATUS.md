@@ -6,14 +6,16 @@
 
 **Current implementation/research task:** STRAVA-001 — Inventory latest Strava bulk export
 
-**Task state:** pending
+**Task state:** done
 
 **JIT:** `docs/tasks/STRAVA-001.md`
 
-**Branch:** none yet; Dex creates the task branch after refreshing `main`
+**Branch:** `strava-001-inventory`
 
-**PR:** none
+**PR:** https://github.com/k14krug/my_strava/pull/3
+
+**Verification:** 6 synthetic tests passed; the revised real-export reports were byte-identical across two runs.
 
 ## Next action
 
-After this Analyst-authored JIT is merged to `main`, Ken may invoke `/TASK` for Dex. Dex should refresh the repository, read the controlling documents and STRAVA-001 JIT, then implement only STRAVA-001.
+None for STRAVA-001. Analyst acceptance is complete. Do not automatically begin another task.
