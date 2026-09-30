@@ -8,7 +8,7 @@
 
 **Current implementation/research task:** STRAVA-002 — Deep inspect representative activity files
 
-**Task state:** ready_for_review
+**Task state:** done
 
 **JIT:** `docs/tasks/STRAVA-002.md`
 
@@ -20,4 +20,4 @@
 
 ## Next action
 
-Analyst review of the STRAVA-002 candidate evidence and comparison limits; no raw export data is committed.
+None for STRAVA-002. Analyst acceptance is complete. Do not automatically begin another task.
