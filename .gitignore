@@ -8,3 +8,5 @@ strava_debug.py
 memory-bank/
 junk*
 strava_app_db.sql
+local_data/
+strava-inventory-output/

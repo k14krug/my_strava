@@ -1,0 +1,1586 @@
+{
+  "anomalies": {
+    "counts": {
+      "row_without_file_reference": 13
+    },
+    "example_limit_per_kind": 25,
+    "examples": {
+      "row_without_file_reference": [
+        {
+          "activity_id": "2594373932",
+          "file": null
+        },
+        {
+          "activity_id": "2619111944",
+          "file": null
+        },
+        {
+          "activity_id": "2619120275",
+          "file": null
+        },
+        {
+          "activity_id": "2619177948",
+          "file": null
+        },
+        {
+          "activity_id": "2619452999",
+          "file": null
+        },
+        {
+          "activity_id": "2619608265",
+          "file": null
+        },
+        {
+          "activity_id": "2639333702",
+          "file": null
+        },
+        {
+          "activity_id": "2639337298",
+          "file": null
+        },
+        {
+          "activity_id": "2788187826",
+          "file": null
+        },
+        {
+          "activity_id": "3026653156",
+          "file": null
+        },
+        {
+          "activity_id": "5144713748",
+          "file": null
+        },
+        {
+          "activity_id": "6795134830",
+          "file": null
+        },
+        {
+          "activity_id": "7149991100",
+          "file": null
+        }
+      ]
+    }
+  },
+  "associations": {
+    "duplicate_activity_id_count": 0,
+    "duplicate_reference_count": 0,
+    "exact_matched_activity_file_rows": 1421,
+    "references_existing_exactly": 1421,
+    "references_missing_exactly": 0,
+    "rows_with_reference": 1421,
+    "rows_without_reference": 13,
+    "unreferenced_activity_file_count": 0
+  },
+  "candidate_files": [
+    {
+      "activity_id": "10519675984",
+      "date": "2024-01-08",
+      "file": "activities/11256451541.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2024"
+      ],
+      "size_bytes": 60320
+    },
+    {
+      "activity_id": "1150380329",
+      "date": "2017-08-24",
+      "file": "activities/1255575554.gpx.gz",
+      "format": ".gpx.gz",
+      "reasons": [
+        "year 2017"
+      ],
+      "size_bytes": 3647
+    },
+    {
+      "activity_id": "122178660",
+      "date": "2014-02-23",
+      "file": "activities/133759711.gpx.gz",
+      "format": ".gpx.gz",
+      "reasons": [
+        "year 2014"
+      ],
+      "size_bytes": 131813
+    },
+    {
+      "activity_id": "122185017",
+      "date": "2012-05-28",
+      "file": "activities/133766879.gpx.gz",
+      "format": ".gpx.gz",
+      "reasons": [
+        "earliest dated activity",
+        "format .gpx.gz",
+        "year 2012"
+      ],
+      "size_bytes": 34356
+    },
+    {
+      "activity_id": "127993934",
+      "date": "2014-04-08",
+      "file": "activities/140124458.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "format .fit.gz"
+      ],
+      "size_bytes": 8097
+    },
+    {
+      "activity_id": "13249070901",
+      "date": "2025-01-02",
+      "file": "activities/14130274713.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2025"
+      ],
+      "size_bytes": 67068
+    },
+    {
+      "activity_id": "1339479593",
+      "date": "2018-01-03",
+      "file": "activities/1447644322.tcx.gz",
+      "format": ".tcx.gz",
+      "reasons": [
+        "year 2018"
+      ],
+      "size_bytes": 34469
+    },
+    {
+      "activity_id": "1705193620",
+      "date": "2018-07-15",
+      "file": "activities/1705193620.gpx",
+      "format": ".gpx",
+      "reasons": [
+        "largest matched file"
+      ],
+      "size_bytes": 1907556
+    },
+    {
+      "activity_id": "16917180034",
+      "date": "2026-01-02",
+      "file": "activities/18010094080.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2026"
+      ],
+      "size_bytes": 100659
+    },
+    {
+      "activity_id": "18919570078",
+      "date": "2026-06-13",
+      "file": "activities/18919570078.gpx",
+      "format": ".gpx",
+      "reasons": [
+        "power metadata absent",
+        "activity type Run"
+      ],
+      "size_bytes": 652624
+    },
+    {
+      "activity_id": "20205926508",
+      "date": "2026-09-16",
+      "file": "activities/21357825200.tcx.gz",
+      "format": ".tcx.gz",
+      "reasons": [
+        "activity type Ride"
+      ],
+      "size_bytes": 20891
+    },
+    {
+      "activity_id": "20262354267",
+      "date": "2012-07-07",
+      "file": "activities/21415497232.tcx.gz",
+      "format": ".tcx.gz",
+      "reasons": [
+        "format .tcx.gz"
+      ],
+      "size_bytes": 133472
+    },
+    {
+      "activity_id": "20383280617",
+      "date": "2026-09-29",
+      "file": "activities/21538875902.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "latest dated activity",
+        "power metadata present",
+        "activity type Virtual Ride"
+      ],
+      "size_bytes": 63440
+    },
+    {
+      "activity_id": "2056153084",
+      "date": "2019-01-05",
+      "file": "activities/2196956004.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2019"
+      ],
+      "size_bytes": 19098
+    },
+    {
+      "activity_id": "255573617",
+      "date": "2015-02-16",
+      "file": "activities/255573617.gpx",
+      "format": ".gpx",
+      "reasons": [
+        "format .gpx"
+      ],
+      "size_bytes": 656358
+    },
+    {
+      "activity_id": "266274304",
+      "date": "2015-03-11",
+      "file": "activities/266274304.gpx",
+      "format": ".gpx",
+      "reasons": [
+        "smallest matched file"
+      ],
+      "size_bytes": 546
+    },
+    {
+      "activity_id": "239883019",
+      "date": "2015-01-11",
+      "file": "activities/271715592.gpx.gz",
+      "format": ".gpx.gz",
+      "reasons": [
+        "year 2015"
+      ],
+      "size_bytes": 2733
+    },
+    {
+      "activity_id": "2974080526",
+      "date": "2020-01-01",
+      "file": "activities/3169076193.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2020"
+      ],
+      "size_bytes": 12435
+    },
+    {
+      "activity_id": "4557704835",
+      "date": "2021-01-03",
+      "file": "activities/4869344930.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2021"
+      ],
+      "size_bytes": 46511
+    },
+    {
+      "activity_id": "551907799",
+      "date": "2016-04-01",
+      "file": "activities/605191208.gpx.gz",
+      "format": ".gpx.gz",
+      "reasons": [
+        "year 2016"
+      ],
+      "size_bytes": 2778
+    },
+    {
+      "activity_id": "6453917995",
+      "date": "2022-01-01",
+      "file": "activities/6861880619.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2022"
+      ],
+      "size_bytes": 45028
+    },
+    {
+      "activity_id": "8333767642",
+      "date": "2023-01-03",
+      "file": "activities/8936618361.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "year 2023"
+      ],
+      "size_bytes": 64044
+    }
+  ],
+  "csv": {
+    "column_details": [
+      {
+        "name": "Activity ID",
+        "nonempty_count": 1434,
+        "position": 1
+      },
+      {
+        "name": "Activity Date",
+        "nonempty_count": 1434,
+        "position": 2
+      },
+      {
+        "name": "Activity Name",
+        "nonempty_count": 1434,
+        "position": 3
+      },
+      {
+        "name": "Activity Type",
+        "nonempty_count": 1434,
+        "position": 4
+      },
+      {
+        "name": "Activity Description",
+        "nonempty_count": 89,
+        "position": 5
+      },
+      {
+        "name": "Elapsed Time",
+        "nonempty_count": 1434,
+        "position": 6
+      },
+      {
+        "name": "Distance",
+        "nonempty_count": 1434,
+        "position": 7
+      },
+      {
+        "name": "Max Heart Rate",
+        "nonempty_count": 1325,
+        "position": 8
+      },
+      {
+        "name": "Relative Effort",
+        "nonempty_count": 1325,
+        "position": 9
+      },
+      {
+        "name": "Commute",
+        "nonempty_count": 1434,
+        "position": 10
+      },
+      {
+        "name": "Activity Private Note",
+        "nonempty_count": 0,
+        "position": 11
+      },
+      {
+        "name": "Activity Gear",
+        "nonempty_count": 1409,
+        "position": 12
+      },
+      {
+        "name": "Filename",
+        "nonempty_count": 1421,
+        "position": 13
+      },
+      {
+        "name": "Athlete Weight",
+        "nonempty_count": 487,
+        "position": 14
+      },
+      {
+        "name": "Bike Weight",
+        "nonempty_count": 1409,
+        "position": 15
+      },
+      {
+        "name": "Elapsed Time",
+        "nonempty_count": 1432,
+        "position": 16
+      },
+      {
+        "name": "Moving Time",
+        "nonempty_count": 1434,
+        "position": 17
+      },
+      {
+        "name": "Distance",
+        "nonempty_count": 1434,
+        "position": 18
+      },
+      {
+        "name": "Max Speed",
+        "nonempty_count": 1421,
+        "position": 19
+      },
+      {
+        "name": "Average Speed",
+        "nonempty_count": 1051,
+        "position": 20
+      },
+      {
+        "name": "Elevation Gain",
+        "nonempty_count": 1423,
+        "position": 21
+      },
+      {
+        "name": "Elevation Loss",
+        "nonempty_count": 1372,
+        "position": 22
+      },
+      {
+        "name": "Elevation Low",
+        "nonempty_count": 1359,
+        "position": 23
+      },
+      {
+        "name": "Elevation High",
+        "nonempty_count": 1359,
+        "position": 24
+      },
+      {
+        "name": "Max Grade",
+        "nonempty_count": 1421,
+        "position": 25
+      },
+      {
+        "name": "Average Grade",
+        "nonempty_count": 1434,
+        "position": 26
+      },
+      {
+        "name": "Average Positive Grade",
+        "nonempty_count": 0,
+        "position": 27
+      },
+      {
+        "name": "Average Negative Grade",
+        "nonempty_count": 0,
+        "position": 28
+      },
+      {
+        "name": "Max Cadence",
+        "nonempty_count": 1149,
+        "position": 29
+      },
+      {
+        "name": "Average Cadence",
+        "nonempty_count": 1302,
+        "position": 30
+      },
+      {
+        "name": "Max Heart Rate",
+        "nonempty_count": 771,
+        "position": 31
+      },
+      {
+        "name": "Average Heart Rate",
+        "nonempty_count": 1340,
+        "position": 32
+      },
+      {
+        "name": "Max Watts",
+        "nonempty_count": 0,
+        "position": 33
+      },
+      {
+        "name": "Average Watts",
+        "nonempty_count": 1399,
+        "position": 34
+      },
+      {
+        "name": "Calories",
+        "nonempty_count": 1415,
+        "position": 35
+      },
+      {
+        "name": "Max Temperature",
+        "nonempty_count": 0,
+        "position": 36
+      },
+      {
+        "name": "Average Temperature",
+        "nonempty_count": 43,
+        "position": 37
+      },
+      {
+        "name": "Relative Effort",
+        "nonempty_count": 1325,
+        "position": 38
+      },
+      {
+        "name": "Total Work",
+        "nonempty_count": 92,
+        "position": 39
+      },
+      {
+        "name": "Number of Runs",
+        "nonempty_count": 0,
+        "position": 40
+      },
+      {
+        "name": "Uphill Time",
+        "nonempty_count": 0,
+        "position": 41
+      },
+      {
+        "name": "Downhill Time",
+        "nonempty_count": 0,
+        "position": 42
+      },
+      {
+        "name": "Other Time",
+        "nonempty_count": 0,
+        "position": 43
+      },
+      {
+        "name": "Perceived Exertion",
+        "nonempty_count": 9,
+        "position": 44
+      },
+      {
+        "name": "Type",
+        "nonempty_count": 0,
+        "position": 45
+      },
+      {
+        "name": "Start Time",
+        "nonempty_count": 0,
+        "position": 46
+      },
+      {
+        "name": "Weighted Average Power",
+        "nonempty_count": 1308,
+        "position": 47
+      },
+      {
+        "name": "Power Count",
+        "nonempty_count": 1308,
+        "position": 48
+      },
+      {
+        "name": "Prefer Perceived Exertion",
+        "nonempty_count": 28,
+        "position": 49
+      },
+      {
+        "name": "Perceived Relative Effort",
+        "nonempty_count": 9,
+        "position": 50
+      },
+      {
+        "name": "Commute",
+        "nonempty_count": 1381,
+        "position": 51
+      },
+      {
+        "name": "Total Weight Lifted",
+        "nonempty_count": 0,
+        "position": 52
+      },
+      {
+        "name": "From Upload",
+        "nonempty_count": 1033,
+        "position": 53
+      },
+      {
+        "name": "Grade Adjusted Distance",
+        "nonempty_count": 20,
+        "position": 54
+      },
+      {
+        "name": "Weather Observation Time",
+        "nonempty_count": 24,
+        "position": 55
+      },
+      {
+        "name": "Weather Condition",
+        "nonempty_count": 24,
+        "position": 56
+      },
+      {
+        "name": "Weather Temperature",
+        "nonempty_count": 24,
+        "position": 57
+      },
+      {
+        "name": "Apparent Temperature",
+        "nonempty_count": 24,
+        "position": 58
+      },
+      {
+        "name": "Dewpoint",
+        "nonempty_count": 24,
+        "position": 59
+      },
+      {
+        "name": "Humidity",
+        "nonempty_count": 24,
+        "position": 60
+      },
+      {
+        "name": "Weather Pressure",
+        "nonempty_count": 24,
+        "position": 61
+      },
+      {
+        "name": "Wind Speed",
+        "nonempty_count": 24,
+        "position": 62
+      },
+      {
+        "name": "Wind Gust",
+        "nonempty_count": 24,
+        "position": 63
+      },
+      {
+        "name": "Wind Bearing",
+        "nonempty_count": 24,
+        "position": 64
+      },
+      {
+        "name": "Precipitation Intensity",
+        "nonempty_count": 24,
+        "position": 65
+      },
+      {
+        "name": "Sunrise Time",
+        "nonempty_count": 24,
+        "position": 66
+      },
+      {
+        "name": "Sunset Time",
+        "nonempty_count": 24,
+        "position": 67
+      },
+      {
+        "name": "Moon Phase",
+        "nonempty_count": 24,
+        "position": 68
+      },
+      {
+        "name": "Bike",
+        "nonempty_count": 1409,
+        "position": 69
+      },
+      {
+        "name": "Gear",
+        "nonempty_count": 0,
+        "position": 70
+      },
+      {
+        "name": "Precipitation Probability",
+        "nonempty_count": 24,
+        "position": 71
+      },
+      {
+        "name": "Precipitation Type",
+        "nonempty_count": 19,
+        "position": 72
+      },
+      {
+        "name": "Cloud Cover",
+        "nonempty_count": 24,
+        "position": 73
+      },
+      {
+        "name": "Weather Visibility",
+        "nonempty_count": 24,
+        "position": 74
+      },
+      {
+        "name": "UV Index",
+        "nonempty_count": 24,
+        "position": 75
+      },
+      {
+        "name": "Weather Ozone",
+        "nonempty_count": 5,
+        "position": 76
+      },
+      {
+        "name": "Jump Count",
+        "nonempty_count": 0,
+        "position": 77
+      },
+      {
+        "name": "Total Grit",
+        "nonempty_count": 0,
+        "position": 78
+      },
+      {
+        "name": "Average Flow",
+        "nonempty_count": 0,
+        "position": 79
+      },
+      {
+        "name": "Flagged",
+        "nonempty_count": 550,
+        "position": 80
+      },
+      {
+        "name": "Average Elapsed Speed",
+        "nonempty_count": 753,
+        "position": 81
+      },
+      {
+        "name": "Dirt Distance",
+        "nonempty_count": 741,
+        "position": 82
+      },
+      {
+        "name": "Newly Explored Distance",
+        "nonempty_count": 0,
+        "position": 83
+      },
+      {
+        "name": "Newly Explored Dirt Distance",
+        "nonempty_count": 0,
+        "position": 84
+      },
+      {
+        "name": "Activity Count",
+        "nonempty_count": 0,
+        "position": 85
+      },
+      {
+        "name": "Total Steps",
+        "nonempty_count": 0,
+        "position": 86
+      },
+      {
+        "name": "Carbon Saved",
+        "nonempty_count": 201,
+        "position": 87
+      },
+      {
+        "name": "Pool Length",
+        "nonempty_count": 0,
+        "position": 88
+      },
+      {
+        "name": "Training Load",
+        "nonempty_count": 363,
+        "position": 89
+      },
+      {
+        "name": "Intensity",
+        "nonempty_count": 363,
+        "position": 90
+      },
+      {
+        "name": "Average Grade Adjusted Pace",
+        "nonempty_count": 6,
+        "position": 91
+      },
+      {
+        "name": "Timer Time",
+        "nonempty_count": 0,
+        "position": 92
+      },
+      {
+        "name": "Total Cycles",
+        "nonempty_count": 0,
+        "position": 93
+      },
+      {
+        "name": "Recovery",
+        "nonempty_count": 107,
+        "position": 94
+      },
+      {
+        "name": "With Pet",
+        "nonempty_count": 102,
+        "position": 95
+      },
+      {
+        "name": "Competition",
+        "nonempty_count": 0,
+        "position": 96
+      },
+      {
+        "name": "Long Run",
+        "nonempty_count": 0,
+        "position": 97
+      },
+      {
+        "name": "For a Cause",
+        "nonempty_count": 0,
+        "position": 98
+      },
+      {
+        "name": "With Kid",
+        "nonempty_count": 91,
+        "position": 99
+      },
+      {
+        "name": "Downhill Distance",
+        "nonempty_count": 0,
+        "position": 100
+      },
+      {
+        "name": "Total Sets",
+        "nonempty_count": 0,
+        "position": 101
+      },
+      {
+        "name": "Total Reps",
+        "nonempty_count": 0,
+        "position": 102
+      },
+      {
+        "name": "Media",
+        "nonempty_count": 1288,
+        "position": 103
+      }
+    ],
+    "column_nonempty_counts": {
+      "Activity Count": 0,
+      "Activity Date": 1434,
+      "Activity Description": 89,
+      "Activity Gear": 1409,
+      "Activity ID": 1434,
+      "Activity Name": 1434,
+      "Activity Private Note": 0,
+      "Activity Type": 1434,
+      "Apparent Temperature": 24,
+      "Athlete Weight": 487,
+      "Average Cadence": 1302,
+      "Average Elapsed Speed": 753,
+      "Average Flow": 0,
+      "Average Grade": 1434,
+      "Average Grade Adjusted Pace": 6,
+      "Average Heart Rate": 1340,
+      "Average Negative Grade": 0,
+      "Average Positive Grade": 0,
+      "Average Speed": 1051,
+      "Average Temperature": 43,
+      "Average Watts": 1399,
+      "Bike": 1409,
+      "Bike Weight": 1409,
+      "Calories": 1415,
+      "Carbon Saved": 201,
+      "Cloud Cover": 24,
+      "Commute [column 10]": 1434,
+      "Commute [column 51]": 1381,
+      "Competition": 0,
+      "Dewpoint": 24,
+      "Dirt Distance": 741,
+      "Distance [column 18]": 1434,
+      "Distance [column 7]": 1434,
+      "Downhill Distance": 0,
+      "Downhill Time": 0,
+      "Elapsed Time [column 16]": 1432,
+      "Elapsed Time [column 6]": 1434,
+      "Elevation Gain": 1423,
+      "Elevation High": 1359,
+      "Elevation Loss": 1372,
+      "Elevation Low": 1359,
+      "Filename": 1421,
+      "Flagged": 550,
+      "For a Cause": 0,
+      "From Upload": 1033,
+      "Gear": 0,
+      "Grade Adjusted Distance": 20,
+      "Humidity": 24,
+      "Intensity": 363,
+      "Jump Count": 0,
+      "Long Run": 0,
+      "Max Cadence": 1149,
+      "Max Grade": 1421,
+      "Max Heart Rate [column 31]": 771,
+      "Max Heart Rate [column 8]": 1325,
+      "Max Speed": 1421,
+      "Max Temperature": 0,
+      "Max Watts": 0,
+      "Media": 1288,
+      "Moon Phase": 24,
+      "Moving Time": 1434,
+      "Newly Explored Dirt Distance": 0,
+      "Newly Explored Distance": 0,
+      "Number of Runs": 0,
+      "Other Time": 0,
+      "Perceived Exertion": 9,
+      "Perceived Relative Effort": 9,
+      "Pool Length": 0,
+      "Power Count": 1308,
+      "Precipitation Intensity": 24,
+      "Precipitation Probability": 24,
+      "Precipitation Type": 19,
+      "Prefer Perceived Exertion": 28,
+      "Recovery": 107,
+      "Relative Effort [column 38]": 1325,
+      "Relative Effort [column 9]": 1325,
+      "Start Time": 0,
+      "Sunrise Time": 24,
+      "Sunset Time": 24,
+      "Timer Time": 0,
+      "Total Cycles": 0,
+      "Total Grit": 0,
+      "Total Reps": 0,
+      "Total Sets": 0,
+      "Total Steps": 0,
+      "Total Weight Lifted": 0,
+      "Total Work": 92,
+      "Training Load": 363,
+      "Type": 0,
+      "UV Index": 24,
+      "Uphill Time": 0,
+      "Weather Condition": 24,
+      "Weather Observation Time": 24,
+      "Weather Ozone": 5,
+      "Weather Pressure": 24,
+      "Weather Temperature": 24,
+      "Weather Visibility": 24,
+      "Weighted Average Power": 1308,
+      "Wind Bearing": 24,
+      "Wind Gust": 24,
+      "Wind Speed": 24,
+      "With Kid": 91,
+      "With Pet": 102
+    },
+    "columns": [
+      "Activity ID",
+      "Activity Date",
+      "Activity Name",
+      "Activity Type",
+      "Activity Description",
+      "Elapsed Time",
+      "Distance",
+      "Max Heart Rate",
+      "Relative Effort",
+      "Commute",
+      "Activity Private Note",
+      "Activity Gear",
+      "Filename",
+      "Athlete Weight",
+      "Bike Weight",
+      "Elapsed Time",
+      "Moving Time",
+      "Distance",
+      "Max Speed",
+      "Average Speed",
+      "Elevation Gain",
+      "Elevation Loss",
+      "Elevation Low",
+      "Elevation High",
+      "Max Grade",
+      "Average Grade",
+      "Average Positive Grade",
+      "Average Negative Grade",
+      "Max Cadence",
+      "Average Cadence",
+      "Max Heart Rate",
+      "Average Heart Rate",
+      "Max Watts",
+      "Average Watts",
+      "Calories",
+      "Max Temperature",
+      "Average Temperature",
+      "Relative Effort",
+      "Total Work",
+      "Number of Runs",
+      "Uphill Time",
+      "Downhill Time",
+      "Other Time",
+      "Perceived Exertion",
+      "Type",
+      "Start Time",
+      "Weighted Average Power",
+      "Power Count",
+      "Prefer Perceived Exertion",
+      "Perceived Relative Effort",
+      "Commute",
+      "Total Weight Lifted",
+      "From Upload",
+      "Grade Adjusted Distance",
+      "Weather Observation Time",
+      "Weather Condition",
+      "Weather Temperature",
+      "Apparent Temperature",
+      "Dewpoint",
+      "Humidity",
+      "Weather Pressure",
+      "Wind Speed",
+      "Wind Gust",
+      "Wind Bearing",
+      "Precipitation Intensity",
+      "Sunrise Time",
+      "Sunset Time",
+      "Moon Phase",
+      "Bike",
+      "Gear",
+      "Precipitation Probability",
+      "Precipitation Type",
+      "Cloud Cover",
+      "Weather Visibility",
+      "UV Index",
+      "Weather Ozone",
+      "Jump Count",
+      "Total Grit",
+      "Average Flow",
+      "Flagged",
+      "Average Elapsed Speed",
+      "Dirt Distance",
+      "Newly Explored Distance",
+      "Newly Explored Dirt Distance",
+      "Activity Count",
+      "Total Steps",
+      "Carbon Saved",
+      "Pool Length",
+      "Training Load",
+      "Intensity",
+      "Average Grade Adjusted Pace",
+      "Timer Time",
+      "Total Cycles",
+      "Recovery",
+      "With Pet",
+      "Competition",
+      "Long Run",
+      "For a Cause",
+      "With Kid",
+      "Downhill Distance",
+      "Total Sets",
+      "Total Reps",
+      "Media"
+    ],
+    "columns_with_values": [
+      "Activity ID",
+      "Activity Date",
+      "Activity Name",
+      "Activity Type",
+      "Activity Description",
+      "Elapsed Time [column 6]",
+      "Distance [column 7]",
+      "Max Heart Rate [column 8]",
+      "Relative Effort [column 9]",
+      "Commute [column 10]",
+      "Activity Gear",
+      "Filename",
+      "Athlete Weight",
+      "Bike Weight",
+      "Elapsed Time [column 16]",
+      "Moving Time",
+      "Distance [column 18]",
+      "Max Speed",
+      "Average Speed",
+      "Elevation Gain",
+      "Elevation Loss",
+      "Elevation Low",
+      "Elevation High",
+      "Max Grade",
+      "Average Grade",
+      "Max Cadence",
+      "Average Cadence",
+      "Max Heart Rate [column 31]",
+      "Average Heart Rate",
+      "Average Watts",
+      "Calories",
+      "Average Temperature",
+      "Relative Effort [column 38]",
+      "Total Work",
+      "Perceived Exertion",
+      "Weighted Average Power",
+      "Power Count",
+      "Prefer Perceived Exertion",
+      "Perceived Relative Effort",
+      "Commute [column 51]",
+      "From Upload",
+      "Grade Adjusted Distance",
+      "Weather Observation Time",
+      "Weather Condition",
+      "Weather Temperature",
+      "Apparent Temperature",
+      "Dewpoint",
+      "Humidity",
+      "Weather Pressure",
+      "Wind Speed",
+      "Wind Gust",
+      "Wind Bearing",
+      "Precipitation Intensity",
+      "Sunrise Time",
+      "Sunset Time",
+      "Moon Phase",
+      "Bike",
+      "Precipitation Probability",
+      "Precipitation Type",
+      "Cloud Cover",
+      "Weather Visibility",
+      "UV Index",
+      "Weather Ozone",
+      "Flagged",
+      "Average Elapsed Speed",
+      "Dirt Distance",
+      "Carbon Saved",
+      "Training Load",
+      "Intensity",
+      "Average Grade Adjusted Pace",
+      "Recovery",
+      "With Pet",
+      "With Kid",
+      "Media"
+    ],
+    "counts_by_type": {
+      "activity_type": {
+        "Ride": 146,
+        "Rowing": 1,
+        "Run": 22,
+        "Virtual Ride": 1264,
+        "Walk": 1
+      }
+    },
+    "counts_by_year": {
+      "2010": 1,
+      "2012": 6,
+      "2014": 33,
+      "2015": 17,
+      "2016": 14,
+      "2017": 6,
+      "2018": 155,
+      "2019": 185,
+      "2020": 159,
+      "2021": 129,
+      "2022": 161,
+      "2023": 119,
+      "2024": 182,
+      "2025": 154,
+      "2026": 113
+    },
+    "earliest_date": "2010-08-05",
+    "entirely_empty_columns": [
+      "Activity Private Note",
+      "Average Positive Grade",
+      "Average Negative Grade",
+      "Max Watts",
+      "Max Temperature",
+      "Number of Runs",
+      "Uphill Time",
+      "Downhill Time",
+      "Other Time",
+      "Type",
+      "Start Time",
+      "Total Weight Lifted",
+      "Gear",
+      "Jump Count",
+      "Total Grit",
+      "Average Flow",
+      "Newly Explored Distance",
+      "Newly Explored Dirt Distance",
+      "Activity Count",
+      "Total Steps",
+      "Pool Length",
+      "Timer Time",
+      "Total Cycles",
+      "Competition",
+      "Long Run",
+      "For a Cause",
+      "Downhill Distance",
+      "Total Sets",
+      "Total Reps"
+    ],
+    "expected_fields_absent": [
+      "sport_type",
+      "trainer",
+      "private"
+    ],
+    "latest_date": "2026-09-29",
+    "recognized_fields": {
+      "activity_id": [
+        "Activity ID"
+      ],
+      "activity_type": [
+        "Activity Type",
+        "Type"
+      ],
+      "cadence": [
+        "Average Cadence"
+      ],
+      "commute": [
+        "Commute [column 10]",
+        "Commute [column 51]"
+      ],
+      "date": [
+        "Activity Date"
+      ],
+      "distance": [
+        "Distance [column 7]",
+        "Distance [column 18]"
+      ],
+      "elapsed_time": [
+        "Elapsed Time [column 6]",
+        "Elapsed Time [column 16]"
+      ],
+      "elevation": [
+        "Elevation Gain"
+      ],
+      "filename": [
+        "Filename"
+      ],
+      "heart_rate": [
+        "Average Heart Rate",
+        "Max Heart Rate [column 8]",
+        "Max Heart Rate [column 31]"
+      ],
+      "moving_time": [
+        "Moving Time"
+      ],
+      "power": [
+        "Weighted Average Power",
+        "Average Watts",
+        "Max Watts",
+        "Power Count"
+      ],
+      "private": [],
+      "sport_type": [],
+      "trainer": []
+    },
+    "row_count": 1434
+  },
+  "file_format_coverage": {
+    "by_activity_type": {
+      "Ride": {
+        ".fit.gz": 1,
+        ".gpx": 19,
+        ".gpx.gz": 70,
+        ".tcx.gz": 46
+      },
+      "Run": {
+        ".fit.gz": 1,
+        ".gpx": 10,
+        ".gpx.gz": 4,
+        ".tcx.gz": 6
+      },
+      "Virtual Ride": {
+        ".fit.gz": 1262,
+        ".gpx.gz": 2
+      }
+    },
+    "by_sport_type": {},
+    "by_year": {
+      "2012": {
+        ".gpx.gz": 5,
+        ".tcx.gz": 1
+      },
+      "2014": {
+        ".fit.gz": 1,
+        ".gpx.gz": 31,
+        ".tcx.gz": 1
+      },
+      "2015": {
+        ".gpx": 11,
+        ".gpx.gz": 6
+      },
+      "2016": {
+        ".gpx.gz": 14
+      },
+      "2017": {
+        ".gpx.gz": 2,
+        ".tcx.gz": 4
+      },
+      "2018": {
+        ".fit.gz": 100,
+        ".gpx": 1,
+        ".gpx.gz": 9,
+        ".tcx.gz": 45
+      },
+      "2019": {
+        ".fit.gz": 175,
+        ".gpx.gz": 1
+      },
+      "2020": {
+        ".fit.gz": 154,
+        ".gpx.gz": 4
+      },
+      "2021": {
+        ".fit.gz": 127,
+        ".gpx": 1
+      },
+      "2022": {
+        ".fit.gz": 158,
+        ".gpx": 2
+      },
+      "2023": {
+        ".fit.gz": 117,
+        ".gpx": 2
+      },
+      "2024": {
+        ".fit.gz": 178,
+        ".gpx": 4
+      },
+      "2025": {
+        ".fit.gz": 151,
+        ".gpx": 1,
+        ".gpx.gz": 2
+      },
+      "2026": {
+        ".fit.gz": 103,
+        ".gpx": 7,
+        ".gpx.gz": 2,
+        ".tcx.gz": 1
+      }
+    }
+  },
+  "file_sizes": {
+    "count": 1421,
+    "definitions": "Tiny: <1024 bytes. P90: nearest-rank 90th percentile. Median: usual midpoint for even counts.",
+    "maximum_bytes": 1907556,
+    "median_bytes": 42471,
+    "minimum_bytes": 546,
+    "p90_bytes": 75759,
+    "tiny_under_1024_bytes_count": 4,
+    "zero_byte_count": 0
+  },
+  "schema_version": 1,
+  "source": "extracted Strava export (local path withheld)",
+  "structure": {
+    "activity_formats": {
+      ".fit.gz": {
+        "bytes": 57291252,
+        "count": 1264
+      },
+      ".gpx": {
+        "bytes": 16820830,
+        "count": 29
+      },
+      ".gpx.gz": {
+        "bytes": 1725722,
+        "count": 76
+      },
+      ".tcx.gz": {
+        "bytes": 1652724,
+        "count": 52
+      }
+    },
+    "compressed_activity_count": 1392,
+    "extensions": {
+      ".csv": 39,
+      ".fit.gz": 1264,
+      ".gpx": 38,
+      ".gpx.gz": 76,
+      ".jpg": 839,
+      ".json": 1,
+      ".mp4": 169,
+      ".tcx.gz": 52
+    },
+    "file_count": 2478,
+    "file_counts_by_directory_depth": {
+      "0": 41,
+      "1": 2437
+    },
+    "top_level": {
+      "activities": {
+        "bytes": 77490528,
+        "files": 1421,
+        "kind": "directory"
+      },
+      "activities.csv": {
+        "bytes": 632851,
+        "files": 1,
+        "kind": "file"
+      },
+      "applications.csv": {
+        "bytes": 72,
+        "files": 1,
+        "kind": "file"
+      },
+      "bikes.csv": {
+        "bytes": 243,
+        "files": 1,
+        "kind": "file"
+      },
+      "blocks.csv": {
+        "bytes": 30,
+        "files": 1,
+        "kind": "file"
+      },
+      "clubs": {
+        "bytes": 0,
+        "files": 0,
+        "kind": "directory"
+      },
+      "clubs.csv": {
+        "bytes": 105,
+        "files": 1,
+        "kind": "file"
+      },
+      "comments.csv": {
+        "bytes": 122,
+        "files": 1,
+        "kind": "file"
+      },
+      "components.csv": {
+        "bytes": 133,
+        "files": 1,
+        "kind": "file"
+      },
+      "connected_apps.csv": {
+        "bytes": 316,
+        "files": 1,
+        "kind": "file"
+      },
+      "contacts.csv": {
+        "bytes": 60,
+        "files": 1,
+        "kind": "file"
+      },
+      "email_preferences.csv": {
+        "bytes": 1717,
+        "files": 1,
+        "kind": "file"
+      },
+      "events.csv": {
+        "bytes": 41,
+        "files": 1,
+        "kind": "file"
+      },
+      "flags.csv": {
+        "bytes": 2032,
+        "files": 1,
+        "kind": "file"
+      },
+      "followers.csv": {
+        "bytes": 319,
+        "files": 1,
+        "kind": "file"
+      },
+      "following.csv": {
+        "bytes": 250,
+        "files": 1,
+        "kind": "file"
+      },
+      "general_preferences.csv": {
+        "bytes": 304,
+        "files": 1,
+        "kind": "file"
+      },
+      "global_challenges.csv": {
+        "bytes": 273,
+        "files": 1,
+        "kind": "file"
+      },
+      "goals.csv": {
+        "bytes": 486,
+        "files": 1,
+        "kind": "file"
+      },
+      "group_challenges.csv": {
+        "bytes": 25,
+        "files": 1,
+        "kind": "file"
+      },
+      "intercom_tickets.csv": {
+        "bytes": 44,
+        "files": 1,
+        "kind": "file"
+      },
+      "local_legend_segments.csv": {
+        "bytes": 55,
+        "files": 1,
+        "kind": "file"
+      },
+      "logins.csv": {
+        "bytes": 11370,
+        "files": 1,
+        "kind": "file"
+      },
+      "media": {
+        "bytes": 1002288308,
+        "files": 1007,
+        "kind": "directory"
+      },
+      "media.csv": {
+        "bytes": 59713,
+        "files": 1,
+        "kind": "file"
+      },
+      "memberships.csv": {
+        "bytes": 347,
+        "files": 1,
+        "kind": "file"
+      },
+      "messaging.json": {
+        "bytes": 333,
+        "files": 1,
+        "kind": "file"
+      },
+      "mobile_device_identifiers.csv": {
+        "bytes": 91,
+        "files": 1,
+        "kind": "file"
+      },
+      "monthly_recap_achievements.csv": {
+        "bytes": 206,
+        "files": 1,
+        "kind": "file"
+      },
+      "orders.csv": {
+        "bytes": 1110,
+        "files": 1,
+        "kind": "file"
+      },
+      "partner_opt_outs.csv": {
+        "bytes": 1316,
+        "files": 1,
+        "kind": "file"
+      },
+      "posts.csv": {
+        "bytes": 1271,
+        "files": 1,
+        "kind": "file"
+      },
+      "privacy_zones.csv": {
+        "bytes": 258,
+        "files": 1,
+        "kind": "file"
+      },
+      "profile.csv": {
+        "bytes": 261,
+        "files": 1,
+        "kind": "file"
+      },
+      "profile.jpg": {
+        "bytes": 93444,
+        "files": 1,
+        "kind": "file"
+      },
+      "reactions.csv": {
+        "bytes": 1154,
+        "files": 1,
+        "kind": "file"
+      },
+      "routes": {
+        "bytes": 428129,
+        "files": 9,
+        "kind": "directory"
+      },
+      "routes.csv": {
+        "bytes": 314,
+        "files": 1,
+        "kind": "file"
+      },
+      "segments.csv": {
+        "bytes": 459,
+        "files": 1,
+        "kind": "file"
+      },
+      "shoes.csv": {
+        "bytes": 57,
+        "files": 1,
+        "kind": "file"
+      },
+      "social_settings.csv": {
+        "bytes": 215,
+        "files": 1,
+        "kind": "file"
+      },
+      "starred_routes.csv": {
+        "bytes": 296,
+        "files": 1,
+        "kind": "file"
+      },
+      "starred_segments.csv": {
+        "bytes": 814,
+        "files": 1,
+        "kind": "file"
+      },
+      "structured_details.csv": {
+        "bytes": 129,
+        "files": 1,
+        "kind": "file"
+      },
+      "visibility_settings.csv": {
+        "bytes": 264,
+        "files": 1,
+        "kind": "file"
+      }
+    },
+    "total_bytes": 1081019865,
+    "uncompressed_activity_count": 29
+  },
+  "tool_version": "1.0",
+  "warnings": [
+    "Power column presence is a CSV metadata proxy, not proof of measured power."
+  ]
+}
