@@ -76,6 +76,18 @@ Only one implementation/research task should normally be `in_progress`.
 
 ---
 
+### DESIGN-001 — Durable activity and provenance model
+
+**Status:** done
+
+**Purpose:** Establish the conceptual model for durable Activity identity, source evidence, provenance, historical state, derivations, and conservative source reconciliation before storage/import implementation design.
+
+**Decision:** See `docs/design/DESIGN-001.md`.
+
+**Dependency:** STRAVA-003 complete.
+
+---
+
 ## Follow-up work
 
-After STRAVA-003, broad archive discovery is considered complete unless later design work identifies a specific unanswered evidence question. The next planned phase is discussion/design of the durable historical activity and data-provenance representation; that design task has not yet been defined.
+Broad archive discovery is complete unless later design work identifies a specific unanswered evidence question. DESIGN-001 establishes the durable conceptual model. The next phase is to translate it into the simplest practical storage and import design for this private single-rider application; no implementation task is authorized yet.
