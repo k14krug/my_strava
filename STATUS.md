@@ -8,14 +8,16 @@
 
 **Current implementation/research task:** STRAVA-002 — Deep inspect representative activity files
 
-**Task state:** pending
+**Task state:** ready_for_review
 
 **JIT:** `docs/tasks/STRAVA-002.md`
 
-**Branch:** none yet; Dex creates the task branch after refreshing `main`
+**Branch:** `strava-002-samples`
 
-**PR:** none
+**PR:** pending creation
+
+**Verification:** 11 synthetic tests passed; 23/23 candidates parsed; two real-data runs produced byte-identical reports.
 
 ## Next action
 
-After this Analyst-authored JIT is reviewed and merged to `main`, Ken may invoke `/TASK` for Dex. Dex should implement only STRAVA-002 and should not begin a whole-corpus scan or importer design.
+Analyst review of the STRAVA-002 candidate evidence and comparison limits; no raw export data is committed.
