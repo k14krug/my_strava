@@ -55,6 +55,27 @@ Only one implementation/research task should normally be `in_progress`.
 
 ---
 
+### STRAVA-003 — Historical data-coverage census
+
+**Status:** pending
+
+**Purpose:** Quantify the source-data characteristics discovered by STRAVA-001/002 across the complete Strava export so later historical-data design is grounded in prevalence, not a 23-file sample.
+
+**Scope summary:**
+
+* account for all 1,434 CSV rows and attempt all 1,421 referenced activity files
+* quantify FIT/TCX/GPX signal and structural coverage by year and activity cohort
+* quantify Ride and Virtual Ride evidence combinations relevant to later historical analysis and estimated-power research
+* keep source record power, source summary power, and Strava CSV power metadata distinct
+* quantify recording/timestamp characteristics and parse/outlier conditions
+* produce a durable findings document separating evidence, unknowns, implications, and candidate design decisions
+
+**Acceptance:** See `docs/tasks/STRAVA-003.md`.
+
+**Dependency:** STRAVA-002 complete.
+
+---
+
 ## Follow-up work
 
-Further tasks will be chosen from STRAVA-002 evidence. A likely direction is whole-history signal/data-quality coverage, but that is not yet a committed task or design decision.
+After STRAVA-003, broad archive discovery is considered complete unless later design work identifies a specific unanswered evidence question. The next planned phase is discussion/design of the durable historical activity and data-provenance representation; that design task has not yet been defined.
