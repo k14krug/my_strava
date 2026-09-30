@@ -4,18 +4,18 @@
 
 **Workflow bootstrap:** done
 
-**Current implementation/research task:** STRAVA-001 — Inventory latest Strava bulk export
+**STRAVA-001:** done
 
-**Task state:** done
+**Current implementation/research task:** STRAVA-002 — Deep inspect representative activity files
 
-**JIT:** `docs/tasks/STRAVA-001.md`
+**Task state:** pending
 
-**Branch:** `strava-001-inventory`
+**JIT:** `docs/tasks/STRAVA-002.md`
 
-**PR:** https://github.com/k14krug/my_strava/pull/3
+**Branch:** none yet; Dex creates the task branch after refreshing `main`
 
-**Verification:** 6 synthetic tests passed; the revised real-export reports were byte-identical across two runs.
+**PR:** none
 
 ## Next action
 
-None for STRAVA-001. Analyst acceptance is complete. Do not automatically begin another task.
+After this Analyst-authored JIT is reviewed and merged to `main`, Ken may invoke `/TASK` for Dex. Dex should implement only STRAVA-002 and should not begin a whole-corpus scan or importer design.
