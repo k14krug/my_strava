@@ -6,18 +6,20 @@
 
 **STRAVA-001:** done
 
-**Current implementation/research task:** STRAVA-002 — Deep inspect representative activity files
+**STRAVA-002:** done
 
-**Task state:** done
+**Current implementation/research task:** STRAVA-003 — Historical data-coverage census
 
-**JIT:** `docs/tasks/STRAVA-002.md`
+**Task state:** pending
 
-**Branch:** `strava-002-samples`
+**JIT:** `docs/tasks/STRAVA-003.md`
 
-**PR:** https://github.com/k14krug/my_strava/pull/5
+**Branch:** none yet; Dex creates the task branch after refreshing `main`
 
-**Verification:** 11 synthetic tests passed; 23/23 candidates parsed; two real-data runs produced byte-identical reports.
+**PR:** none
 
 ## Next action
 
-None for STRAVA-002. Analyst acceptance is complete. Do not automatically begin another task.
+Review and merge the Analyst-authored STRAVA-003 JIT. After it is on `main`, Ken may invoke `/TASK` for Dex.
+
+STRAVA-003 is the final planned broad archive-discovery experiment. Do not begin historical-data architecture/design implementation as part of this task.
