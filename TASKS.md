@@ -57,7 +57,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### STRAVA-003 — Historical data-coverage census
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Quantify the source-data characteristics discovered by STRAVA-001/002 across the complete Strava export so later historical-data design is grounded in prevalence, not a 23-file sample.
 
