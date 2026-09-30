@@ -12,7 +12,7 @@
 
 **Branch:** `strava-001-inventory`
 
-**PR:** pending creation
+**PR:** https://github.com/k14krug/my_strava/pull/3
 
 ## Next action
 
