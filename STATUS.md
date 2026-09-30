@@ -14,7 +14,7 @@
 
 **Branch:** `strava-002-samples`
 
-**PR:** pending creation
+**PR:** https://github.com/k14krug/my_strava/pull/5
 
 **Verification:** 11 synthetic tests passed; 23/23 candidates parsed; two real-data runs produced byte-identical reports.
 
