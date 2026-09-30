@@ -35,6 +35,26 @@ Only one implementation/research task should normally be `in_progress`.
 
 ---
 
+### STRAVA-002 — Deep inspect representative activity files
+
+**Status:** pending
+
+**Purpose:** Deeply inspect the STRAVA-001 diagnostic candidates and compare source-file evidence with Strava CSV metadata before making importer or historical-data-model decisions.
+
+**Scope summary:**
+
+* parse the 23 candidate FIT/TCX/GPX files at a diagnostic level
+* compare source-file evidence with corresponding `activities.csv` rows
+* characterize signal availability, timing behavior, device/session/lap metadata, and power provenance evidence
+* characterize the 13 CSV rows without filename references
+* keep raw activity streams and personal source files out of Git
+
+**Acceptance:** See `docs/tasks/STRAVA-002.md`.
+
+**Dependency:** STRAVA-001 complete.
+
+---
+
 ## Follow-up work
 
-Additional tasks will be added from evidence produced by STRAVA-001 and subsequent project decisions. Do not infer a fixed implementation roadmap from this placeholder.
+Further tasks will be chosen from STRAVA-002 evidence. A likely direction is whole-history signal/data-quality coverage, but that is not yet a committed task or design decision.
