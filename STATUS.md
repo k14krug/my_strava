@@ -6,7 +6,7 @@
 
 **Current implementation/research task:** STRAVA-001 — Inventory latest Strava bulk export
 
-**Task state:** ready_for_review
+**Task state:** done
 
 **JIT:** `docs/tasks/STRAVA-001.md`
 
@@ -18,4 +18,4 @@
 
 ## Next action
 
-Analyst review of the explicit `Virtual Ride` and `Ride` candidate proxy labels in PR #3; no raw export data is committed.
+None for STRAVA-001. Analyst acceptance is complete. Do not automatically begin another task.
