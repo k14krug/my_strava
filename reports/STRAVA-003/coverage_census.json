@@ -1,0 +1,2678 @@
+{
+  "by_activity_type": {
+    "Ride": {
+      "csv_power_metadata_rows": 135,
+      "csv_rows": 146,
+      "file_backed_rows": 136,
+      "format_counts": {
+        ".fit.gz": 1,
+        ".gpx": 19,
+        ".gpx.gz": 70,
+        ".tcx.gz": 46
+      },
+      "no_file_rows": 10,
+      "parse_or_file_failures": 0,
+      "parsed_files": 136,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 136,
+          "files": 92,
+          "percent": 67.6
+        },
+        "cadence": {
+          "denominator_parsed_files": 136,
+          "files": 51,
+          "percent": 37.5
+        },
+        "distance": {
+          "denominator_parsed_files": 136,
+          "files": 9,
+          "percent": 6.6
+        },
+        "gps": {
+          "denominator_parsed_files": 136,
+          "files": 92,
+          "percent": 67.6
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 136,
+          "files": 82,
+          "percent": 60.3
+        },
+        "power": {
+          "denominator_parsed_files": 136,
+          "files": 44,
+          "percent": 32.4
+        },
+        "speed": {
+          "denominator_parsed_files": 136,
+          "files": 8,
+          "percent": 5.9
+        },
+        "temperature": {
+          "denominator_parsed_files": 136,
+          "files": 40,
+          "percent": 29.4
+        },
+        "time": {
+          "denominator_parsed_files": 136,
+          "files": 136,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 44,
+      "source_summary_power_files": 52
+    },
+    "Rowing": {
+      "csv_power_metadata_rows": 0,
+      "csv_rows": 1,
+      "file_backed_rows": 0,
+      "format_counts": {},
+      "no_file_rows": 1,
+      "parse_or_file_failures": 0,
+      "parsed_files": 0,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "cadence": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "distance": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "gps": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "power": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "speed": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "temperature": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "time": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 0
+    },
+    "Run": {
+      "csv_power_metadata_rows": 0,
+      "csv_rows": 22,
+      "file_backed_rows": 21,
+      "format_counts": {
+        ".fit.gz": 1,
+        ".gpx": 10,
+        ".gpx.gz": 4,
+        ".tcx.gz": 6
+      },
+      "no_file_rows": 1,
+      "parse_or_file_failures": 0,
+      "parsed_files": 21,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 21,
+          "files": 14,
+          "percent": 66.7
+        },
+        "cadence": {
+          "denominator_parsed_files": 21,
+          "files": 1,
+          "percent": 4.8
+        },
+        "distance": {
+          "denominator_parsed_files": 21,
+          "files": 7,
+          "percent": 33.3
+        },
+        "gps": {
+          "denominator_parsed_files": 21,
+          "files": 20,
+          "percent": 95.2
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 21,
+          "files": 7,
+          "percent": 33.3
+        },
+        "power": {
+          "denominator_parsed_files": 21,
+          "files": 1,
+          "percent": 4.8
+        },
+        "speed": {
+          "denominator_parsed_files": 21,
+          "files": 6,
+          "percent": 28.6
+        },
+        "temperature": {
+          "denominator_parsed_files": 21,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 21,
+          "files": 21,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 1,
+      "source_summary_power_files": 1
+    },
+    "Virtual Ride": {
+      "csv_power_metadata_rows": 1264,
+      "csv_rows": 1264,
+      "file_backed_rows": 1264,
+      "format_counts": {
+        ".fit.gz": 1262,
+        ".gpx.gz": 2
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 1264,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 1264,
+          "files": 1247,
+          "percent": 98.7
+        },
+        "cadence": {
+          "denominator_parsed_files": 1264,
+          "files": 1264,
+          "percent": 100.0
+        },
+        "distance": {
+          "denominator_parsed_files": 1264,
+          "files": 1262,
+          "percent": 99.8
+        },
+        "gps": {
+          "denominator_parsed_files": 1264,
+          "files": 1246,
+          "percent": 98.6
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 1264,
+          "files": 1262,
+          "percent": 99.8
+        },
+        "power": {
+          "denominator_parsed_files": 1264,
+          "files": 1264,
+          "percent": 100.0
+        },
+        "speed": {
+          "denominator_parsed_files": 1264,
+          "files": 1264,
+          "percent": 100.0
+        },
+        "temperature": {
+          "denominator_parsed_files": 1264,
+          "files": 2,
+          "percent": 0.2
+        },
+        "time": {
+          "denominator_parsed_files": 1264,
+          "files": 1264,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 1264,
+      "source_summary_power_files": 1261
+    },
+    "Walk": {
+      "csv_power_metadata_rows": 0,
+      "csv_rows": 1,
+      "file_backed_rows": 0,
+      "format_counts": {},
+      "no_file_rows": 1,
+      "parse_or_file_failures": 0,
+      "parsed_files": 0,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "cadence": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "distance": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "gps": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "power": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "speed": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "temperature": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "time": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 0
+    }
+  },
+  "by_year": {
+    "2010": {
+      "csv_power_metadata_rows": 0,
+      "csv_rows": 1,
+      "file_backed_rows": 0,
+      "format_counts": {},
+      "no_file_rows": 1,
+      "parse_or_file_failures": 0,
+      "parsed_files": 0,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "cadence": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "distance": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "gps": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "power": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "speed": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "temperature": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        },
+        "time": {
+          "denominator_parsed_files": 0,
+          "files": 0,
+          "percent": null
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 0
+    },
+    "2012": {
+      "csv_power_metadata_rows": 6,
+      "csv_rows": 6,
+      "file_backed_rows": 6,
+      "format_counts": {
+        ".gpx.gz": 5,
+        ".tcx.gz": 1
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 6,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 6,
+          "files": 6,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "distance": {
+          "denominator_parsed_files": 6,
+          "files": 1,
+          "percent": 16.7
+        },
+        "gps": {
+          "denominator_parsed_files": 6,
+          "files": 6,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "power": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "speed": {
+          "denominator_parsed_files": 6,
+          "files": 1,
+          "percent": 16.7
+        },
+        "temperature": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 6,
+          "files": 6,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 5
+    },
+    "2014": {
+      "csv_power_metadata_rows": 29,
+      "csv_rows": 33,
+      "file_backed_rows": 33,
+      "format_counts": {
+        ".fit.gz": 1,
+        ".gpx.gz": 31,
+        ".tcx.gz": 1
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 33,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 33,
+          "files": 32,
+          "percent": 97.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 33,
+          "files": 0,
+          "percent": 0.0
+        },
+        "distance": {
+          "denominator_parsed_files": 33,
+          "files": 2,
+          "percent": 6.1
+        },
+        "gps": {
+          "denominator_parsed_files": 33,
+          "files": 33,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 33,
+          "files": 2,
+          "percent": 6.1
+        },
+        "power": {
+          "denominator_parsed_files": 33,
+          "files": 0,
+          "percent": 0.0
+        },
+        "speed": {
+          "denominator_parsed_files": 33,
+          "files": 2,
+          "percent": 6.1
+        },
+        "temperature": {
+          "denominator_parsed_files": 33,
+          "files": 20,
+          "percent": 60.6
+        },
+        "time": {
+          "denominator_parsed_files": 33,
+          "files": 33,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 2
+    },
+    "2015": {
+      "csv_power_metadata_rows": 17,
+      "csv_rows": 17,
+      "file_backed_rows": 17,
+      "format_counts": {
+        ".gpx": 11,
+        ".gpx.gz": 6
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 17,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 17,
+          "files": 17,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 17,
+          "files": 13,
+          "percent": 76.5
+        },
+        "distance": {
+          "denominator_parsed_files": 17,
+          "files": 0,
+          "percent": 0.0
+        },
+        "gps": {
+          "denominator_parsed_files": 17,
+          "files": 17,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 17,
+          "files": 12,
+          "percent": 70.6
+        },
+        "power": {
+          "denominator_parsed_files": 17,
+          "files": 0,
+          "percent": 0.0
+        },
+        "speed": {
+          "denominator_parsed_files": 17,
+          "files": 0,
+          "percent": 0.0
+        },
+        "temperature": {
+          "denominator_parsed_files": 17,
+          "files": 6,
+          "percent": 35.3
+        },
+        "time": {
+          "denominator_parsed_files": 17,
+          "files": 17,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 2
+    },
+    "2016": {
+      "csv_power_metadata_rows": 14,
+      "csv_rows": 14,
+      "file_backed_rows": 14,
+      "format_counts": {
+        ".gpx.gz": 14
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 14,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 14,
+          "files": 14,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 14,
+          "files": 0,
+          "percent": 0.0
+        },
+        "distance": {
+          "denominator_parsed_files": 14,
+          "files": 0,
+          "percent": 0.0
+        },
+        "gps": {
+          "denominator_parsed_files": 14,
+          "files": 14,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 14,
+          "files": 9,
+          "percent": 64.3
+        },
+        "power": {
+          "denominator_parsed_files": 14,
+          "files": 0,
+          "percent": 0.0
+        },
+        "speed": {
+          "denominator_parsed_files": 14,
+          "files": 0,
+          "percent": 0.0
+        },
+        "temperature": {
+          "denominator_parsed_files": 14,
+          "files": 14,
+          "percent": 100.0
+        },
+        "time": {
+          "denominator_parsed_files": 14,
+          "files": 14,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 0
+    },
+    "2017": {
+      "csv_power_metadata_rows": 0,
+      "csv_rows": 6,
+      "file_backed_rows": 6,
+      "format_counts": {
+        ".gpx.gz": 2,
+        ".tcx.gz": 4
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 6,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 6,
+          "files": 2,
+          "percent": 33.3
+        },
+        "cadence": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "distance": {
+          "denominator_parsed_files": 6,
+          "files": 4,
+          "percent": 66.7
+        },
+        "gps": {
+          "denominator_parsed_files": 6,
+          "files": 6,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "power": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "speed": {
+          "denominator_parsed_files": 6,
+          "files": 4,
+          "percent": 66.7
+        },
+        "temperature": {
+          "denominator_parsed_files": 6,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 6,
+          "files": 6,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 0,
+      "source_summary_power_files": 0
+    },
+    "2018": {
+      "csv_power_metadata_rows": 154,
+      "csv_rows": 155,
+      "file_backed_rows": 155,
+      "format_counts": {
+        ".fit.gz": 100,
+        ".gpx": 1,
+        ".gpx.gz": 9,
+        ".tcx.gz": 45
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 155,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 155,
+          "files": 110,
+          "percent": 71.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 155,
+          "files": 139,
+          "percent": 89.7
+        },
+        "distance": {
+          "denominator_parsed_files": 155,
+          "files": 107,
+          "percent": 69.0
+        },
+        "gps": {
+          "denominator_parsed_files": 155,
+          "files": 111,
+          "percent": 71.6
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 155,
+          "files": 148,
+          "percent": 95.5
+        },
+        "power": {
+          "denominator_parsed_files": 155,
+          "files": 145,
+          "percent": 93.5
+        },
+        "speed": {
+          "denominator_parsed_files": 155,
+          "files": 108,
+          "percent": 69.7
+        },
+        "temperature": {
+          "denominator_parsed_files": 155,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 155,
+          "files": 155,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 145,
+      "source_summary_power_files": 144
+    },
+    "2019": {
+      "csv_power_metadata_rows": 176,
+      "csv_rows": 185,
+      "file_backed_rows": 176,
+      "format_counts": {
+        ".fit.gz": 175,
+        ".gpx.gz": 1
+      },
+      "no_file_rows": 9,
+      "parse_or_file_failures": 0,
+      "parsed_files": 176,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 176,
+          "files": 176,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 176,
+          "files": 175,
+          "percent": 99.4
+        },
+        "distance": {
+          "denominator_parsed_files": 176,
+          "files": 175,
+          "percent": 99.4
+        },
+        "gps": {
+          "denominator_parsed_files": 176,
+          "files": 176,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 176,
+          "files": 176,
+          "percent": 100.0
+        },
+        "power": {
+          "denominator_parsed_files": 176,
+          "files": 175,
+          "percent": 99.4
+        },
+        "speed": {
+          "denominator_parsed_files": 176,
+          "files": 175,
+          "percent": 99.4
+        },
+        "temperature": {
+          "denominator_parsed_files": 176,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 176,
+          "files": 176,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 175,
+      "source_summary_power_files": 175
+    },
+    "2020": {
+      "csv_power_metadata_rows": 158,
+      "csv_rows": 159,
+      "file_backed_rows": 158,
+      "format_counts": {
+        ".fit.gz": 154,
+        ".gpx.gz": 4
+      },
+      "no_file_rows": 1,
+      "parse_or_file_failures": 0,
+      "parsed_files": 158,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 158,
+          "files": 158,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 158,
+          "files": 155,
+          "percent": 98.1
+        },
+        "distance": {
+          "denominator_parsed_files": 158,
+          "files": 154,
+          "percent": 97.5
+        },
+        "gps": {
+          "denominator_parsed_files": 158,
+          "files": 158,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 158,
+          "files": 157,
+          "percent": 99.4
+        },
+        "power": {
+          "denominator_parsed_files": 158,
+          "files": 155,
+          "percent": 98.1
+        },
+        "speed": {
+          "denominator_parsed_files": 158,
+          "files": 155,
+          "percent": 98.1
+        },
+        "temperature": {
+          "denominator_parsed_files": 158,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 158,
+          "files": 158,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 155,
+      "source_summary_power_files": 154
+    },
+    "2021": {
+      "csv_power_metadata_rows": 128,
+      "csv_rows": 129,
+      "file_backed_rows": 128,
+      "format_counts": {
+        ".fit.gz": 127,
+        ".gpx": 1
+      },
+      "no_file_rows": 1,
+      "parse_or_file_failures": 0,
+      "parsed_files": 128,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 128,
+          "files": 128,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 128,
+          "files": 127,
+          "percent": 99.2
+        },
+        "distance": {
+          "denominator_parsed_files": 128,
+          "files": 127,
+          "percent": 99.2
+        },
+        "gps": {
+          "denominator_parsed_files": 128,
+          "files": 128,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 128,
+          "files": 128,
+          "percent": 100.0
+        },
+        "power": {
+          "denominator_parsed_files": 128,
+          "files": 127,
+          "percent": 99.2
+        },
+        "speed": {
+          "denominator_parsed_files": 128,
+          "files": 127,
+          "percent": 99.2
+        },
+        "temperature": {
+          "denominator_parsed_files": 128,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 128,
+          "files": 128,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 127,
+      "source_summary_power_files": 127
+    },
+    "2022": {
+      "csv_power_metadata_rows": 158,
+      "csv_rows": 161,
+      "file_backed_rows": 160,
+      "format_counts": {
+        ".fit.gz": 158,
+        ".gpx": 2
+      },
+      "no_file_rows": 1,
+      "parse_or_file_failures": 0,
+      "parsed_files": 160,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 160,
+          "files": 160,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 160,
+          "files": 158,
+          "percent": 98.8
+        },
+        "distance": {
+          "denominator_parsed_files": 160,
+          "files": 158,
+          "percent": 98.8
+        },
+        "gps": {
+          "denominator_parsed_files": 160,
+          "files": 160,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 160,
+          "files": 159,
+          "percent": 99.4
+        },
+        "power": {
+          "denominator_parsed_files": 160,
+          "files": 158,
+          "percent": 98.8
+        },
+        "speed": {
+          "denominator_parsed_files": 160,
+          "files": 158,
+          "percent": 98.8
+        },
+        "temperature": {
+          "denominator_parsed_files": 160,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 160,
+          "files": 160,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 158,
+      "source_summary_power_files": 158
+    },
+    "2023": {
+      "csv_power_metadata_rows": 117,
+      "csv_rows": 119,
+      "file_backed_rows": 119,
+      "format_counts": {
+        ".fit.gz": 117,
+        ".gpx": 2
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 119,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 119,
+          "files": 119,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 119,
+          "files": 117,
+          "percent": 98.3
+        },
+        "distance": {
+          "denominator_parsed_files": 119,
+          "files": 117,
+          "percent": 98.3
+        },
+        "gps": {
+          "denominator_parsed_files": 119,
+          "files": 119,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 119,
+          "files": 119,
+          "percent": 100.0
+        },
+        "power": {
+          "denominator_parsed_files": 119,
+          "files": 117,
+          "percent": 98.3
+        },
+        "speed": {
+          "denominator_parsed_files": 119,
+          "files": 117,
+          "percent": 98.3
+        },
+        "temperature": {
+          "denominator_parsed_files": 119,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 119,
+          "files": 119,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 117,
+      "source_summary_power_files": 117
+    },
+    "2024": {
+      "csv_power_metadata_rows": 178,
+      "csv_rows": 182,
+      "file_backed_rows": 182,
+      "format_counts": {
+        ".fit.gz": 178,
+        ".gpx": 4
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 182,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 182,
+          "files": 165,
+          "percent": 90.7
+        },
+        "cadence": {
+          "denominator_parsed_files": 182,
+          "files": 178,
+          "percent": 97.8
+        },
+        "distance": {
+          "denominator_parsed_files": 182,
+          "files": 178,
+          "percent": 97.8
+        },
+        "gps": {
+          "denominator_parsed_files": 182,
+          "files": 165,
+          "percent": 90.7
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 182,
+          "files": 179,
+          "percent": 98.4
+        },
+        "power": {
+          "denominator_parsed_files": 182,
+          "files": 178,
+          "percent": 97.8
+        },
+        "speed": {
+          "denominator_parsed_files": 182,
+          "files": 178,
+          "percent": 97.8
+        },
+        "temperature": {
+          "denominator_parsed_files": 182,
+          "files": 2,
+          "percent": 1.1
+        },
+        "time": {
+          "denominator_parsed_files": 182,
+          "files": 182,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 178,
+      "source_summary_power_files": 178
+    },
+    "2025": {
+      "csv_power_metadata_rows": 152,
+      "csv_rows": 154,
+      "file_backed_rows": 154,
+      "format_counts": {
+        ".fit.gz": 151,
+        ".gpx": 1,
+        ".gpx.gz": 2
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 154,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 154,
+          "files": 153,
+          "percent": 99.4
+        },
+        "cadence": {
+          "denominator_parsed_files": 154,
+          "files": 151,
+          "percent": 98.1
+        },
+        "distance": {
+          "denominator_parsed_files": 154,
+          "files": 151,
+          "percent": 98.1
+        },
+        "gps": {
+          "denominator_parsed_files": 154,
+          "files": 152,
+          "percent": 98.7
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 154,
+          "files": 152,
+          "percent": 98.7
+        },
+        "power": {
+          "denominator_parsed_files": 154,
+          "files": 151,
+          "percent": 98.1
+        },
+        "speed": {
+          "denominator_parsed_files": 154,
+          "files": 150,
+          "percent": 97.4
+        },
+        "temperature": {
+          "denominator_parsed_files": 154,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 154,
+          "files": 154,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 151,
+      "source_summary_power_files": 149
+    },
+    "2026": {
+      "csv_power_metadata_rows": 112,
+      "csv_rows": 113,
+      "file_backed_rows": 113,
+      "format_counts": {
+        ".fit.gz": 103,
+        ".gpx": 7,
+        ".gpx.gz": 2,
+        ".tcx.gz": 1
+      },
+      "no_file_rows": 0,
+      "parse_or_file_failures": 0,
+      "parsed_files": 113,
+      "signals": {
+        "altitude": {
+          "denominator_parsed_files": 113,
+          "files": 113,
+          "percent": 100.0
+        },
+        "cadence": {
+          "denominator_parsed_files": 113,
+          "files": 103,
+          "percent": 91.2
+        },
+        "distance": {
+          "denominator_parsed_files": 113,
+          "files": 104,
+          "percent": 92.0
+        },
+        "gps": {
+          "denominator_parsed_files": 113,
+          "files": 113,
+          "percent": 100.0
+        },
+        "heart_rate": {
+          "denominator_parsed_files": 113,
+          "files": 110,
+          "percent": 97.3
+        },
+        "power": {
+          "denominator_parsed_files": 113,
+          "files": 103,
+          "percent": 91.2
+        },
+        "speed": {
+          "denominator_parsed_files": 113,
+          "files": 103,
+          "percent": 91.2
+        },
+        "temperature": {
+          "denominator_parsed_files": 113,
+          "files": 0,
+          "percent": 0.0
+        },
+        "time": {
+          "denominator_parsed_files": 113,
+          "files": 113,
+          "percent": 100.0
+        }
+      },
+      "source_record_power_files": 103,
+      "source_summary_power_files": 103
+    }
+  },
+  "by_year_type_format": [
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": "[no file]",
+      "year": "2010"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 5,
+      "format": ".gpx.gz",
+      "year": "2012"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": ".tcx.gz",
+      "year": "2012"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": ".fit.gz",
+      "year": "2014"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 29,
+      "format": ".gpx.gz",
+      "year": "2014"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 2,
+      "format": ".gpx.gz",
+      "year": "2014"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 1,
+      "format": ".tcx.gz",
+      "year": "2014"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 11,
+      "format": ".gpx",
+      "year": "2015"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 6,
+      "format": ".gpx.gz",
+      "year": "2015"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 14,
+      "format": ".gpx.gz",
+      "year": "2016"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 2,
+      "format": ".gpx.gz",
+      "year": "2017"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 4,
+      "format": ".tcx.gz",
+      "year": "2017"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": ".gpx",
+      "year": "2018"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 8,
+      "format": ".gpx.gz",
+      "year": "2018"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 44,
+      "format": ".tcx.gz",
+      "year": "2018"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 1,
+      "format": ".tcx.gz",
+      "year": "2018"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 100,
+      "format": ".fit.gz",
+      "year": "2018"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 1,
+      "format": ".gpx.gz",
+      "year": "2018"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": ".gpx.gz",
+      "year": "2019"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 7,
+      "format": "[no file]",
+      "year": "2019"
+    },
+    {
+      "activity_type": "Rowing",
+      "csv_rows": 1,
+      "format": "[no file]",
+      "year": "2019"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 1,
+      "format": "[no file]",
+      "year": "2019"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 175,
+      "format": ".fit.gz",
+      "year": "2019"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 3,
+      "format": ".gpx.gz",
+      "year": "2020"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": "[no file]",
+      "year": "2020"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 154,
+      "format": ".fit.gz",
+      "year": "2020"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 1,
+      "format": ".gpx.gz",
+      "year": "2020"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": ".gpx",
+      "year": "2021"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 127,
+      "format": ".fit.gz",
+      "year": "2021"
+    },
+    {
+      "activity_type": "Walk",
+      "csv_rows": 1,
+      "format": "[no file]",
+      "year": "2021"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": "[no file]",
+      "year": "2022"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 2,
+      "format": ".gpx",
+      "year": "2022"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 158,
+      "format": ".fit.gz",
+      "year": "2022"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 2,
+      "format": ".gpx",
+      "year": "2023"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 117,
+      "format": ".fit.gz",
+      "year": "2023"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 4,
+      "format": ".gpx",
+      "year": "2024"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 178,
+      "format": ".fit.gz",
+      "year": "2024"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 2,
+      "format": ".gpx.gz",
+      "year": "2025"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 1,
+      "format": ".fit.gz",
+      "year": "2025"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 1,
+      "format": ".gpx",
+      "year": "2025"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 150,
+      "format": ".fit.gz",
+      "year": "2025"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 6,
+      "format": ".gpx",
+      "year": "2026"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 2,
+      "format": ".gpx.gz",
+      "year": "2026"
+    },
+    {
+      "activity_type": "Ride",
+      "csv_rows": 1,
+      "format": ".tcx.gz",
+      "year": "2026"
+    },
+    {
+      "activity_type": "Run",
+      "csv_rows": 1,
+      "format": ".gpx",
+      "year": "2026"
+    },
+    {
+      "activity_type": "Virtual Ride",
+      "csv_rows": 103,
+      "format": ".fit.gz",
+      "year": "2026"
+    }
+  ],
+  "cycling_cohorts": {
+    "Other": {
+      "combination_denominator_parsed_files": 21,
+      "combinations": {
+        "heart_rate_without_source_record_power": 6,
+        "no_source_record_power": 20,
+        "position_altitude_heart_rate_without_source_record_power": 5,
+        "position_altitude_without_source_record_power": 14,
+        "source_record_power": 1
+      },
+      "population": {
+        "csv_power_metadata_rows": 0,
+        "csv_rows": 24,
+        "file_backed_rows": 21,
+        "format_counts": {
+          ".fit.gz": 1,
+          ".gpx": 10,
+          ".gpx.gz": 4,
+          ".tcx.gz": 6
+        },
+        "no_file_rows": 3,
+        "parse_or_file_failures": 0,
+        "parsed_files": 21,
+        "signals": {
+          "altitude": {
+            "denominator_parsed_files": 21,
+            "files": 14,
+            "percent": 66.7
+          },
+          "cadence": {
+            "denominator_parsed_files": 21,
+            "files": 1,
+            "percent": 4.8
+          },
+          "distance": {
+            "denominator_parsed_files": 21,
+            "files": 7,
+            "percent": 33.3
+          },
+          "gps": {
+            "denominator_parsed_files": 21,
+            "files": 20,
+            "percent": 95.2
+          },
+          "heart_rate": {
+            "denominator_parsed_files": 21,
+            "files": 7,
+            "percent": 33.3
+          },
+          "power": {
+            "denominator_parsed_files": 21,
+            "files": 1,
+            "percent": 4.8
+          },
+          "speed": {
+            "denominator_parsed_files": 21,
+            "files": 6,
+            "percent": 28.6
+          },
+          "temperature": {
+            "denominator_parsed_files": 21,
+            "files": 0,
+            "percent": 0.0
+          },
+          "time": {
+            "denominator_parsed_files": 21,
+            "files": 21,
+            "percent": 100.0
+          }
+        },
+        "source_record_power_files": 1,
+        "source_summary_power_files": 1
+      },
+      "power_matrix_parsed_files": {
+        "record=0,summary=0,csv=0": 19,
+        "record=0,summary=1,csv=0": 1,
+        "record=1,summary=0,csv=0": 1
+      }
+    },
+    "Ride": {
+      "combination_denominator_parsed_files": 136,
+      "combinations": {
+        "cadence_without_source_record_power": 13,
+        "csv_power_without_source_record_power": 91,
+        "heart_rate_without_source_record_power": 39,
+        "no_source_record_power": 92,
+        "position_altitude_heart_rate_without_source_record_power": 39,
+        "position_altitude_without_source_record_power": 92,
+        "source_record_power": 44
+      },
+      "population": {
+        "csv_power_metadata_rows": 135,
+        "csv_rows": 146,
+        "file_backed_rows": 136,
+        "format_counts": {
+          ".fit.gz": 1,
+          ".gpx": 19,
+          ".gpx.gz": 70,
+          ".tcx.gz": 46
+        },
+        "no_file_rows": 10,
+        "parse_or_file_failures": 0,
+        "parsed_files": 136,
+        "signals": {
+          "altitude": {
+            "denominator_parsed_files": 136,
+            "files": 92,
+            "percent": 67.6
+          },
+          "cadence": {
+            "denominator_parsed_files": 136,
+            "files": 51,
+            "percent": 37.5
+          },
+          "distance": {
+            "denominator_parsed_files": 136,
+            "files": 9,
+            "percent": 6.6
+          },
+          "gps": {
+            "denominator_parsed_files": 136,
+            "files": 92,
+            "percent": 67.6
+          },
+          "heart_rate": {
+            "denominator_parsed_files": 136,
+            "files": 82,
+            "percent": 60.3
+          },
+          "power": {
+            "denominator_parsed_files": 136,
+            "files": 44,
+            "percent": 32.4
+          },
+          "speed": {
+            "denominator_parsed_files": 136,
+            "files": 8,
+            "percent": 5.9
+          },
+          "temperature": {
+            "denominator_parsed_files": 136,
+            "files": 40,
+            "percent": 29.4
+          },
+          "time": {
+            "denominator_parsed_files": 136,
+            "files": 136,
+            "percent": 100.0
+          }
+        },
+        "source_record_power_files": 44,
+        "source_summary_power_files": 52
+      },
+      "power_matrix_parsed_files": {
+        "record=0,summary=0,csv=0": 1,
+        "record=0,summary=0,csv=1": 83,
+        "record=0,summary=1,csv=1": 8,
+        "record=1,summary=1,csv=1": 44
+      }
+    },
+    "Virtual Ride": {
+      "combination_denominator_parsed_files": 1264,
+      "combinations": {
+        "source_record_power": 1264
+      },
+      "population": {
+        "csv_power_metadata_rows": 1264,
+        "csv_rows": 1264,
+        "file_backed_rows": 1264,
+        "format_counts": {
+          ".fit.gz": 1262,
+          ".gpx.gz": 2
+        },
+        "no_file_rows": 0,
+        "parse_or_file_failures": 0,
+        "parsed_files": 1264,
+        "signals": {
+          "altitude": {
+            "denominator_parsed_files": 1264,
+            "files": 1247,
+            "percent": 98.7
+          },
+          "cadence": {
+            "denominator_parsed_files": 1264,
+            "files": 1264,
+            "percent": 100.0
+          },
+          "distance": {
+            "denominator_parsed_files": 1264,
+            "files": 1262,
+            "percent": 99.8
+          },
+          "gps": {
+            "denominator_parsed_files": 1264,
+            "files": 1246,
+            "percent": 98.6
+          },
+          "heart_rate": {
+            "denominator_parsed_files": 1264,
+            "files": 1262,
+            "percent": 99.8
+          },
+          "power": {
+            "denominator_parsed_files": 1264,
+            "files": 1264,
+            "percent": 100.0
+          },
+          "speed": {
+            "denominator_parsed_files": 1264,
+            "files": 1264,
+            "percent": 100.0
+          },
+          "temperature": {
+            "denominator_parsed_files": 1264,
+            "files": 2,
+            "percent": 0.2
+          },
+          "time": {
+            "denominator_parsed_files": 1264,
+            "files": 1264,
+            "percent": 100.0
+          }
+        },
+        "source_record_power_files": 1264,
+        "source_summary_power_files": 1261
+      },
+      "power_matrix_parsed_files": {
+        "record=1,summary=0,csv=1": 3,
+        "record=1,summary=1,csv=1": 1261
+      }
+    }
+  },
+  "diagnostics": {
+    "category_counts": {
+      "leading_xml_whitespace": 50
+    },
+    "event_count": 50,
+    "events": [
+      {
+        "activity_id": "1339479593",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1341007772",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1347476119",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1350737163",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1363642262",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1370220376",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1381931171",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1404562797",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1404664295",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1428843988",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1429544046",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1438109215",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1439697140",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1442936353",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1451405093",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1461337715",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1473433028",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1473533505",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1475223773",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1484621224",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1486061857",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1491364382",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1495624319",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1500917515",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1501056827",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1506567280",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1511317006",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1512707436",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1514592011",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1523561145",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1533626519",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1544142760",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1545836766",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1547922749",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1554844204",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1556538544",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1558722433",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1562846901",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1572166111",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1589311892",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1593843273",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1617475485",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1848487773",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1884547398",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1884547480",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1884547653",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1884547711",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1884547804",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1884547902",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      },
+      {
+        "activity_id": "1894802809",
+        "bytes": 10,
+        "category": "leading_xml_whitespace",
+        "format": ".tcx.gz"
+      }
+    ]
+  },
+  "fit_parser": {
+    "crc_check": "raise",
+    "error_handling": "raise",
+    "name": "fitdecode",
+    "version": "0.11.0"
+  },
+  "methodology": {
+    "activity_type": "Ride and Virtual Ride are CSV labels/proxies, not physical indoor/outdoor truth",
+    "population": "one CSV row per activity; exact Filename reference; no-file rows retained",
+    "power": "three evidence flags; GPX numeric avgPower/maxPower tags outside points count as source summary metadata; provenance and summary semantics remain unknown",
+    "signal": "presence means at least one source record/point with a decoded value; source summary power is separate",
+    "source_signal_denominator": "successfully parsed source files in each reported group",
+    "timing": "STRAVA-002 timing_summary: source order; large gap > max(30 s, 5 x median positive delta); intervals summarized per file"
+  },
+  "schema_version": 1,
+  "source": "local extracted Strava export (path withheld)",
+  "structure": {
+    "FIT": {
+      "denominator_parsed_files": 1264,
+      "developer_fields_by_file": {
+        "air_speed": 1,
+        "air_speed_avg": 1,
+        "air_speed_wind_time_in_zone": 1,
+        "air_speed_wind_zone": 1,
+        "ant_device_num": 1,
+        "ascent": 1,
+        "auto_lap_distance": 1,
+        "auto_lap_duration": 1,
+        "avg_smoothness_x": 1,
+        "avg_smoothness_y": 1,
+        "avg_smoothness_z": 1,
+        "calibration": 1,
+        "charge": 1,
+        "core_data_quality": 187,
+        "core_reserved": 187,
+        "crank_length": 1,
+        "descent": 1,
+        "fit_date_time": 1,
+        "glucose": 1,
+        "heat_strain_index": 187,
+        "lap_distance_before_snap": 1,
+        "lat_gps": 1,
+        "lev_travel_assist_level_time_in_zone": 1,
+        "lon_gps": 1,
+        "name-sha256:1978472fe10ecdfa": 1,
+        "name-sha256:878b843b9c8332a2": 1,
+        "name-sha256:b24f1532d1ff2be9": 1,
+        "name-sha256:c7fc7966da5a1a20": 1,
+        "reanalyzer_lap_motion_type": 1,
+        "rpe_value": 18,
+        "running_smoothness": 1,
+        "running_stress_score": 1,
+        "serial_number": 1,
+        "skin_temperature": 187,
+        "target_power": 216,
+        "time_ms": 1,
+        "travel_assist_level": 1,
+        "wind_adj_speed": 1,
+        "wind_adj_speed_avg": 1,
+        "wind_grade_power_ratio": 1,
+        "wind_speed": 1,
+        "wind_time_in_zone": 1,
+        "workout_type": 1
+      },
+      "files_with_device_clues": 1264,
+      "messages_by_file": {
+        "activity": 1264,
+        "developer_data_id": 236,
+        "device_info": 1254,
+        "event": 1264,
+        "field_description": 235,
+        "file_creator": 7,
+        "file_id": 1264,
+        "hr_zone": 1,
+        "lap": 1259,
+        "power_zone": 1,
+        "record": 1264,
+        "session": 1264,
+        "sport": 1,
+        "unknown_65280": 1,
+        "unknown_65281": 1,
+        "unknown_65284": 1,
+        "unknown_65285": 1,
+        "workout": 1
+      },
+      "record_fields_by_file": {
+        "altitude": 1246,
+        "battery_soc": 1,
+        "cadence": 1263,
+        "calories": 2,
+        "distance": 1264,
+        "enhanced_altitude": 1246,
+        "enhanced_speed": 1263,
+        "heart_rate": 1261,
+        "position_lat": 1245,
+        "position_long": 1245,
+        "power": 1263,
+        "resistance": 1,
+        "speed": 1263,
+        "speed_1s": 289,
+        "target_power": 216,
+        "temperature": 3,
+        "timestamp": 1264,
+        "zone": 2
+      }
+    },
+    "GPX": {
+      "denominator_parsed_files": 105,
+      "extension_tags_by_file": {
+        "cadence": 2,
+        "heartrate": 2,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:TrackPointExtension": 70,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:atemp": 39,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:cad": 13,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:hr": 43,
+        "namespace-sha256:0577849458133555:activityName": 1,
+        "namespace-sha256:0577849458133555:activitySpeedBased": 1,
+        "namespace-sha256:0577849458133555:activityTypeID": 1,
+        "namespace-sha256:0577849458133555:adjustedPower": 1,
+        "namespace-sha256:0577849458133555:age": 1,
+        "namespace-sha256:0577849458133555:altitudeAdjust": 1,
+        "namespace-sha256:0577849458133555:altitudeAdjustment": 1,
+        "namespace-sha256:0577849458133555:altitudeHasClimbSpeed": 1,
+        "namespace-sha256:0577849458133555:altitudeHasDistanceDelta": 1,
+        "namespace-sha256:0577849458133555:altitudeHasLongAltitude": 1,
+        "namespace-sha256:0577849458133555:altitudeTable": 1,
+        "namespace-sha256:0577849458133555:appInstanceID": 1,
+        "namespace-sha256:0577849458133555:ascent": 1,
+        "namespace-sha256:0577849458133555:avgCrankRPM": 1,
+        "namespace-sha256:0577849458133555:avgHeartRate": 1,
+        "namespace-sha256:0577849458133555:avgPower": 1,
+        "namespace-sha256:0577849458133555:avgPowerBalance": 1,
+        "namespace-sha256:0577849458133555:avgStepsPM": 1,
+        "namespace-sha256:0577849458133555:avgTemperature": 1,
+        "namespace-sha256:0577849458133555:avgWheelRPM": 1,
+        "namespace-sha256:0577849458133555:badGPSTime": 1,
+        "namespace-sha256:0577849458133555:batteryLevel": 1,
+        "namespace-sha256:0577849458133555:batteryUsage": 1,
+        "namespace-sha256:0577849458133555:bikeID": 1,
+        "namespace-sha256:0577849458133555:bikeName": 1,
+        "namespace-sha256:0577849458133555:bikeSpeedStopDetection": 1,
+        "namespace-sha256:0577849458133555:calories": 1,
+        "namespace-sha256:0577849458133555:caloriesUseElevation": 1,
+        "namespace-sha256:0577849458133555:competitorInitials": 1,
+        "namespace-sha256:0577849458133555:coordinateHasSpeed": 1,
+        "namespace-sha256:0577849458133555:coordinateTable": 1,
+        "namespace-sha256:0577849458133555:descent": 1,
+        "namespace-sha256:0577849458133555:distance": 1,
+        "namespace-sha256:0577849458133555:dontLoadRunData": 1,
+        "namespace-sha256:0577849458133555:grossSteps": 1,
+        "namespace-sha256:0577849458133555:heartRateDataTable": 1,
+        "namespace-sha256:0577849458133555:locality": 1,
+        "namespace-sha256:0577849458133555:maxCrankRPM": 1,
+        "namespace-sha256:0577849458133555:maxHeartRate": 1,
+        "namespace-sha256:0577849458133555:maxPower": 1,
+        "namespace-sha256:0577849458133555:maxSpeed": 1,
+        "namespace-sha256:0577849458133555:maxStepsPM": 1,
+        "namespace-sha256:0577849458133555:maxTemperature": 1,
+        "namespace-sha256:0577849458133555:maxWheelRPM": 1,
+        "namespace-sha256:0577849458133555:minPace": 1,
+        "namespace-sha256:0577849458133555:minTemperature": 1,
+        "namespace-sha256:0577849458133555:notes": 1,
+        "namespace-sha256:0577849458133555:official": 1,
+        "namespace-sha256:0577849458133555:pathOnly": 1,
+        "namespace-sha256:0577849458133555:pathname": 1,
+        "namespace-sha256:0577849458133555:peakPower10Min": 1,
+        "namespace-sha256:0577849458133555:peakPower1Hr": 1,
+        "namespace-sha256:0577849458133555:peakPower1Min": 1,
+        "namespace-sha256:0577849458133555:peakPower20Min": 1,
+        "namespace-sha256:0577849458133555:peakPower20Sec": 1,
+        "namespace-sha256:0577849458133555:peakPower5Min": 1,
+        "namespace-sha256:0577849458133555:powerIntensity": 1,
+        "namespace-sha256:0577849458133555:powerOutput": 1,
+        "namespace-sha256:0577849458133555:powerScore": 1,
+        "namespace-sha256:0577849458133555:routeID": 1,
+        "namespace-sha256:0577849458133555:routeName": 1,
+        "namespace-sha256:0577849458133555:runEditFlags": 1,
+        "namespace-sha256:0577849458133555:runID": 1,
+        "namespace-sha256:0577849458133555:runStateTable": 1,
+        "namespace-sha256:0577849458133555:runTime": 1,
+        "namespace-sha256:0577849458133555:runTimeBegin": 1,
+        "namespace-sha256:0577849458133555:runTimeEnd": 1,
+        "namespace-sha256:0577849458133555:sensorData2Table": 1,
+        "namespace-sha256:0577849458133555:sex": 1,
+        "namespace-sha256:0577849458133555:shoesID": 1,
+        "namespace-sha256:0577849458133555:startTime": 1,
+        "namespace-sha256:0577849458133555:startTimeZone": 1,
+        "namespace-sha256:0577849458133555:stepLength": 1,
+        "namespace-sha256:0577849458133555:steps": 1,
+        "namespace-sha256:0577849458133555:stopDetection": 1,
+        "namespace-sha256:0577849458133555:stopDetectionTable": 1,
+        "namespace-sha256:0577849458133555:stoppedTime": 1,
+        "namespace-sha256:0577849458133555:temperatureDataTable": 1,
+        "namespace-sha256:0577849458133555:thresholdPower": 1,
+        "namespace-sha256:0577849458133555:useIndoors": 1,
+        "namespace-sha256:0577849458133555:useStepDistance": 1,
+        "namespace-sha256:0577849458133555:useSteps": 1,
+        "namespace-sha256:0577849458133555:vo2Max": 1,
+        "namespace-sha256:0577849458133555:weatherCity": 1,
+        "namespace-sha256:0577849458133555:weatherCode": 1,
+        "namespace-sha256:0577849458133555:weatherCountry": 1,
+        "namespace-sha256:0577849458133555:weatherIdentifier": 1,
+        "namespace-sha256:0577849458133555:weatherIsDay": 1,
+        "namespace-sha256:0577849458133555:weatherLatitude": 1,
+        "namespace-sha256:0577849458133555:weatherLongitude": 1,
+        "namespace-sha256:0577849458133555:weatherRequestLatitude": 1,
+        "namespace-sha256:0577849458133555:weatherRequestLocality": 1,
+        "namespace-sha256:0577849458133555:weatherRequestLongitude": 1,
+        "namespace-sha256:0577849458133555:weatherRequestTime": 1,
+        "namespace-sha256:0577849458133555:weatherState": 1,
+        "namespace-sha256:0577849458133555:weatherSunriseTime": 1,
+        "namespace-sha256:0577849458133555:weatherSunsetTime": 1,
+        "namespace-sha256:0577849458133555:weatherTempC": 1,
+        "namespace-sha256:0577849458133555:weatherTempF": 1,
+        "namespace-sha256:0577849458133555:weatherTempHumidity": 1,
+        "namespace-sha256:0577849458133555:weatherTime": 1,
+        "namespace-sha256:0577849458133555:weatherTimeZone": 1,
+        "namespace-sha256:0577849458133555:weatherWindDirectionCode": 1,
+        "namespace-sha256:0577849458133555:weatherWindSpeedKMH": 1,
+        "namespace-sha256:0577849458133555:weatherWindSpeedKTS": 1,
+        "namespace-sha256:0577849458133555:weatherWindSpeedMPH": 1,
+        "namespace-sha256:0577849458133555:weight": 1,
+        "namespace-sha256:0577849458133555:wheelSize": 1,
+        "namespace-sha256:0577849458133555:xmlVersion": 1,
+        "namespace-sha256:0a299f180fceced9:activityName": 8,
+        "namespace-sha256:0a299f180fceced9:activitySpeedBased": 8,
+        "namespace-sha256:0a299f180fceced9:activityTypeID": 8,
+        "namespace-sha256:0a299f180fceced9:adjustedPower": 8,
+        "namespace-sha256:0a299f180fceced9:age": 8,
+        "namespace-sha256:0a299f180fceced9:altitudeHasClimbSpeed": 8,
+        "namespace-sha256:0a299f180fceced9:altitudeHasDistanceDelta": 8,
+        "namespace-sha256:0a299f180fceced9:altitudeHasLongAltitude": 8,
+        "namespace-sha256:0a299f180fceced9:altitudeTable": 8,
+        "namespace-sha256:0a299f180fceced9:appInstanceID": 8,
+        "namespace-sha256:0a299f180fceced9:ascent": 8,
+        "namespace-sha256:0a299f180fceced9:avgCrankRPM": 8,
+        "namespace-sha256:0a299f180fceced9:avgHeartRate": 8,
+        "namespace-sha256:0a299f180fceced9:avgPower": 8,
+        "namespace-sha256:0a299f180fceced9:avgStepsPM": 8,
+        "namespace-sha256:0a299f180fceced9:avgTemperature": 8,
+        "namespace-sha256:0a299f180fceced9:avgWheelRPM": 8,
+        "namespace-sha256:0a299f180fceced9:badGPSTime": 8,
+        "namespace-sha256:0a299f180fceced9:batteryUsage": 8,
+        "namespace-sha256:0a299f180fceced9:bikeID": 8,
+        "namespace-sha256:0a299f180fceced9:bikeName": 1,
+        "namespace-sha256:0a299f180fceced9:bikeSpeedStopDetection": 1,
+        "namespace-sha256:0a299f180fceced9:calories": 8,
+        "namespace-sha256:0a299f180fceced9:caloriesUseElevation": 8,
+        "namespace-sha256:0a299f180fceced9:competitorInitials": 8,
+        "namespace-sha256:0a299f180fceced9:coordinateHasSpeed": 8,
+        "namespace-sha256:0a299f180fceced9:coordinateTable": 8,
+        "namespace-sha256:0a299f180fceced9:descent": 8,
+        "namespace-sha256:0a299f180fceced9:distance": 8,
+        "namespace-sha256:0a299f180fceced9:dontLoadRunData": 8,
+        "namespace-sha256:0a299f180fceced9:genderMale": 8,
+        "namespace-sha256:0a299f180fceced9:grossSteps": 2,
+        "namespace-sha256:0a299f180fceced9:maxCrankRPM": 8,
+        "namespace-sha256:0a299f180fceced9:maxHeartRate": 8,
+        "namespace-sha256:0a299f180fceced9:maxPower": 8,
+        "namespace-sha256:0a299f180fceced9:maxSpeed": 8,
+        "namespace-sha256:0a299f180fceced9:maxStepsPM": 8,
+        "namespace-sha256:0a299f180fceced9:maxTemperature": 8,
+        "namespace-sha256:0a299f180fceced9:maxWheelRPM": 8,
+        "namespace-sha256:0a299f180fceced9:minPace": 8,
+        "namespace-sha256:0a299f180fceced9:minTemperature": 8,
+        "namespace-sha256:0a299f180fceced9:notes": 8,
+        "namespace-sha256:0a299f180fceced9:official": 8,
+        "namespace-sha256:0a299f180fceced9:pathOnly": 8,
+        "namespace-sha256:0a299f180fceced9:pathname": 1,
+        "namespace-sha256:0a299f180fceced9:peakPower10Min": 1,
+        "namespace-sha256:0a299f180fceced9:peakPower1Hr": 8,
+        "namespace-sha256:0a299f180fceced9:peakPower1Min": 8,
+        "namespace-sha256:0a299f180fceced9:peakPower20Min": 8,
+        "namespace-sha256:0a299f180fceced9:peakPower20Sec": 8,
+        "namespace-sha256:0a299f180fceced9:peakPower5Min": 8,
+        "namespace-sha256:0a299f180fceced9:powerIntensity": 8,
+        "namespace-sha256:0a299f180fceced9:powerScore": 8,
+        "namespace-sha256:0a299f180fceced9:routeID": 8,
+        "namespace-sha256:0a299f180fceced9:routeName": 8,
+        "namespace-sha256:0a299f180fceced9:runEditFlags": 8,
+        "namespace-sha256:0a299f180fceced9:runID": 8,
+        "namespace-sha256:0a299f180fceced9:runStateTable": 8,
+        "namespace-sha256:0a299f180fceced9:runTime": 8,
+        "namespace-sha256:0a299f180fceced9:sensorDataTable": 1,
+        "namespace-sha256:0a299f180fceced9:shoesID": 8,
+        "namespace-sha256:0a299f180fceced9:startTime": 8,
+        "namespace-sha256:0a299f180fceced9:startTimeZone": 8,
+        "namespace-sha256:0a299f180fceced9:stepLength": 8,
+        "namespace-sha256:0a299f180fceced9:steps": 8,
+        "namespace-sha256:0a299f180fceced9:stopDetection": 8,
+        "namespace-sha256:0a299f180fceced9:stopDetectionTable": 8,
+        "namespace-sha256:0a299f180fceced9:stoppedTime": 8,
+        "namespace-sha256:0a299f180fceced9:temperatureDataTable": 2,
+        "namespace-sha256:0a299f180fceced9:thresholdPower": 8,
+        "namespace-sha256:0a299f180fceced9:useIndoors": 8,
+        "namespace-sha256:0a299f180fceced9:useStepDistance": 8,
+        "namespace-sha256:0a299f180fceced9:useSteps": 8,
+        "namespace-sha256:0a299f180fceced9:vo2Max": 8,
+        "namespace-sha256:0a299f180fceced9:weatherCity": 2,
+        "namespace-sha256:0a299f180fceced9:weatherCode": 2,
+        "namespace-sha256:0a299f180fceced9:weatherCountry": 2,
+        "namespace-sha256:0a299f180fceced9:weatherIdentifier": 2,
+        "namespace-sha256:0a299f180fceced9:weatherIsDay": 2,
+        "namespace-sha256:0a299f180fceced9:weatherLatitude": 2,
+        "namespace-sha256:0a299f180fceced9:weatherLongitude": 2,
+        "namespace-sha256:0a299f180fceced9:weatherRequestLatitude": 2,
+        "namespace-sha256:0a299f180fceced9:weatherRequestLocality": 1,
+        "namespace-sha256:0a299f180fceced9:weatherRequestLongitude": 2,
+        "namespace-sha256:0a299f180fceced9:weatherRequestTime": 2,
+        "namespace-sha256:0a299f180fceced9:weatherState": 2,
+        "namespace-sha256:0a299f180fceced9:weatherSunriseTime": 2,
+        "namespace-sha256:0a299f180fceced9:weatherSunsetTime": 2,
+        "namespace-sha256:0a299f180fceced9:weatherTempC": 2,
+        "namespace-sha256:0a299f180fceced9:weatherTempF": 2,
+        "namespace-sha256:0a299f180fceced9:weatherTempHumidity": 2,
+        "namespace-sha256:0a299f180fceced9:weatherTime": 2,
+        "namespace-sha256:0a299f180fceced9:weatherTimeZone": 2,
+        "namespace-sha256:0a299f180fceced9:weatherWindDirectionCode": 2,
+        "namespace-sha256:0a299f180fceced9:weatherWindSpeedKMH": 2,
+        "namespace-sha256:0a299f180fceced9:weatherWindSpeedKTS": 2,
+        "namespace-sha256:0a299f180fceced9:weatherWindSpeedMPH": 2,
+        "namespace-sha256:0a299f180fceced9:weight": 8,
+        "namespace-sha256:0a299f180fceced9:wheelSize": 8,
+        "namespace-sha256:0a299f180fceced9:xmlVersion": 8,
+        "namespace-sha256:44802ff9328d0464:TrackPointExtension": 2,
+        "namespace-sha256:44802ff9328d0464:cad": 2,
+        "namespace-sha256:44802ff9328d0464:hr": 2,
+        "power": 2,
+        "speed": 2
+      },
+      "files_with_device_clues": 105,
+      "files_with_numeric_nonpoint_summary_power_tags": 9,
+      "namespaces_by_file": {
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1": 70,
+        "http://www.topografix.com/GPX/1/1": 103,
+        "namespace-sha256:0577849458133555": 1,
+        "namespace-sha256:0a299f180fceced9": 8,
+        "namespace-sha256:44802ff9328d0464": 2
+      },
+      "point_fields_by_file": {
+        "cadence": 2,
+        "ele": 2,
+        "extensions": 2,
+        "heartrate": 2,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:TrackPointExtension": 70,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:atemp": 39,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:cad": 13,
+        "http://www.garmin.com/xmlschemas/TrackPointExtension/v1:hr": 43,
+        "http://www.topografix.com/GPX/1/1:ele": 103,
+        "http://www.topografix.com/GPX/1/1:extensions": 70,
+        "http://www.topografix.com/GPX/1/1:time": 103,
+        "namespace-sha256:44802ff9328d0464:TrackPointExtension": 2,
+        "namespace-sha256:44802ff9328d0464:cad": 2,
+        "namespace-sha256:44802ff9328d0464:hr": 2,
+        "power": 2,
+        "speed": 2,
+        "time": 2,
+        "type": 2
+      }
+    },
+    "TCX": {
+      "denominator_parsed_files": 52,
+      "extension_tags_by_file": {
+        "AvgSpeed": 44,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:AvgWatts": 44,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:LX": 44,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:MaxBikeCadence": 44,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:MaxWatts": 44,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:Speed": 13,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:TPX": 51,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:Watts": 44,
+        "http://www.garmin.com/xmlschemas/ActivityLapExtension/v2:AvgSpeed": 1,
+        "http://www.garmin.com/xmlschemas/ActivityLapExtension/v2:LX": 1,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:AvgSpeed": 6,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:LX": 6,
+        "namespace-sha256:d8a296403a97515f:activityName": 1,
+        "namespace-sha256:d8a296403a97515f:activitySpeedBased": 1,
+        "namespace-sha256:d8a296403a97515f:activityTypeID": 1,
+        "namespace-sha256:d8a296403a97515f:adjustedPower": 1,
+        "namespace-sha256:d8a296403a97515f:age": 1,
+        "namespace-sha256:d8a296403a97515f:altitudeAdjust": 1,
+        "namespace-sha256:d8a296403a97515f:altitudeAdjustment": 1,
+        "namespace-sha256:d8a296403a97515f:altitudeHasClimbSpeed": 1,
+        "namespace-sha256:d8a296403a97515f:altitudeHasDistanceDelta": 1,
+        "namespace-sha256:d8a296403a97515f:altitudeHasGrade": 1,
+        "namespace-sha256:d8a296403a97515f:altitudeHasLongAltitude": 1,
+        "namespace-sha256:d8a296403a97515f:altitudeTable": 1,
+        "namespace-sha256:d8a296403a97515f:appInstanceID": 1,
+        "namespace-sha256:d8a296403a97515f:ascent": 1,
+        "namespace-sha256:d8a296403a97515f:avgCrankRPM": 1,
+        "namespace-sha256:d8a296403a97515f:avgHeartRate": 1,
+        "namespace-sha256:d8a296403a97515f:avgPower": 1,
+        "namespace-sha256:d8a296403a97515f:avgPowerBalance": 1,
+        "namespace-sha256:d8a296403a97515f:avgStepsPM": 1,
+        "namespace-sha256:d8a296403a97515f:avgTemperature": 1,
+        "namespace-sha256:d8a296403a97515f:avgWheelRPM": 1,
+        "namespace-sha256:d8a296403a97515f:badGPSTime": 1,
+        "namespace-sha256:d8a296403a97515f:batteryLevel": 1,
+        "namespace-sha256:d8a296403a97515f:batteryUsage": 1,
+        "namespace-sha256:d8a296403a97515f:bikeID": 1,
+        "namespace-sha256:d8a296403a97515f:calories": 1,
+        "namespace-sha256:d8a296403a97515f:caloriesUseElevation": 1,
+        "namespace-sha256:d8a296403a97515f:competitorInitials": 1,
+        "namespace-sha256:d8a296403a97515f:coordinateHasSpeed": 1,
+        "namespace-sha256:d8a296403a97515f:coordinateTable": 1,
+        "namespace-sha256:d8a296403a97515f:course": 1,
+        "namespace-sha256:d8a296403a97515f:descent": 1,
+        "namespace-sha256:d8a296403a97515f:distance": 1,
+        "namespace-sha256:d8a296403a97515f:dontLoadRunData": 1,
+        "namespace-sha256:d8a296403a97515f:grossSteps": 1,
+        "namespace-sha256:d8a296403a97515f:locality": 1,
+        "namespace-sha256:d8a296403a97515f:maxCrankRPM": 1,
+        "namespace-sha256:d8a296403a97515f:maxHeartRate": 1,
+        "namespace-sha256:d8a296403a97515f:maxPower": 1,
+        "namespace-sha256:d8a296403a97515f:maxSpeed": 1,
+        "namespace-sha256:d8a296403a97515f:maxStepsPM": 1,
+        "namespace-sha256:d8a296403a97515f:maxTemperature": 1,
+        "namespace-sha256:d8a296403a97515f:maxWheelRPM": 1,
+        "namespace-sha256:d8a296403a97515f:minPace": 1,
+        "namespace-sha256:d8a296403a97515f:minTemperature": 1,
+        "namespace-sha256:d8a296403a97515f:notes": 1,
+        "namespace-sha256:d8a296403a97515f:official": 1,
+        "namespace-sha256:d8a296403a97515f:pathOnly": 1,
+        "namespace-sha256:d8a296403a97515f:pathname": 1,
+        "namespace-sha256:d8a296403a97515f:peakPower10Min": 1,
+        "namespace-sha256:d8a296403a97515f:peakPower1Hr": 1,
+        "namespace-sha256:d8a296403a97515f:peakPower1Min": 1,
+        "namespace-sha256:d8a296403a97515f:peakPower20Min": 1,
+        "namespace-sha256:d8a296403a97515f:peakPower20Sec": 1,
+        "namespace-sha256:d8a296403a97515f:peakPower5Min": 1,
+        "namespace-sha256:d8a296403a97515f:powerIntensity": 1,
+        "namespace-sha256:d8a296403a97515f:powerOutput": 1,
+        "namespace-sha256:d8a296403a97515f:powerScore": 1,
+        "namespace-sha256:d8a296403a97515f:routeID": 1,
+        "namespace-sha256:d8a296403a97515f:routeName": 1,
+        "namespace-sha256:d8a296403a97515f:runEditFlags": 1,
+        "namespace-sha256:d8a296403a97515f:runID": 1,
+        "namespace-sha256:d8a296403a97515f:runProperties": 1,
+        "namespace-sha256:d8a296403a97515f:runStateTable": 1,
+        "namespace-sha256:d8a296403a97515f:runTime": 1,
+        "namespace-sha256:d8a296403a97515f:runTimeBegin": 1,
+        "namespace-sha256:d8a296403a97515f:runTimeEnd": 1,
+        "namespace-sha256:d8a296403a97515f:sex": 1,
+        "namespace-sha256:d8a296403a97515f:shoesID": 1,
+        "namespace-sha256:d8a296403a97515f:startTime": 1,
+        "namespace-sha256:d8a296403a97515f:startTimeZone": 1,
+        "namespace-sha256:d8a296403a97515f:stepLength": 1,
+        "namespace-sha256:d8a296403a97515f:steps": 1,
+        "namespace-sha256:d8a296403a97515f:stopDetection": 1,
+        "namespace-sha256:d8a296403a97515f:stopDetectionTable": 1,
+        "namespace-sha256:d8a296403a97515f:stoppedTime": 1,
+        "namespace-sha256:d8a296403a97515f:thresholdPower": 1,
+        "namespace-sha256:d8a296403a97515f:useIndoors": 1,
+        "namespace-sha256:d8a296403a97515f:useStepDistance": 1,
+        "namespace-sha256:d8a296403a97515f:useSteps": 1,
+        "namespace-sha256:d8a296403a97515f:uuid": 1,
+        "namespace-sha256:d8a296403a97515f:vo2Max": 1,
+        "namespace-sha256:d8a296403a97515f:weight": 1,
+        "namespace-sha256:d8a296403a97515f:wheelSize": 1,
+        "namespace-sha256:d8a296403a97515f:xmlVersion": 1
+      },
+      "files_with_device_clues": 45,
+      "namespaces_by_file": {
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2": 51,
+        "http://www.garmin.com/xmlschemas/ActivityLapExtension/v2": 1,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2": 52,
+        "namespace-sha256:d8a296403a97515f": 1
+      },
+      "point_fields_by_file": {
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:Speed": 13,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:TPX": 51,
+        "http://www.garmin.com/xmlschemas/ActivityExtension/v2:Watts": 44,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:AltitudeMeters": 2,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:Cadence": 38,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:DistanceMeters": 14,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:Extensions": 51,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:HeartRateBpm": 45,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:LatitudeDegrees": 8,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:LongitudeDegrees": 8,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:Position": 8,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:SensorState": 1,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:Time": 52,
+        "http://www.garmin.com/xmlschemas/TrainingCenterDatabase/v2:Value": 45
+      }
+    }
+  },
+  "tool_version": "1.0",
+  "totals": {
+    "csv_power_metadata_rows": 1399,
+    "population": {
+      "attempted_source_files": 1421,
+      "csv_rows": 1434,
+      "failed_source_files": 0,
+      "no_file_rows": 13,
+      "parsed_source_files": 1421,
+      "source_file_backed_rows": 1421,
+      "status_counts": {
+        "no_file": 13,
+        "parsed": 1421
+      }
+    },
+    "power_matrix_all_rows": {
+      "record=0,summary=0,csv=0": 33,
+      "record=0,summary=0,csv=1": 83,
+      "record=0,summary=1,csv=0": 1,
+      "record=0,summary=1,csv=1": 8,
+      "record=1,summary=0,csv=0": 1,
+      "record=1,summary=0,csv=1": 3,
+      "record=1,summary=1,csv=1": 1305
+    },
+    "source_formats": {
+      ".fit.gz": 1264,
+      ".gpx": 29,
+      ".gpx.gz": 76,
+      ".tcx.gz": 52
+    },
+    "source_record_power_files": 1309,
+    "source_signal_coverage": {
+      "altitude": {
+        "denominator_parsed_files": 1421,
+        "files": 1353,
+        "percent_of_parsed_files": 95.2,
+        "points_with_value": 3482547
+      },
+      "cadence": {
+        "denominator_parsed_files": 1421,
+        "files": 1316,
+        "percent_of_parsed_files": 92.6,
+        "points_with_value": 3501974
+      },
+      "distance": {
+        "denominator_parsed_files": 1421,
+        "files": 1278,
+        "percent_of_parsed_files": 89.9,
+        "points_with_value": 3379571
+      },
+      "gps": {
+        "denominator_parsed_files": 1421,
+        "files": 1358,
+        "percent_of_parsed_files": 95.6,
+        "points_with_value": 3483737
+      },
+      "heart_rate": {
+        "denominator_parsed_files": 1421,
+        "files": 1351,
+        "percent_of_parsed_files": 95.1,
+        "points_with_value": 3553732
+      },
+      "power": {
+        "denominator_parsed_files": 1421,
+        "files": 1309,
+        "percent_of_parsed_files": 92.1,
+        "points_with_value": 3492130
+      },
+      "speed": {
+        "denominator_parsed_files": 1421,
+        "files": 1278,
+        "percent_of_parsed_files": 89.9,
+        "points_with_value": 3382856
+      },
+      "temperature": {
+        "denominator_parsed_files": 1421,
+        "files": 42,
+        "percent_of_parsed_files": 3.0,
+        "points_with_value": 32486
+      },
+      "time": {
+        "denominator_parsed_files": 1421,
+        "files": 1421,
+        "percent_of_parsed_files": 100.0,
+        "points_with_value": 3661469
+      }
+    },
+    "source_summary_power_files": 1314,
+    "timing": {
+      "common_interval_file_counts_seconds": {
+        "1.0": 1344,
+        "10.0": 1,
+        "14.203": 1,
+        "2.0": 13,
+        "3.867": 1,
+        "4.036": 1,
+        "4.263": 1,
+        "5.0": 2,
+        "5.177": 1,
+        "5.225": 1,
+        "5.36": 1,
+        "6.0": 42,
+        "7.0": 7,
+        "8.0": 1
+      },
+      "common_interval_file_distribution_seconds": {
+        "count": 1417,
+        "maximum": 14.203,
+        "median": 1.0,
+        "minimum": 1.0
+      },
+      "denominator_parsed_files": 1421,
+      "files_with_backward_or_incompatible_timestamps": 0,
+      "files_with_duplicate_timestamps": 83,
+      "files_with_large_gaps": 238,
+      "files_with_missing_or_invalid_timestamps": 0,
+      "files_with_points": 1421,
+      "median_interval_file_counts_seconds": {
+        "1.0": 1340,
+        "12.248": 1,
+        "13.0": 1,
+        "2.0": 13,
+        "3.867": 1,
+        "4.0": 2,
+        "4.036": 1,
+        "4.263": 1,
+        "5.0": 13,
+        "5.177": 1,
+        "5.225": 1,
+        "5.36": 1,
+        "6.0": 33,
+        "7.0": 6,
+        "8.0": 1,
+        "9.0": 1
+      },
+      "median_interval_file_distribution_seconds": {
+        "count": 1417,
+        "maximum": 13.0,
+        "median": 1.0,
+        "minimum": 1.0
+      },
+      "total_backward_or_incompatible_timestamps": 0,
+      "total_duplicate_timestamps": 3236,
+      "total_large_gaps": 571,
+      "total_missing_or_invalid_timestamps": 0
+    }
+  },
+  "xml_parser": "Python standard-library ElementTree"
+}
