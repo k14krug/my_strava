@@ -29,9 +29,9 @@ Only one implementation/research task should normally be `in_progress`.
 * produce compact machine-readable and human-readable outputs suitable for Analyst review
 * keep the raw export and personal activity archive out of Git
 
-**Acceptance:** Defined by the Analyst-authored JIT brief before implementation begins.
+**Acceptance:** See `docs/tasks/STRAVA-001.md`.
 
-**Dependency:** Workflow bootstrap must be accepted/merged first.
+**Dependency:** Workflow bootstrap complete.
 
 ---
 
