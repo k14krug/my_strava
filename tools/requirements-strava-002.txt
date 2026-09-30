@@ -1,0 +1,2 @@
+# FIT frame/message/field parsing for the STRAVA-002 research utility only.
+fitdecode==0.11.0

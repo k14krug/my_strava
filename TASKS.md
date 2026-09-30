@@ -37,7 +37,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### STRAVA-002 — Deep inspect representative activity files
 
-**Status:** pending
+**Status:** done
 
 **Purpose:** Deeply inspect the STRAVA-001 diagnostic candidates and compare source-file evidence with Strava CSV metadata before making importer or historical-data-model decisions.
 
