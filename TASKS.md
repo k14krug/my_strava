@@ -17,7 +17,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### STRAVA-001 — Inventory latest Strava bulk export
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Inspect Ken's latest local Strava bulk export and produce a compact, reproducible inventory that tells us what source data actually exists before detailed import design begins.
 
