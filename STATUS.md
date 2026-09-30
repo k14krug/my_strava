@@ -2,18 +2,18 @@
 
 ## Current state
 
-**Workflow bootstrap:** ready_for_review
+**Workflow bootstrap:** done
 
-**Current implementation/research task:** none
+**Current implementation/research task:** STRAVA-001 — Inventory latest Strava bulk export
 
-**Next pending task:** STRAVA-001 — Inventory latest Strava bulk export
+**Task state:** pending
 
-**STRAVA-001 JIT:** not yet created
+**JIT:** `docs/tasks/STRAVA-001.md`
 
-**Branch:** `bootstrap-agent-workflow`
+**Branch:** none yet; Dex creates the task branch after refreshing `main`
 
-**PR:** not yet opened
+**PR:** none
 
 ## Next action
 
-Review and accept the workflow bootstrap. After it is merged to `main`, the AI Analyst will author the JIT brief for STRAVA-001. Dex should not begin STRAVA-001 before that brief exists.
+After this Analyst-authored JIT is merged to `main`, Ken may invoke `/TASK` for Dex. Dex should refresh the repository, read the controlling documents and STRAVA-001 JIT, then implement only STRAVA-001.
