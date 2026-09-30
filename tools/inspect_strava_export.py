@@ -223,6 +223,11 @@ def select_candidates(matched, activity_files, unreferenced, alternate_files):
     if by_size:
         choose(by_size[:1], "smallest matched file")
         choose(by_size[-1:], "largest matched file")
+    # Activity Type is only a proxy for cycling modality; no stream data is read.
+    choose((row for row in dated + matched if row["activity_type"] == "Virtual Ride"),
+           "virtual/indoor proxy (Activity Type: Virtual Ride)")
+    choose((row for row in dated + matched if row["activity_type"] == "Ride"),
+           "outdoor-ride proxy (Activity Type: Ride)")
     for fmt in sorted({row["format"] for row in matched}):
         choose((row for row in dated + matched if row["format"] == fmt), "format " + fmt)
     for year in sorted({row["date"][:4] for row in dated}):

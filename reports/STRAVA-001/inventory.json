@@ -109,6 +109,7 @@
       "format": ".gpx.gz",
       "reasons": [
         "earliest dated activity",
+        "outdoor-ride proxy (Activity Type: Ride)",
         "format .gpx.gz",
         "year 2012"
       ],
@@ -143,6 +144,16 @@
         "year 2018"
       ],
       "size_bytes": 34469
+    },
+    {
+      "activity_id": "1580824270",
+      "date": "2018-05-13",
+      "file": "activities/1699538338.fit.gz",
+      "format": ".fit.gz",
+      "reasons": [
+        "virtual/indoor proxy (Activity Type: Virtual Ride)"
+      ],
+      "size_bytes": 52948
     },
     {
       "activity_id": "1705193620",

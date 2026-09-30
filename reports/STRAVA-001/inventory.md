@@ -117,10 +117,11 @@ These are deliberately diverse diagnostic samples, not statistical samples.
 | activities/11256451541.fit.gz | 10519675984 | .fit.gz | year 2024 |
 | activities/1255575554.gpx.gz | 1150380329 | .gpx.gz | year 2017 |
 | activities/133759711.gpx.gz | 122178660 | .gpx.gz | year 2014 |
-| activities/133766879.gpx.gz | 122185017 | .gpx.gz | earliest dated activity, format .gpx.gz, year 2012 |
+| activities/133766879.gpx.gz | 122185017 | .gpx.gz | earliest dated activity, outdoor-ride proxy (Activity Type: Ride), format .gpx.gz, year 2012 |
 | activities/140124458.fit.gz | 127993934 | .fit.gz | format .fit.gz |
 | activities/14130274713.fit.gz | 13249070901 | .fit.gz | year 2025 |
 | activities/1447644322.tcx.gz | 1339479593 | .tcx.gz | year 2018 |
+| activities/1699538338.fit.gz | 1580824270 | .fit.gz | virtual/indoor proxy (Activity Type: Virtual Ride) |
 | activities/1705193620.gpx | 1705193620 | .gpx | largest matched file |
 | activities/18010094080.fit.gz | 16917180034 | .fit.gz | year 2026 |
 | activities/18919570078.gpx | 18919570078 | .gpx | power metadata absent, activity type Run |

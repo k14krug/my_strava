@@ -59,6 +59,9 @@ class InventoryTests(unittest.TestCase):
                             for candidate in report["candidate_files"]))
         self.assertTrue(any("unreferenced activity file" in candidate["reasons"]
                             for candidate in report["candidate_files"]))
+        self.assertFalse(any("proxy (Activity Type:" in reason
+                             for candidate in report["candidate_files"]
+                             for reason in candidate["reasons"]))
         output = json.dumps(report, sort_keys=True)
         self.assertNotIn("private-export-name", output)
         self.assertNotIn("private free text", output)
@@ -80,6 +83,21 @@ class InventoryTests(unittest.TestCase):
         self.assertEqual(report["structure"]["activity_formats"][".fit"]["count"], 1)
         self.assertEqual(report["associations"]["unreferenced_activity_file_count"], 0)
         self.assertEqual(report["csv"]["recognized_fields"]["power"], ["Average Watts"])
+
+    def test_cycling_modality_candidates_use_activity_type_without_trainer(self):
+        self.make_csv([
+            "Activity ID,Activity Date,Activity Type,Filename",
+            "1,2020-01-01,Ride,activities/1.fit",
+            "2,2020-01-02,Virtual Ride,activities/2.fit",
+        ])
+        self.make_file("1.fit", 2000)
+        self.make_file("2.fit", 2000)
+        report = tool.inventory(self.root)
+        self.assertEqual(report["csv"]["recognized_fields"]["trainer"], [])
+        by_id = {candidate["activity_id"]: candidate["reasons"]
+                 for candidate in report["candidate_files"]}
+        self.assertIn("outdoor-ride proxy (Activity Type: Ride)", by_id["1"])
+        self.assertIn("virtual/indoor proxy (Activity Type: Virtual Ride)", by_id["2"])
 
     def test_compound_extension_and_size_definition(self):
         self.assertEqual(tool.extension("example.FIT.GZ"), ".fit.gz")
