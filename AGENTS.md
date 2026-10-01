@@ -175,6 +175,8 @@ Do not automatically begin the next task.
 
 ## Requirements and Design Sources
 
+`docs/PRODUCT_REQUIREMENTS.md` is the controlling product requirements document. Product phases, design work, and JIT task briefs must trace to it unless Ken explicitly supersedes a requirement.
+
 The Personal Cycling Training App project documents are the primary source for product principles and settled design context.
 
 When relevant project documents are available in this repository, the JIT brief must identify them under `Requirements Used`. When they are not checked into this repository, the Analyst must carry the relevant requirements into the JIT explicitly rather than asking Dex to infer them.
