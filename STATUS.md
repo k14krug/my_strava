@@ -12,9 +12,11 @@
 
 **DESIGN-001:** done — Durable activity and provenance model
 
-**Decision document:** `docs/design/DESIGN-001.md`
+**DESIGN-002:** done — Source-centered storage and import representation
 
-**Branch:** `design-001-model`
+**Product requirements:** approved — `docs/PRODUCT_REQUIREMENTS.md`
+
+**Phase 1 definition:** done — `docs/PHASE_1_ACCEPTANCE.md`
 
 **Implementation authorized:** no
 
@@ -22,4 +24,6 @@
 
 ## Next action
 
-Review/merge the DESIGN-001 documentation. After that, design the simplest practical storage and import representation that satisfies DESIGN-001. Do not begin implementation automatically.
+Author the Analyst JIT for **P1-01 — Durable single-FIT activity import**, including its `Execution Control`, local-data procedure, minimum physical implementation choices, verification, and stop conditions.
+
+Do not begin P1-01 implementation until that JIT is committed. Do not start P1-02 or P1-03 automatically.
