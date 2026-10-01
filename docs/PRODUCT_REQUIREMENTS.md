@@ -1,0 +1,567 @@
+# Cycling Training App — Product Requirements
+
+**Status:** Initial controlling product requirements  
+**Purpose:** Define what the application is intended to become, what the first delivery phases must accomplish, and what implementation/design tasks must trace back to.  
+**Scope:** Personal, single-rider cycling training, ride analysis, performance history, training-state assessment, and later adaptive planning.
+
+---
+
+## 1. Product purpose
+
+The application should stand on its own as the rider's primary place for reviewing cycling activity, understanding long-term performance, checking progress toward goals, assessing current training state, and eventually deciding what training should come next.
+
+Strava is an important source and ecosystem, but it is not the product specification. The application may use Strava data where useful, but it must own a durable training history assembled from the best available sources and remain useful even if Strava access changes or disappears.
+
+The core product questions are:
+
+1. **How did I perform today?**
+2. **How does today's performance compare with my previous performance?**
+3. **How am I progressing toward my goals?**
+4. **How is my 20-minute power changing?**
+5. **Did today's workout accomplish its intended purpose?**
+6. **Was today's session materially harder or easier than intended?**
+7. **What is tomorrow's workout?**
+8. **Eventually: given my recent training and current state, what should I do next?**
+
+The application is not merely an activity archive. Its value comes from turning durable training history into useful, explainable review, comparison, progress tracking, and planning.
+
+---
+
+## 2. Product principles
+
+These principles are controlling requirements unless explicitly superseded later.
+
+### PR-001 — Personal application first
+
+The application is designed for one rider. Decisions should optimize for usefulness, accuracy, explainability, and simplicity for that rider rather than hypothetical multi-user scale or commercial generality.
+
+### PR-002 — Product-first implementation
+
+Implementation work must support a user-visible product capability or a clearly necessary foundation for one. The data model, importer, parser, or storage layer must not become the product roadmap by accident.
+
+### PR-003 — Durable application-owned history
+
+The application must maintain its own durable cycling and training history from the best available combination of:
+
+- FIT files;
+- TCX and GPX files;
+- Strava bulk-export data;
+- Strava API data where useful;
+- direct/local source files where practical;
+- manual corrections and selected manual information;
+- application-calculated metrics and interpretations.
+
+### PR-004 — Source evidence and interpretation remain distinct
+
+Original evidence, normalized source evidence, calculated metrics, estimates, and interpretations must remain distinguishable.
+
+### PR-005 — Preserve originals
+
+Original source artifacts should be preserved unchanged whenever available. Derived files or recalculated results must not overwrite original evidence.
+
+### PR-006 — Provenance matters
+
+Where materially useful, the application must be able to determine where a value came from and whether it was:
+
+- measured;
+- supplied/known;
+- calculated;
+- estimated;
+- inferred;
+- missing;
+- unknown;
+- not applicable.
+
+Field presence alone must not be treated as proof that a value was measured.
+
+### PR-007 — Historical athlete state
+
+FTP, weight, zones, bike identity/configuration, calibration state, and similar athlete or equipment information must be treated as historical information. Today's state must not silently be applied to old activities.
+
+### PR-008 — Reproducible and replaceable analysis
+
+Important calculations and interpretations should be reproducible from preserved evidence. Material algorithms should be replaceable or recalculable as better methods are developed.
+
+### PR-009 — Competing evidence may coexist
+
+The application must not force one universal canonical value where multiple legitimate evidence channels disagree. Analysis should select evidence appropriate to its purpose and should be explainable when that choice matters.
+
+### PR-010 — Explain results, do not hide them behind mystery scores
+
+When the application says something such as "this session was substantially harder than intended," it should be able to show the evidence behind that conclusion.
+
+### PR-011 — No required subjective tracking
+
+Routine subjective inputs such as RPE, sleep, soreness, fatigue, and motivation are **not** required product inputs. Manual notes may remain possible, but the core system must work without rider questionnaires or regular subjective check-ins.
+
+### PR-012 — Missing data remains visible
+
+The application must not manufacture precision to fill historical gaps. Missing, estimated, inferred, calculated, and measured information must not silently become equivalent.
+
+---
+
+## 3. Major product areas
+
+The application is expected to develop around four primary user-facing areas. These are product capability areas, not yet a final navigation specification.
+
+### 3.1 Dashboard
+
+The dashboard is the intended primary operating view of the application.
+
+It should eventually provide a concise view of:
+
+- current performance/training state;
+- progress toward important goals;
+- recent activities;
+- notable recent performance changes;
+- selected longitudinal trends;
+- the next planned workout;
+- useful alerts or interpretations;
+- shortcuts into deeper activity, performance, and planning views.
+
+The supplied dashboard mockup represents the desired general direction: a useful combination of current status, recent activity, progress, trends, next workout, and insights. The complete mockup is a destination, not a requirement that every element exist in the first release.
+
+### 3.2 Activity review
+
+Activity review answers: **What happened during this ride, and what does it mean in context?**
+
+It must eventually support:
+
+- ride summary;
+- power, heart-rate, cadence, speed/elevation and other available streams;
+- important/best efforts;
+- power-duration results;
+- workout structure or intervals where known or detected;
+- comparison with intended workout purpose where known;
+- comparison with recent and historical performance;
+- comparison with a selected previous ride;
+- notable findings and explainable interpretations;
+- visibility into source/provenance when something looks wrong.
+
+### 3.3 Performance history
+
+Performance history answers: **Am I improving, declining, or changing?**
+
+The first emphasized longitudinal metric is **20-minute power**.
+
+The product should eventually support:
+
+- 20-minute power over time;
+- FTP history;
+- arbitrary-duration power history where detailed source data permits;
+- power-duration curves;
+- monthly/yearly bests;
+- comparisons between periods;
+- watts/kg where historical weight is known;
+- relationships between training patterns and later performance.
+
+### 3.4 Training plan
+
+Training planning answers: **What am I supposed to do next?**
+
+Initially this can be simple: show today's intended workout, determine whether it was accomplished, and show tomorrow's workout.
+
+Later it should become adaptive: actual workout results, recent performance, recovery/training state, goals, schedule constraints, and changing conditions should be able to alter future recommendations.
+
+Training-state assessment and training planning must remain conceptually distinct:
+
+- training state: **Where am I now?**
+- planning: **What should I do next?**
+
+---
+
+## 4. Functional requirements
+
+### Activity and source requirements
+
+**ACT-001 — Application-owned activity identity**  
+An activity must have durable application-owned identity independent of Strava or any individual source file.
+
+**ACT-002 — Multiple sources per activity**  
+Multiple sources may describe or enrich one activity. A FIT file, Strava export row, Strava API record, manual correction, or later source must not automatically become separate activities.
+
+**ACT-003 — Conservative source association**  
+Source matching must prefer explicit identity or strong multi-factor evidence. Ambiguous associations should remain unresolved rather than being silently forced.
+
+**ACT-004 — Preserve original artifacts**  
+When an original FIT/TCX/GPX or equivalent artifact exists, preserve it unchanged.
+
+**ACT-005 — Typed normalized source evidence**  
+The application may persist typed normalized extraction of source evidence for efficient application use, while retaining the original artifact as durable evidence.
+
+**ACT-006 — Preserve native timing**  
+Import must not silently interpolate, resample, smooth, remove gaps, manufacture aligned samples, or discard duplicate timestamps merely to produce cleaner streams.
+
+**ACT-007 — Source summaries and calculated summaries coexist**  
+A source-supplied average or summary must not be overwritten by an independently calculated value.
+
+**ACT-008 — Later enrichment**  
+A later source must be able to enrich an existing activity, for example by adding detailed streams to a historical summary-only activity.
+
+**ACT-009 — Manual correction**  
+The user must eventually be able to correct classifications, activity/source associations, athlete state, and other incorrect inferred or automated information without destroying original evidence.
+
+---
+
+### Activity review requirements
+
+**REV-001 — Useful single-ride summary**  
+For a supported activity, the review view must show the key available ride facts needed to understand what happened.
+
+**REV-002 — Time-series review**  
+Where available, the activity view must support review of power and heart rate over time. Other streams may be added according to usefulness.
+
+**REV-003 — Best-effort analysis**  
+The application must calculate and present best efforts from detailed power data, including at minimum a 20-minute result when the activity duration and data permit it.
+
+**REV-004 — Historical context**  
+The activity view must be able to place today's result against prior performance rather than presenting it in isolation.
+
+**REV-005 — Ride-to-ride comparison**  
+The user must be able to compare today's ride with a selected previous ride on meaningful common metrics and, where useful, comparable streams/efforts.
+
+**REV-006 — Workout intent**  
+When a ride has a known planned purpose or workout target, the application must retain that intent separately from the completed activity evidence.
+
+**REV-007 — Workout outcome**  
+The application must eventually determine whether the completed ride appears to have met the intended workout purpose using transparent rules and available evidence.
+
+**REV-008 — Intended-versus-actual interpretation**  
+The application should surface useful statements such as:
+
+- session substantially harder than intended;
+- session substantially easier than intended;
+- planned work completed;
+- final intervals materially faded;
+- unusually strong sustained performance;
+
+provided the supporting evidence can be shown.
+
+**REV-009 — Explainability**  
+Interpretations must be traceable to concrete evidence: what was expected, what occurred, how they differed, and what calculation or comparison was used.
+
+**REV-010 — Inspectability**  
+The normal activity page should remain clean, but the user must eventually be able to inspect source values, calculated values, missing data, streams, and source associations when a result appears questionable.
+
+---
+
+### Performance-history requirements
+
+**PERF-001 — 20-minute power history**  
+The application must maintain and present 20-minute power history from eligible activities with sufficient power evidence.
+
+**PERF-002 — Current versus recent/historical context**  
+Today's 20-minute result should be comparable against useful prior periods such as recent weeks, year-to-date, prior year, or lifetime where appropriate.
+
+**PERF-003 — Arbitrary-duration future capability**  
+The design must not hard-code the product around only a fixed list of durations. Detailed power data should eventually support arbitrary-duration analysis.
+
+**PERF-004 — Eligibility and evidence quality**  
+Measured, estimated, and other power evidence may require different eligibility rules for personal records and longitudinal comparisons. Low-confidence estimates must not silently pollute lifetime bests.
+
+**PERF-005 — Historical athlete context**  
+Where metrics depend on FTP, weight, zones, or other athlete state, use the state appropriate to the activity date whenever possible.
+
+---
+
+### Goal requirements
+
+**GOAL-001 — Goal progress is a first-class dashboard concern**  
+The application must be able to show progress toward rider goals, not merely activity totals.
+
+**GOAL-002 — Goals are broader than mileage**  
+The product must not assume annual mileage is the only type of goal. Future goal types may include performance, consistency, event preparation, workout completion, or other useful targets.
+
+**GOAL-003 — Do not overbuild a generic goal engine initially**  
+The first release may support a narrow set of useful goals. A universal configurable goal framework is not required before the product proves value.
+
+---
+
+### Dashboard requirements
+
+**DASH-001 — Dashboard as primary overview**  
+The dashboard should become the main place to answer: How am I doing now, what changed recently, how are my goals progressing, and what comes next?
+
+**DASH-002 — Recent activities**  
+The dashboard must eventually provide recent activities with enough information to identify important rides and open detailed review.
+
+**DASH-003 — Performance snapshot**  
+The dashboard should surface selected current performance/trend information, including 20-minute power when useful.
+
+**DASH-004 — Goal progress**  
+The dashboard should show progress toward selected goals.
+
+**DASH-005 — Next workout**  
+The dashboard should show the next planned workout when planning data exists.
+
+**DASH-006 — Useful insights only**  
+Dashboard insights must be actionable or informative and explainable. Avoid filling the screen with generic observations merely because they can be calculated.
+
+---
+
+### Planning requirements
+
+**PLAN-001 — Planned workout representation**  
+The application must eventually represent a planned workout independently from the completed activity that may fulfill it.
+
+**PLAN-002 — Today's intent**  
+The application should be able to tell what today's workout was intended to accomplish when a workout is planned.
+
+**PLAN-003 — Tomorrow's workout**  
+The application should be able to show tomorrow's planned workout.
+
+**PLAN-004 — Actual outcome can affect later planning**  
+Later adaptive planning must be capable of changing future workouts based on what actually happened rather than blindly following a static schedule.
+
+**PLAN-005 — Planning recommendations are explainable**  
+If a future workout is changed or recommended, the application should be able to state the evidence and reasoning.
+
+---
+
+## 5. Data and analysis requirements that support the product
+
+These requirements are supporting constraints, not user-facing phases by themselves.
+
+**DATA-001 — No provenance-free universal activity summary**  
+Do not turn the Activity object into a universal collection of canonical distance, elevation, power, heart rate, calories, and similar values when legitimate source disagreement may exist.
+
+**DATA-002 — Source-centered evidence ownership**  
+Imported evidence belongs to the source that supplied it. FIT summaries belong to the FIT source; Strava values belong to the Strava source; streams belong to the supplying source.
+
+**DATA-003 — Material derivations retain context**  
+Important derived results should retain or be able to reproduce their inputs, method/version, assumptions, and relevant uncertainty.
+
+**DATA-004 — Analytical persistence by usefulness**  
+Persist derived analytical metrics when they are useful as durable/versioned analytical history or repeatedly consumed longitudinally. Cheap presentation-only aggregates may be calculated on demand.
+
+**DATA-005 — No universal source ranking**  
+Source/evidence selection depends on analytical purpose. The application should not encode one global ranking that assumes one source is always best.
+
+**DATA-006 — Reparse/recalculate capability**  
+Preserved originals must allow normalized extraction and derived analytical results to be rebuilt when parsers or algorithms materially improve.
+
+---
+
+## 6. Explicitly deferred areas
+
+The following are important but are **not prerequisites for the first useful application slice**.
+
+- exact database product and schema;
+- final web/framework choices;
+- final navigation and complete UI design;
+- exact training-load model;
+- exact recovery/fatigue model;
+- adaptive planning algorithm;
+- final goal framework;
+- exact AI/LLM runtime role;
+- automatic local-file watching;
+- complete Strava synchronization mechanism;
+- outdoor estimated-power reconstruction implementation;
+- final outdoor estimated-power confidence/eligibility rules;
+- final use of weather/elevation services;
+- generalized multi-user/commercial architecture.
+
+Deferred does not mean rejected. It means these areas should not block proving the core product experience.
+
+---
+
+## 7. Delivery phases
+
+The phases below are the initial product delivery sequence. They should be changed only when there is a clear product reason, not because a lower-level implementation task happens to be convenient.
+
+### Phase 1 — Useful single-ride review
+
+**Goal:** Import a real representative ride and produce an activity-review experience useful enough to open after a ride.
+
+Minimum user-visible outcomes:
+
+- activity exists with durable application identity;
+- original source artifact is preserved;
+- key summary evidence is available;
+- native power and HR streams are reviewable when present;
+- best 20-minute power is calculated when possible;
+- today's ride can be understood without opening Strava;
+- source/calculated distinctions remain inspectable behind the normal view.
+
+Phase 1 is **not complete** merely because import/storage works.
+
+### Phase 2 — Historical context and ride comparison
+
+**Goal:** Stop treating a ride as an isolated event.
+
+Minimum user-visible outcomes:
+
+- 20-minute power history across multiple eligible rides;
+- today's 20-minute result shown against useful prior performance;
+- selected previous ride can be compared with today's ride;
+- multiple source/activity enrichment works in at least one real case;
+- missing or lower-quality evidence is handled visibly rather than silently substituted.
+
+### Phase 3 — Useful dashboard
+
+**Goal:** Make the application useful before opening an individual activity.
+
+Minimum user-visible outcomes:
+
+- recent activities;
+- selected current performance/trend information;
+- 20-minute power trend or snapshot;
+- at least one meaningful goal-progress element;
+- next workout area when plan data exists;
+- selected useful insights based on already-trusted analysis.
+
+The supplied dashboard mockup is the long-term direction. Phase 3 requires a useful subset, not feature parity with the mockup.
+
+### Phase 4 — Workout intent and outcome
+
+**Goal:** Connect what was planned with what actually happened.
+
+Minimum user-visible outcomes:
+
+- planned workout/intended purpose represented separately from completed activity;
+- ride review indicates whether key workout goals were achieved;
+- explainable intended-versus-actual findings such as "harder than intended" are supported;
+- tomorrow's workout is shown from the plan.
+
+### Phase 5 — Training state
+
+**Goal:** Answer "Where am I now?" using transparent longitudinal evidence.
+
+Candidate inputs may include:
+
+- recent workload;
+- longer-term workload;
+- hard-session frequency;
+- recovery spacing;
+- recent performance changes;
+- workout completion/failure patterns;
+- recent races or unusually demanding sessions.
+
+The exact model remains open and must be evaluated rather than copied blindly from industry convention.
+
+### Phase 6 — Adaptive planning
+
+**Goal:** Answer "What should I do next?" and adapt future training based on actual training outcomes and current state.
+
+The system should eventually be able to alter future workouts when prior training materially changes the situation and explain why.
+
+---
+
+## 8. Requirements traceability for tasks
+
+Every implementation/design task should reference one or more requirement IDs or a phase outcome.
+
+Examples:
+
+- `REV-003`: calculate best 20-minute power from a native power stream.
+- `ACT-004`, `DATA-006`: preserve original FIT and support reparsing.
+- `PERF-001`, Phase 2: persist/query 20-minute history across eligible activities.
+- `REV-006`, `PLAN-001`: represent planned workout intent separately from completed ride evidence.
+
+A task that cannot identify what requirement or phase outcome it supports should be questioned before implementation.
+
+Technical tasks are allowed when necessary, but their task brief should state the user-facing capability they enable.
+
+---
+
+## 9. Product decisions already settled outside this document
+
+This requirements document does not replace detailed design decisions. It controls **what** the application must accomplish; design decisions define **how** supporting concepts behave.
+
+The following project decisions remain in force:
+
+- DESIGN-001 — Durable Activity and Provenance Model;
+- DESIGN-002 — Source-Centered Storage and Import Representation.
+
+Their core implications include:
+
+- application-owned Activity identity;
+- multiple Sources per Activity;
+- preservation of original artifacts;
+- typed source-centered normalized evidence;
+- historical state as analysis context;
+- reproducible derived interpretations;
+- conservative activity reconciliation;
+- native timing preservation;
+- source summaries and calculated summaries coexisting;
+- no universal canonical-value table initially.
+
+These design decisions support this requirements document. They are not substitutes for product requirements and must not independently drive the roadmap.
+
+---
+
+## 10. Special topic: outdoor estimated power
+
+Outdoor estimated-power reconstruction remains an important design exploration but is not an immediate implementation target.
+
+Strong principles already established include:
+
+- original files remain unchanged;
+- reconstructed watts are explicitly estimated, not measured;
+- physics alone is insufficient;
+- HR can constrain an estimate but is not a wattmeter;
+- historical FTP/weight/bike state matters;
+- uncertainty/confidence must be explicit;
+- estimated power may be suitable for some analyses and unsuitable for others depending on confidence and time scale.
+
+This feature should re-enter implementation when the core activity/performance product has enough structure to make its downstream use and eligibility rules clear.
+
+---
+
+## 11. Non-goals for the near term
+
+The near-term project is **not** trying to:
+
+- recreate Strava's social network;
+- build a commercial multi-athlete platform;
+- support every possible cycling device/workflow immediately;
+- produce one opaque "fitness score" that substitutes for evidence;
+- require daily wellness questionnaires;
+- solve adaptive training planning before ride review and performance history are useful;
+- build a bulk historical Strava API harvester;
+- force incomplete historical activities to look more complete than they are.
+
+---
+
+## 12. Definition of product progress
+
+Project progress should primarily be measured by useful rider capabilities, not by infrastructure volume.
+
+A phase is successful when the application can answer a new real question reliably enough to be useful.
+
+Examples:
+
+- **Phase 1:** "How did this ride go?"
+- **Phase 2:** "How does this compare with my past performance?"
+- **Phase 3:** "How am I doing overall right now?"
+- **Phase 4:** "Did I accomplish today's workout, and what is tomorrow?"
+- **Phase 5:** "What is my current training state?"
+- **Phase 6:** "What should change next because of what actually happened?"
+
+That sequence is the guardrail against returning to an infrastructure-first project.
+
+---
+
+## 13. Current open product questions
+
+These remain deliberately open and should be answered when their phase approaches:
+
+1. Which exact metrics belong on the first activity-review page beyond power, HR, duration, and 20-minute performance?
+2. What is the first useful ride-to-ride comparison interaction?
+3. Which goal types should be implemented first?
+4. What exact evidence should trigger statements such as "harder than intended"?
+5. What planning source or representation should supply tomorrow's workout initially?
+6. Which performance/training-state metrics belong on the first dashboard subset?
+7. When should estimated power become eligible for longitudinal performance or training-load use?
+8. What training-state model best fits this rider and remains explainable?
+9. What parts of planning should remain deterministic versus AI-assisted, if AI is used at all?
+
+These questions should not be answered prematurely merely to complete a schema or architecture diagram.
+
+---
+
+## 14. Working product statement
+
+> Build a durable personal cycling-training application that explains how today's ride went, shows how performance is changing over time, tracks progress toward goals, connects completed work with planned work, and eventually uses trustworthy historical evidence to decide what training should come next.
+
+The application owns the history. Sources provide evidence. Analysis explains what happened. Performance history shows what is changing. Planning determines what comes next.
