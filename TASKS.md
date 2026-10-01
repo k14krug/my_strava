@@ -88,6 +88,84 @@ Only one implementation/research task should normally be `in_progress`.
 
 ---
 
+### DESIGN-002 — Source-centered storage and import representation
+
+**Status:** done
+
+**Purpose:** Translate DESIGN-001 into the simplest practical logical storage/import representation while preserving immutable source evidence, typed normalized extraction, native timing, historical context, and reproducible derivations.
+
+**Decision:** See `docs/design/DESIGN-002.md`.
+
+**Dependency:** DESIGN-001 complete.
+
+---
+
+## Phase 1 — Useful single-ride review
+
+**Acceptance contract:** `docs/PHASE_1_ACCEPTANCE.md`
+
+### P1-01 — Durable single-FIT activity import
+
+**Status:** pending
+
+**Purpose:** Import the Phase 1 representative FIT as a durable application-owned Activity + Source, preserve the original artifact unchanged, and persist the minimum typed source evidence/native streams needed by Phase 1.
+
+**Scope summary:**
+
+* use the representative activity identified by the Phase 1 acceptance contract
+* create durable application-owned Activity identity
+* associate the FIT Source and preserve original artifact/integrity evidence
+* extract typed source/session/stream evidence without destructive canonicalization
+* preserve native timing
+* support re-extraction without reacquiring the original
+
+**Acceptance:** See `docs/PHASE_1_ACCEPTANCE.md`; detailed acceptance will be expanded in `docs/tasks/P1-01.md`.
+
+**Dependencies:** DESIGN-001, DESIGN-002, and Phase 1 acceptance contract complete.
+
+---
+
+### P1-02 — Single-ride analysis core
+
+**Status:** pending
+
+**Purpose:** Produce the trusted analytical inputs needed by the Phase 1 activity-review experience.
+
+**Scope summary:**
+
+* expose the required FIT-backed summary evidence
+* expose native power and heart-rate streams
+* calculate reproducible best 20-minute power as an application derivation
+* keep source summaries and application derivations distinct
+* provide verification suitable for later UI consumption
+
+**Acceptance:** See `docs/PHASE_1_ACCEPTANCE.md`; detailed acceptance will be expanded in `docs/tasks/P1-02.md`.
+
+**Dependency:** P1-01 complete.
+
+---
+
+### P1-03 — Activity review experience and Phase 1 acceptance
+
+**Status:** pending
+
+**Purpose:** Turn the Phase 1 evidence and analysis into the first useful rider-facing post-ride review experience.
+
+**Scope summary:**
+
+* activity identity/header
+* required summary metrics
+* native-timing power and heart-rate review
+* best 20-minute result
+* practical provenance/inspectability details
+* Owner visual/usability acceptance against the representative ride
+
+**Acceptance:** `docs/PHASE_1_ACCEPTANCE.md` plus the future `docs/tasks/P1-03.md`.
+
+**Dependency:** P1-02 complete.
+
+---
+
 ## Follow-up work
 
-Broad archive discovery is complete unless later design work identifies a specific unanswered evidence question. DESIGN-001 establishes the durable conceptual model. The next phase is to translate it into the simplest practical storage and import design for this private single-rider application; no implementation task is authorized yet.
+Phase 1 is now defined by a product acceptance contract and three ordered implementation tasks. No implementation task is authorized until the Analyst authors the corresponding JIT. Phase 2 remains historical context and ride comparison; do not pull Phase 2 features into Phase 1 merely because they are convenient to implement.
