@@ -98,6 +98,16 @@ Routine subjective inputs such as RPE, sleep, soreness, fatigue, and motivation 
 
 The application must not manufacture precision to fill historical gaps. Missing, estimated, inferred, calculated, and measured information must not silently become equivalent.
 
+### PR-013 — Approved mockups guide the visual product
+
+The supplied **Strava Activity screen** and **Strava Dashboard mockup** are the preferred visual and layout references for the application.
+
+Implementations should preserve their overall page structure, information hierarchy, density, card/panel organization, and visual character unless a concrete usability, data-availability, or technical reason justifies divergence.
+
+The product should grow into these mockups over successive phases rather than repeatedly redesigning the interface. Features whose underlying capability does not yet exist should be omitted rather than displayed as fake placeholders.
+
+This requirement does not freeze every color, spacing value, label, or component detail. It does establish the mockups as the intended screen direction.
+
 ---
 
 ## 3. Major product areas
@@ -119,11 +129,13 @@ It should eventually provide a concise view of:
 - useful alerts or interpretations;
 - shortcuts into deeper activity, performance, and planning views.
 
-The supplied dashboard mockup represents the desired general direction: a useful combination of current status, recent activity, progress, trends, next workout, and insights. The complete mockup is a destination, not a requirement that every element exist in the first release.
+The supplied **Strava Dashboard mockup** is the preferred visual/layout reference for this screen. The real dashboard should retain its overall hierarchy: persistent left navigation; top status/progress cards; recent activities as the primary body; next-workout and insight panels to the right; and trend/progress panels below. The complete mockup is a destination, not a requirement that every element exist immediately. Missing capabilities should be omitted until real rather than replaced with fake content.
 
 ### 3.2 Activity review
 
 Activity review answers: **What happened during this ride, and what does it mean in context?**
+
+The supplied **Strava Activity screen** is the preferred visual/layout reference. The implemented screen should preserve its overall hierarchy as capabilities arrive: persistent left navigation; strong activity identity/header; a top row of important ride metrics; a large central ride chart; supporting analysis panels below; and a right-hand ride-summary/insight column. The interface may be thinner in early phases, but it should grow into this structure rather than being replaced by a different generic application layout.
 
 It must eventually support:
 
