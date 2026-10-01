@@ -134,6 +134,26 @@ The normal page should stay reasonably clean, but there must be a practical way 
 
 This may initially be a simple details section rather than polished provenance UI.
 
+### 4.6 Visual/layout direction
+
+The supplied **Strava Activity screen** mockup is the preferred visual reference for P1-03 and for later growth of the activity-review experience.
+
+Phase 1 should preserve the mockup's overall composition even though several later capabilities are intentionally absent:
+
+- persistent left navigation and application identity;
+- strong ride header with date/type/source context;
+- a row of prominent ride-metric cards;
+- a large central **Ride Power & Heart Rate** chart;
+- supporting analysis below the main chart, with best 20-minute power represented in a compact performance panel;
+- a right-hand **Ride Summary**-style panel;
+- provenance/details kept secondary so the normal review remains clean.
+
+Phase 1 must **not** implement fake placeholders for later mockup features such as AI Insights, Compare to Recent, Next Workout, Zone Breakdown, or Laps/Intervals. Those areas may be absent or the remaining panels may naturally occupy the available space until the underlying capability is implemented.
+
+Exact pixel matching, colors, typography, and spacing are not frozen. The acceptance concern is recognizable structure, hierarchy, density, and visual character.
+
+A materially different generic developer/admin page does not satisfy the intended Phase 1 product direction merely because it contains the required data.
+
 ## 5. Narrow Phase 1 presentation policy
 
 Phase 1 deliberately avoids solving global evidence selection.
@@ -208,7 +228,8 @@ Phase 1 is accepted only when all of the following are true.
 ### Product acceptance
 
 19. Ken reviews the Phase 1 activity page using the representative ride and agrees that it is useful enough to answer the narrow question: **"How did this ride go?"**
-20. Any required Owner-facing visual/usability changes from that review are completed before Phase 1 is declared accepted.
+20. The page recognizably follows the approved Strava Activity screen mockup's overall layout and visual hierarchy, while omitting capabilities not yet implemented.
+21. Any required Owner-facing visual/usability changes from that review are completed before Phase 1 is declared accepted.
 
 ## 8. Planned Phase 1 task sequence
 
