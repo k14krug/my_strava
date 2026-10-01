@@ -88,6 +88,18 @@ Only one implementation/research task should normally be `in_progress`.
 
 ---
 
+### DESIGN-002 — Source-centered storage and import representation
+
+**Status:** done
+
+**Purpose:** Translate DESIGN-001 into the simplest practical logical storage/import representation while preserving immutable source evidence, typed normalized extraction, native timing, historical context, and reproducible derivations.
+
+**Decision:** See `docs/design/DESIGN-002.md`.
+
+**Dependency:** DESIGN-001 complete.
+
+---
+
 ## Follow-up work
 
-Broad archive discovery is complete unless later design work identifies a specific unanswered evidence question. DESIGN-001 establishes the durable conceptual model. The next phase is to translate it into the simplest practical storage and import design for this private single-rider application; no implementation task is authorized yet.
+DESIGN-001 and DESIGN-002 establish the conceptual model and logical storage/import constraints. The next phase is to define a deliberately narrow first implementation slice that proves Activity identity, Source association, original-artifact preservation, typed extraction, and native-timing preservation on representative cases. No implementation task is authorized until the Analyst authors the corresponding JIT.
