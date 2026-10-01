@@ -158,7 +158,8 @@ Only one implementation/research task should normally be `in_progress`.
 * native-timing power and heart-rate review
 * best 20-minute result
 * practical provenance/inspectability details
-* Owner visual/usability acceptance against the representative ride
+* implement the approved Strava Activity screen mockup as the preferred layout/visual reference, using only capabilities genuinely available in Phase 1
+* Owner visual/usability acceptance against both the representative ride and the approved mockup
 
 **Acceptance:** `docs/PHASE_1_ACCEPTANCE.md` plus the future `docs/tasks/P1-03.md`.
 
