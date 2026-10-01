@@ -119,6 +119,14 @@ Detailed just-in-time task brief for the current task.
 
 The AI Analyst authors and commits this brief before Dex starts implementation.
 
+Every newly authored or substantively revised JIT must contain an `Execution Control` section with an `Allowed Invocation` declaration. Valid declarations are:
+
+- `/TASK only`
+- `/AUTOTASK only`
+- `/TASK or /AUTOTASK`
+
+If a legacy JIT has no `Allowed Invocation` declaration, treat it as `/TASK only`. Never infer autonomous authorization from task simplicity, model capability, prior behavior, or conversation context.
+
 If the selected task has no Analyst-authored JIT brief after repository refresh, Dex must stop and report the missing brief. Dex must not create, reconstruct, expand, or substantively redesign the JIT itself.
 
 ---
@@ -282,18 +290,63 @@ Every `docs/tasks/<TASK-ID>.md` brief must contain, as applicable:
 1. Purpose
 2. Background / question being answered
 3. Requirements Used
-4. Scope
-5. Explicit non-goals
-6. Inputs and local-data expectations
-7. Required implementation or experiment
-8. Required outputs/artifacts
-9. Verification / test procedure
-10. Acceptance criteria
-11. Stop-and-report conditions
+4. Execution Control
+5. Scope
+6. Explicit non-goals
+7. Inputs and local-data expectations
+8. Required implementation or experiment
+9. Required outputs/artifacts
+10. Verification / test procedure
+11. Acceptance criteria
+12. Stop-and-report conditions
+
+Every newly authored or substantively revised JIT must declare `Allowed Invocation` in its `Execution Control` section. A missing declaration means `/TASK only`.
+
+Dex must not change a JIT's `Allowed Invocation`, gate classification, acceptance criteria, or stop conditions. If implementation reveals that those controls need revision, stop for Analyst review.
 
 The JIT expands a `TASKS.md` entry but must not silently redefine its purpose.
 
 If implementation reveals a material conflict, ambiguity, missing requirement, unexpected data condition, or evidence that invalidates the planned experiment, Dex should stop and report it rather than inventing policy.
+
+---
+
+## Execution Control
+
+The project supports two explicit task-invocation paths. The JIT controls which path is authorized.
+
+### Gate classifications
+
+A JIT may divide work into gates when staged implementation or review is useful. Each gate that participates in autonomous execution must be classified as one of:
+
+- `SOFT` — Dex may cross this gate automatically under `/AUTOTASK` only after the gate's required implementation, verification, evidence, and repository updates are complete.
+- `HARD — Analyst` — stop for AI Analyst review and authorization.
+- `HARD — Owner` — stop for Ken's product, training-analysis, privacy, priority, visual, or final design decision.
+
+A JIT does not need artificial gates when the task is naturally one implementation unit. Do not create ceremony merely to label steps.
+
+### Mandatory stop conditions
+
+Under either invocation path, Dex must stop and report rather than guess when any of these occurs:
+
+1. controlling requirements conflict or are materially ambiguous;
+2. a new or changed product, training-analysis, privacy, priority, or final design decision is required;
+3. implementation would materially expand task scope;
+4. the JIT appears incorrect, incomplete, or inconsistent with higher-authority repository sources;
+5. source data, experiment results, or analysis reveal materially unexpected evidence that invalidates the planned approach or acceptance assumptions;
+6. required verification fails in a way that may indicate a requirement, design, data, or analytical problem rather than a straightforward implementation defect;
+7. a required source, dependency, or authoritative external rule cannot be established;
+8. a `HARD — Analyst` or `HARD — Owner` gate is reached.
+
+Straightforward implementation defects discovered while executing an otherwise unambiguous authorized gate may be corrected and re-verified within that same gate.
+
+### Invocation authorization
+
+The slash command must be permitted by the current JIT's `Allowed Invocation`.
+
+- If Ken invokes `/AUTOTASK` for a `/TASK only` JIT, do not implement. Report that the JIT authorizes `/TASK` only.
+- If Ken invokes `/TASK` for an `/AUTOTASK only` JIT, do not implement. Report that the JIT authorizes `/AUTOTASK` only.
+- If the JIT allows both, the command used for the current invocation selects the execution behavior.
+- Do not persist a global execution-mode setting. Authorization is task-specific and invocation-specific.
 
 ---
 
@@ -303,7 +356,7 @@ Never begin work from a stale checkout.
 
 ### Initial remote refresh is unconditional
 
-At the start of `/TASK`, Dex must:
+At the start of `/TASK` or `/AUTOTASK`, Dex must:
 
 1. Confirm there are no unexpected local changes that would make switching branches unsafe.
 2. Run `git fetch origin --prune`.
@@ -351,6 +404,10 @@ If repository state, task files, GitHub state, source data, or instructions conf
 
 ## `/TASK`
 
+`/TASK` is the controlled execution path. It preserves the conservative workflow and never uses autonomous gate-crossing authority.
+
+Before implementation, verify that the current JIT permits `/TASK`. If it does not, stop without changing implementation state.
+
 When Ken invokes `/TASK`, Dex should:
 
 1. Perform the unconditional remote refresh and appropriate repository sync.
@@ -368,7 +425,45 @@ When Ken invokes `/TASK`, Dex should:
 13. Push/update the PR when appropriate.
 14. Report what changed, verification/results, and blockers or unresolved findings.
 
+If the JIT defines staged gates, `/TASK` must stop at each explicit review boundary rather than using `SOFT` classification as permission to continue. A later `/TASK` invocation may resume from the next authorized point after the required review or instruction is present.
+
 Do not automatically begin another task.
+
+---
+
+## `/AUTOTASK`
+
+`/AUTOTASK` is the bounded autonomous execution path. It allows Dex to continue through Analyst-preauthorized `SOFT` gates without requiring Ken to relay a continue command after each one.
+
+Before implementation, verify that the current JIT permits `/AUTOTASK`. If it does not, stop without changing implementation state.
+
+When Ken invokes `/AUTOTASK`:
+
+1. Perform the same unconditional remote refresh and repository sync required by `/TASK`.
+2. Read the same repository, JIT, source, code/test, GitHub issue/PR, and unresolved-review context required by the Start-of-Work Procedure.
+3. Continue the current `in_progress` task if one exists; otherwise select the next appropriate `pending` task.
+4. Verify that the Analyst-authored JIT exists and explicitly permits `/AUTOTASK`.
+5. Mark lifecycle state exactly as required for normal implementation.
+6. Implement only the current task and only within the JIT's authorized scope.
+7. For each `SOFT` gate:
+   - complete the gate's implementation;
+   - run the gate's required verification;
+   - record any required durable verification evidence;
+   - inspect the resulting diff and relevant data/analysis invariants;
+   - update repository/GitHub state as required;
+   - continue automatically only when the gate is clean and no mandatory stop condition applies.
+8. Stop immediately at a `HARD — Analyst` or `HARD — Owner` gate and provide a concise review package containing:
+   - gates completed;
+   - material files/behavior changed;
+   - verification performed and results;
+   - the exact decision or review needed;
+   - branch/PR and current head.
+9. If a mandatory stop condition occurs before a hard gate, stop at that point and report the conflict, failure, or uncertainty without inventing policy or broadening scope.
+10. When all authorized implementation gates are complete, set `STATUS.md` to `ready_for_review` and leave `TASKS.md` `in_progress` unless the JIT explicitly defines an Analyst-authorized mechanical closeout that is consistent with the Task Lifecycle.
+11. Final task acceptance remains with the AI Analyst unless the controlling JIT and repository governance explicitly say otherwise. `/AUTOTASK` does not by itself authorize Dex to declare substantive implementation accepted.
+12. Do not automatically start the next task.
+
+`/AUTOTASK` changes execution cadence, not requirements ownership. Dex still must not author or redesign the JIT, invent product/design policy, silently resolve conflicts, or weaken acceptance criteria.
 
 ---
 
