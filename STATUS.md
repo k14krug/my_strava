@@ -2,22 +2,24 @@
 
 **Product:** RideWorks
 
-**P1-01 — Durable single-FIT activity import:** done
+**P1-01:** done — accepted on PR #10
 
-**Accepted implementation:** PR #10, implementation head `5c872ea`
+**Current task:** P1-02 — Single-ride analysis core
 
-**P1-01 verification:** 39 tests passed (22 RideWorks + 17 research). Representative local acceptance passed with 3,621 complete power/HR records, 3,620 one-second timestamp deltas, exact original preservation, restart/idempotency, and successful/failed re-extraction behavior.
+**Task state:** in_progress
 
-**P1-02 — Single-ride analysis core:** pending
+**Implementation state:** ready_for_review
 
-**P1-02 JIT:** authored — `docs/tasks/P1-02.md`
+**Branch:** `task/p1-02-single-ride-analysis`
 
-**Allowed invocation:** `/TASK or /AUTOTASK`
+**PR:** opening for Analyst review
 
-**P1-02 scope:** expose the accepted FIT source summary/native power-HR evidence and calculate one transparent application derivation: best 20-minute average power using complete 1,200-sample one-second windows. No UI, zones, normalized power, training load, interval detection, broad power curves, or analysis-persistence framework.
+**Scope:** on-demand analysis of the current single FIT extraction, unchanged source summary/native records, and best 20-minute power under the committed JIT.
 
-**Implementation decision:** calculate best-20 on demand from the current P1-01 extraction and return explicit Source/extraction/method context; do not add durable analytical-result persistence in this slice.
+**Verification:** 64 tests passed (25 P1-02 + 22 P1-01 + 17 research). Representative acceptance and independent direct-sum verification passed: 120.11916666666667 W, rounded 120 W, records [204, 1404), difference 0.0 W. Source summary/native evidence remain unchanged.
 
-**Blockers:** none
+**Evidence:** `reports/P1-02/verification.md`
 
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P1-02. Do not begin P1-03 automatically.
+**Blockers:** none; final HARD — Analyst review outstanding.
+
+**Next action:** Analyst reviews P1-02 analysis semantics, read boundary and verification evidence. Do not start P1-03 automatically.

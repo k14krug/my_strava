@@ -5,6 +5,7 @@ import json
 import sqlite3
 import sys
 
+from .analysis import analyze_activity, compact_analysis
 from .errors import RideWorksError
 from .store import Store
 
@@ -15,6 +16,7 @@ def main(argv=None):
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("import-fit", help="Preserve and import one FIT/FIT.GZ").add_argument("path")
     commands.add_parser("inspect", help="Compact source evidence; no raw streams").add_argument("activity_id")
+    commands.add_parser("analyze", help="Source summary and best 20-minute result; no raw streams").add_argument("activity_id")
     commands.add_parser("reextract", help="Rebuild from the preserved original").add_argument("source_id")
     args = parser.parse_args(argv)
     try:
@@ -23,6 +25,8 @@ def main(argv=None):
                 result = store.import_fit(args.path)
             elif args.command == "inspect":
                 result = store.inspect(args.activity_id)
+            elif args.command == "analyze":
+                result = compact_analysis(analyze_activity(store, args.activity_id))
             else:
                 result = store.reextract(args.source_id)
         print(json.dumps(result, indent=2, ensure_ascii=True))

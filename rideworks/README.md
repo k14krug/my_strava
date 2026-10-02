@@ -83,3 +83,37 @@ Set `P1_01_INPUT` to the local-only representative `21538875902.fit.gz`. The
 acceptance utility uses and removes a disposable copy and disposable store,
 runs CLI commands from a different working directory, and emits only compact
 facts. It never modifies the supplied file. Run with assertions enabled.
+
+P1-02 adds on-demand activity analysis:
+
+```bash
+.venv/bin/python -m rideworks analyze <activity-id>
+.venv/bin/python tools/verify_rideworks_analysis.py --input "$P1_01_INPUT" --work-dir /tmp
+```
+
+`rideworks.analysis.analyze_activity(store, activity_id)` consumes the P1-01
+read boundary and returns `activity`, `source`, `extraction`, `source_summary`,
+`native_records`, `availability`, and `best_20_minute_power`. The summary's
+`values` remain source-supplied FIT session evidence; the best-20 result is
+explicitly `calculated` and identifies its Activity, Source and extraction.
+The native record dictionaries, including order, timestamps, zero and null
+values, pass through unchanged. The normal `analyze` CLI omits those records.
+
+Method `best-average-power-v1` evaluates exactly 1,200 consecutive records with
+complete power and exact one-second timestamp deltas. Each candidate represents
+`[start, start + 1200 seconds)` and requires no additional endpoint sample.
+Zero watts contribute to the mean. Missing power and timing defects disqualify
+only the windows containing/spanning them. Equal unrounded means select the
+earliest source-record window. The result includes unrounded watts, nearest
+whole watts with .5 upward rounding, selected indices/times and eligibility.
+No eligible window returns `unavailable` with a reason and null result values.
+Unexpected power values fail clearly for investigation rather than being repaired.
+
+There is no result cache or analytical database schema. Each call reads the
+current extraction and recalculates. Multiple candidate FIT Sources fail with
+an explicit selection-decision error; no source-ranking policy is introduced.
+`tools/verify_rideworks_analysis.py` independently enumerates complete windows,
+directly sums their samples, and applies Decimal half-up rounding. It compares
+its result against the application, checks source/native evidence unchanged,
+and verifies analysis after re-extraction using a disposable store/input copy.
+Run verification with assertions enabled.

@@ -128,7 +128,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P1-02 — Single-ride analysis core
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Produce the trusted analytical inputs needed by the Phase 1 activity-review experience.
 
