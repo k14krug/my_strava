@@ -27,12 +27,15 @@ Activity identity
     |       +-- typed normalized source evidence
     |       +-- native source timing/streams
     |
-    +-- Historical state
-    |
-    +-- versioned derived analysis
+    +-------------------------+
+                              |
+Historical state/context      |
+(independent, time-aware)     |
+              |               |
+              +----> versioned derived analysis
 ```
 
-Activity owns durable identity. Sources own imported evidence. Historical state is independent and time-aware. Derived analysis explicitly consumes source evidence and resolved historical context.
+Activity owns durable identity. Sources own imported evidence. **Historical state is independent and time-aware; it is not owned by the Activity merely because an analysis resolves historical state for that Activity's date.** Derived analysis explicitly consumes source evidence and resolved historical context.
 
 Do not create a universal observation/EAV store merely because DESIGN-001 uses “Observation” as conceptual vocabulary. Do not collapse competing evidence into canonical Activity fields.
 
@@ -227,16 +230,20 @@ Those choices must satisfy DESIGN-001 and DESIGN-002 and should be selected only
 The first implementation design must demonstrate the simplest practical path that can:
 
 - create app-owned Activity identities
-- attach multiple Sources with explicit association basis
+- represent a Source association with explicit association basis
 - preserve original file artifacts unchanged
 - extract useful typed source evidence without destructive canonicalization
 - preserve native source timing and gaps
 - distinguish unavailable signals from observed evidence
 - allow later reparsing/re-extraction
-- add later sources without duplicating the Activity
+- remain structurally capable of associating additional Sources with the same Activity later
 - leave room for time-aware historical state and versioned derivations without requiring those entire systems to be implemented at once
 
-The implementation slice should prove these properties on representative cases rather than attempting to build the entire future application model in one task.
+For **RideWorks Phase 1**, the real implementation proof is intentionally narrower than the full set of representative cases described above. P1-01 may prove the structure with one source-rich FIT Activity. It does **not** need to demonstrate real multi-source enrichment, CSV-only activities, GPX/TCX production support, or later-file reconciliation.
+
+Those broader cases remain design requirements that the Phase 1 representation must not make impossible. Real multi-source/activity enrichment is a Phase 2 product outcome under the controlling product requirements.
+
+The implementation slice should prove the properties required by its current phase rather than attempting to build the entire future application model in one task.
 
 ## Decision boundary
 
