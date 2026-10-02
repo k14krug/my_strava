@@ -141,7 +141,7 @@ Only one implementation/research task should normally be `in_progress`.
 * keep source summaries and application derivations distinct
 * provide verification suitable for later UI consumption
 
-**Acceptance:** See `docs/PHASE_1_ACCEPTANCE.md`; detailed acceptance will be expanded in `docs/tasks/P1-02.md`.
+**Acceptance:** See `docs/PHASE_1_ACCEPTANCE.md` and `docs/tasks/P1-02.md`.
 
 **Dependency:** P1-01 complete.
 
