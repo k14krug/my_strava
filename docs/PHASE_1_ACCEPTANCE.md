@@ -180,6 +180,8 @@ For the representative FIT activity:
 
 This is a Phase 1 policy for one source-rich activity, not a universal ranking rule.
 
+For P1-01, **provenance/origin and availability are separate concerns**. Evidence being supplied by FIT does not prove that the underlying value was measured rather than estimated or calculated upstream. Likewise, an unavailable/uninspected signal, an observed-absent field, and a present stream containing missing samples must not be collapsed into one generic status merely for implementation convenience. The P1-01 JIT should specify the smallest explicit representation needed for these distinctions without creating a generalized metadata framework.
+
 ## 6. Explicit Phase 1 non-goals
 
 Phase 1 does not require:
@@ -249,7 +251,7 @@ Phase 1 is accepted only when all of the following are true.
 
 ### P1-01 — Durable single-FIT activity import
 
-**Outcome:** The representative FIT can enter the future application as a durable Activity + Source with preserved original artifact and typed normalized evidence.
+**Outcome:** The representative FIT can enter RideWorks as a durable Activity + Source with preserved original artifact and typed normalized evidence.
 
 Primary requirements: ACT-001, ACT-004, ACT-005, ACT-006, DATA-001, DATA-002, DATA-006.
 
@@ -269,7 +271,9 @@ This task must not expand into zones, normalized power, training load, interval 
 
 Primary requirements: REV-001 through REV-003, REV-009, REV-010, PR-002, PR-010, PR-013, PR-014, Phase 1 product acceptance.
 
-This task includes the Owner visual/usability review boundary. It must stop for that review before Phase 1 is declared accepted.
+This task includes the Owner visual/usability review boundary. Its JIT must also define the first usable RideWorks journey: how the application is started, how the already-imported ride is selected/opened, how it can be opened again after restart, display units/timezone labeling, and the minimum chart interaction needed for review. A browser upload workflow is not inherently required if a simpler Phase 1 import/open path satisfies the acceptance contract.
+
+It must stop for Owner visual/usability review before Phase 1 is declared accepted.
 
 ## 9. Task-control intent
 
