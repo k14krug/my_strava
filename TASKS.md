@@ -118,6 +118,7 @@ Only one implementation/research task should normally be `in_progress`.
 * extract typed source/session/stream evidence without destructive canonicalization
 * preserve native timing
 * support re-extraction without reacquiring the original
+* establish a clean RideWorks application/runtime boundary with no compatibility obligation to the retired Strava application; legacy application code may be ignored or removed if that is simpler
 
 **Acceptance:** See `docs/PHASE_1_ACCEPTANCE.md`; detailed acceptance will be expanded in `docs/tasks/P1-01.md`.
 
