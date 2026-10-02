@@ -2,6 +2,8 @@
 
 ## Current state
 
+**Product:** RideWorks
+
 **Workflow bootstrap:** done
 
 **STRAVA-001:** done
@@ -18,12 +20,18 @@
 
 **Phase 1 definition:** done — `docs/PHASE_1_ACCEPTANCE.md`
 
+**Independent readiness review:** complete — `docs/reviews/2026-10-02-phase-1-readiness-astra.md`
+
+**Readiness corrections:** applied — mockups are repository-controlled, legacy `.clinerules` is retired, Phase 1 traceability/timing/calculation boundaries are tightened, and DESIGN-002's Phase 1 boundary is clarified.
+
+**Approved UI references:** `docs/mockups/activity-review.png`, `docs/mockups/dashboard.png`
+
 **Implementation authorized:** no
 
 **Blockers:** none
 
 ## Next action
 
-Author the Analyst JIT for **P1-01 — Durable single-FIT activity import**, including its `Execution Control`, local-data procedure, minimum physical implementation choices, verification, and stop conditions.
+Author the Analyst JIT for **P1-01 — Durable single-FIT activity import**, incorporating the accepted Astra readiness findings: durable original storage, repeat-import/re-extraction behavior, typed extraction and availability/provenance distinctions, timing preservation, legacy-code exclusion boundary, private runtime-data location, verification, and stop conditions.
 
 Do not begin P1-01 implementation until that JIT is committed. Do not start P1-02 or P1-03 automatically.
