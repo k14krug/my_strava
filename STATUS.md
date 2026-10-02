@@ -12,7 +12,9 @@
 
 **Branch:** `task/p1-02-single-ride-analysis`
 
-**PR:** opening for Analyst review
+**PR:** [#11](https://github.com/k14krug/my_strava/pull/11)
+
+**Implementation commit:** `6851477`
 
 **Scope:** on-demand analysis of the current single FIT extraction, unchanged source summary/native records, and best 20-minute power under the committed JIT.
 

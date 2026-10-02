@@ -6,6 +6,10 @@
 
 **Branch:** `task/p1-02-single-ride-analysis`
 
+**Implementation commit:** `6851477`
+
+**PR:** [#11](https://github.com/k14krug/my_strava/pull/11)
+
 **Base:** refreshed `main` at `67c27ab`, including accepted P1-01 and the Analyst-authored P1-02 brief.
 
 **State:** implementation and verification complete; awaiting HARD — Analyst review.
