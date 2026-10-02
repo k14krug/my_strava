@@ -10,7 +10,9 @@
 
 **Branch:** `task/p1-01-durable-fit-import`
 
-**PR:** opening for Analyst review
+**PR:** [#10](https://github.com/k14krug/my_strava/pull/10)
+
+**Implementation commit:** `7a1246e`
 
 **Implementation:** clean Python/SQLite Activity + Source store; exact originals; typed summary/native records/lap/event evidence; repeat-import integrity; failure-safe re-extraction; callable read API and CLI. Legacy runtime ignored.
 

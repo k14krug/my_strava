@@ -1,10 +1,17 @@
 # P1-01 verification
 
 **Product:** RideWorks
+
 **Date:** 2026-10-02
+
 **Branch:** `task/p1-01-durable-fit-import`
+
+**Implementation commit:** `7a1246e`
+
 **Base:** refreshed `main` at `5b0659d`
+
 **State:** implementation and local verification complete; awaiting HARD — Analyst review.
+
 
 ## Implementation and environment
 
