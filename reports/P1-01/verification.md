@@ -6,7 +6,7 @@
 
 **Branch:** `task/p1-01-durable-fit-import`
 
-**Implementation commit:** `7a1246e`
+**Implementation commit:** `1599058` (includes Analyst-requested activity-envelope correction)
 
 **Base:** refreshed `main` at `5b0659d`
 
@@ -66,7 +66,7 @@ Final automated command:
 PYTHONDONTWRITEBYTECODE=1 /tmp/rideworks-p1-01-venv/bin/python -m unittest discover -s tests -v
 ```
 
-**37 tests passed:** 20 new RideWorks tests and all 17 existing research tests.
+**39 tests passed:** 22 RideWorks tests and all 17 existing research tests.
 New tests exercise the actual fitdecode path using a 200-byte committed,
 synthetic FIT fixture and stdlib-generated variations. The fixture contains no
 personal/location data. No FIT-writing dependency was introduced.
@@ -76,10 +76,31 @@ exact-byte preservation of plain/gzip input, filename independence, differing
 packaging as distinct artifacts, summary nulls, legitimate zero power, missing
 power/HR, availability counts and unknown origin, duplicate/backward/missing
 record timestamps, session/lap/event timing and timer trigger, strict invalid
-FIT/gzip/CRC failures, multiple/chained session rejection, database rollback,
+FIT/gzip/CRC failures, missing/duplicate `file_id` rejection, multiple/chained
+session rejection, database rollback,
 stored-original integrity errors without repair, successful extraction revision
 replacement, decoder/database re-extraction failures, and verified reuse of
 unreferenced originals without overwriting conflicting bytes.
+
+### Analyst review correction
+
+[Review feedback](https://github.com/k14krug/my_strava/pull/10#discussion_r4169592761)
+identified that the prior validation accepted a decodable FIT session without
+explicit activity-file identity. The importer now requires exactly one `file_id`
+whose type is `activity`. Synthetic missing/duplicate `file_id` cases use the real
+decoder and confirm rejection leaves no Activity, Source, extraction, original
+or staging file. The normalized mapping and schema are unchanged (`fit-v1`).
+
+Both regression tests failed before the correction (no `InvalidFitError` was
+raised), using this targeted reproduction command:
+
+```bash
+/tmp/rideworks-p1-01-venv/bin/python -m unittest discover -s tests -p test_rideworks.py -k file_id -v
+```
+
+After correction, the full 39-test command above and the representative acceptance
+command below both passed again. The supplied artifact and all expected counts
+remain unchanged.
 
 ## Representative local acceptance
 
@@ -105,6 +126,7 @@ during re-extraction to verify transaction rollback after replacement has begun.
 | Received artifact SHA-256 | `5830f9ee6b4dd61265f1e8487d7ff62d97fbd54695ea347015e72df2ff27acc6` |
 | Received/preserved size | 63,440 bytes |
 | Activity / FIT Source / supported session | 1 / 1 / 1 |
+| Activity-file identity evidence | Exactly one `file_id` whose type is `activity` |
 | Native record count | 3,621 |
 | Power / HR present values | 3,621 / 3,621 |
 | Power / HR missing values | 0 / 0 |
@@ -128,7 +150,8 @@ boundary and does not establish final Phase 1 product acceptance.
 ## Boundaries and review
 
 Unsupported conditions are reported clearly: invalid gzip/FIT/CRC, multiple
-sessions, chained FIT files, non-activity file types and unresolved device-relative
+sessions, missing/duplicate `file_id`, chained FIT files, non-activity file types
+and unresolved device-relative
 timestamps. Different received bytes are not reconciled as the same ride. There
 is no bulk import, ORM, migration framework, web framework, generic storage
 abstraction, athlete-state policy or application-derived ride metric.
