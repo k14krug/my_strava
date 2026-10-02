@@ -1,14 +1,16 @@
 # AGENTS.md
 
-## my_strava Research Workbench
+## my_strava — Personal Cycling Training App
 
-This repository is a retired Strava application that is now available as a research and development workbench for the Personal Cycling Training App project.
+This repository is the development repository for the Personal Cycling Training App.
 
-The old application is not a compatibility target. Existing code may be reused, changed, isolated, or removed when a task requires it.
+It began as a retired Strava application and was reused as the research and development workbench for the project's Strava-export discovery and design work. The same repository will now evolve into the new application; do not assume that the production application will move to a separate repository.
 
-The repository's immediate purpose is to support evidence-gathering and experiments against real cycling data before implementation decisions are made for the future application.
+The old Strava application is not a compatibility target. Its architecture, schema, behavior, UI, and package structure do not become requirements merely because they already exist. Existing code may be reused, changed, isolated, or removed when a task requires it.
 
-Research code in this repository is not automatically production architecture for the future application.
+Research utilities, reports, and experiments may remain in this repository when useful. Research code is evidence and tooling, not automatically production architecture for the new application.
+
+Implementation work for the new application begins in this repository under the controlling product requirements, accepted design decisions, phase acceptance contracts, and Analyst-authored JIT briefs.
 
 ---
 
