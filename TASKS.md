@@ -162,6 +162,7 @@ Only one implementation/research task should normally be `in_progress`.
 * implement `docs/mockups/activity-review.png` as the preferred layout/visual reference, using only capabilities genuinely available in Phase 1
 * use the **RideWorks** product name consistently in the user-facing application shell
 * design and apply RideWorks branded application icon/mark assets for Owner visual approval
+* define the narrow first user journey: start RideWorks, open/select the imported ride, reopen it after restart, and use appropriate units/timezone/chart interaction
 * Owner visual/usability acceptance against both the representative ride and the approved mockup
 
 **Acceptance:** `docs/PHASE_1_ACCEPTANCE.md` plus the future `docs/tasks/P1-03.md`.
