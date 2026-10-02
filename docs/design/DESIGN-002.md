@@ -243,7 +243,7 @@ For **RideWorks Phase 1**, the real implementation proof is intentionally narrow
 
 Those broader cases remain design requirements that the Phase 1 representation must not make impossible. Real multi-source/activity enrichment is a Phase 2 product outcome under the controlling product requirements.
 
-The implementation slice should prove the properties required by its current phase rather than attempting to build the entire future application model in one task.
+The implementation slice should prove the properties required by its current phase rather than attempting to build the entire RideWorks application model in one task.
 
 ## Decision boundary
 
