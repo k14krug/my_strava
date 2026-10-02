@@ -106,7 +106,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P1-01 — Durable single-FIT activity import
 
-**Status:** pending
+**Status:** done
 
 **Purpose:** Import the Phase 1 representative FIT as a durable application-owned Activity + Source, preserve the original artifact unchanged, and persist the minimum typed source evidence/native streams needed by Phase 1.
 

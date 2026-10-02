@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rideworks"
+version = "0.1.0"
+description = "Durable personal cycling source evidence"
+requires-python = ">=3.10"
+dependencies = ["fitdecode==0.11.0"]
+
+[project.scripts]
+rideworks = "rideworks.__main__:main"
+
+[tool.setuptools]
+packages = ["rideworks"]

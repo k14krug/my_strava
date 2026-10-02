@@ -10,3 +10,11 @@ junk*
 strava_app_db.sql
 local_data/
 strava-inventory-output/
+
+# RideWorks local runtime/build artifacts
+.venv/
+*.egg-info/
+build/
+dist/
+.rideworks/
+rideworks.sqlite3*
