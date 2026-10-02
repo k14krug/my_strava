@@ -67,9 +67,10 @@ originals are never silently overwritten or repaired. Re-extraction verifies
 stored integrity before decoding and leaves the prior current extraction intact
 on decoder or database failure.
 
-Only one FIT file with one activity session is supported. Chained FIT files,
-multiple sessions, non-activity file types, malformed gzip/FIT, and invalid CRCs
-fail clearly. Exact originals enable later extraction of fields omitted here.
+Only one FIT file with one activity session and exactly one `file_id` whose type
+is `activity` is supported. Missing/duplicate `file_id` messages, chained FIT
+files, multiple sessions, non-activity file types, malformed gzip/FIT, and invalid
+CRCs fail clearly. Exact originals enable later extraction of fields omitted here.
 
 Verification:
 

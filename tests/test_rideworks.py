@@ -170,6 +170,18 @@ class ImportTests(unittest.TestCase):
                 self.store.import_fit(self.input)
             self.assert_empty()
 
+    def test_missing_file_id_rejected_without_completed_import(self):
+        self.input.write_bytes(make_fit(file_ids=0))
+        with self.assertRaisesRegex(InvalidFitError, 'file_id'):
+            self.store.import_fit(self.input)
+        self.assert_empty()
+
+    def test_multiple_file_ids_rejected_without_completed_import(self):
+        self.input.write_bytes(make_fit(file_ids=2))
+        with self.assertRaisesRegex(InvalidFitError, 'file_id'):
+            self.store.import_fit(self.input)
+        self.assert_empty()
+
     def test_unresolved_device_relative_time_rejected(self):
         self.input.write_bytes(make_fit(timestamps=(100, 101, 102)))
         with self.assertRaisesRegex(InvalidFitError, 'absolute UTC'):

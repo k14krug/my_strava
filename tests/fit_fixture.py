@@ -19,7 +19,7 @@ def crc(data):
 def make_fit(*, powers=(0, None, 180), heart_rates=(100, None, 110),
              timestamps=(1100000000, 1100000000, 1100000002),
              sessions=1, max_hr=150, elapsed=2, timer=1,
-             file_type=4, num_sessions=1):
+             file_type=4, num_sessions=1, file_ids=1):
     body = bytearray()
 
     def messages(number, fields, rows):
@@ -32,7 +32,7 @@ def make_fit(*, powers=(0, None, 180), heart_rates=(100, None, 110),
             body.append(0)
             body.extend(struct.pack('<' + ''.join(f[1] for f in fields), *row))
 
-    messages(0, [(0, 'B', 0)], [(file_type,)])
+    messages(0, [(0, 'B', 0)], [(file_type,)] * file_ids)
     messages(21, [(253, 'I', 0x86), (0, 'B', 0), (1, 'B', 0), (3, 'I', 0x86)],
              [(1100000000, 0, 0, 0), (1100000002, 0, 4, 0)])
     messages(20, [(253, 'I', 0x86), (7, 'H', 0x84), (3, 'B', 2)],

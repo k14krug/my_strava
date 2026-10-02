@@ -147,8 +147,8 @@ def decode_fit(path: Path, packaging: str) -> ParsedFit:
         raise InvalidFitError(f"Invalid {packaging} FIT artifact: {exc}") from exc
     if header_count != 1 or len(sessions) != 1:
         raise InvalidFitError("Exactly one FIT file and one activity session are supported")
-    if any(t != "activity" for t in file_types):
-        raise InvalidFitError("FIT content is not an activity file")
+    if len(file_types) != 1 or file_types[0] != "activity":
+        raise InvalidFitError("Exactly one file_id identifying a FIT activity file is required")
     if len(activity_sessions) > 1 or any(n not in (None, 1) for n in activity_sessions):
         raise InvalidFitError("Multiple activity sessions are unsupported")
     return ParsedFit(sessions[0], records, laps, events)
