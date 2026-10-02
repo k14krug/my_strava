@@ -1,6 +1,6 @@
-# Cycling Training App — Product Requirements
+# RideWorks — Product Requirements
 
-**Status:** Initial controlling product requirements  
+**Status:** Approved controlling product requirements  
 **Purpose:** Define what the application is intended to become, what the first delivery phases must accomplish, and what implementation/design tasks must trace back to.  
 **Scope:** Personal, single-rider cycling training, ride analysis, performance history, training-state assessment, and later adaptive planning.
 
@@ -100,13 +100,27 @@ The application must not manufacture precision to fill historical gaps. Missing,
 
 ### PR-013 — Approved mockups guide the visual product
 
-The supplied **Strava Activity screen** and **Strava Dashboard mockup** are the preferred visual and layout references for the application.
+The approved RideWorks mockups are repository-controlled visual references:
+
+- Activity Review: `docs/mockups/activity-review.png`
+- Dashboard: `docs/mockups/dashboard.png`
+- authority/version notes and image hashes: `docs/mockups/README.md`
 
 Implementations should preserve their overall page structure, information hierarchy, density, card/panel organization, and visual character unless a concrete usability, data-availability, or technical reason justifies divergence.
 
 The product should grow into these mockups over successive phases rather than repeatedly redesigning the interface. Features whose underlying capability does not yet exist should be omitted rather than displayed as fake placeholders.
 
+The images predate the final product name. Any older title or wordmark visible in them is superseded by **RideWorks**.
+
 This requirement does not freeze every color, spacing value, label, or component detail. It does establish the mockups as the intended screen direction.
+
+### PR-014 — RideWorks identity and branded iconography
+
+**RideWorks** is the product name. User-facing application titles, navigation chrome, product labels, and new current-state documentation must use RideWorks consistently.
+
+Historical research reports and completed task artifacts may retain earlier working names; they are historical evidence and need not be cosmetically rewritten.
+
+RideWorks requires branded application iconography/mark assets appropriate to the application shell and normal desktop/web presentation. Exact artwork is a visual-design decision, not a P1-01 prerequisite. The branded icon/mark must receive Owner visual approval before final Phase 1 UI acceptance.
 
 ---
 
@@ -129,13 +143,13 @@ It should eventually provide a concise view of:
 - useful alerts or interpretations;
 - shortcuts into deeper activity, performance, and planning views.
 
-The supplied **Strava Dashboard mockup** is the preferred visual/layout reference for this screen. The real dashboard should retain its overall hierarchy: persistent left navigation; top status/progress cards; recent activities as the primary body; next-workout and insight panels to the right; and trend/progress panels below. The complete mockup is a destination, not a requirement that every element exist immediately. Missing capabilities should be omitted until real rather than replaced with fake content.
+The approved Dashboard mockup at `docs/mockups/dashboard.png` is the preferred visual/layout reference for this screen. The real RideWorks dashboard should retain its overall hierarchy: persistent left navigation; top status/progress cards; recent activities as the primary body; next-workout and insight panels to the right; and trend/progress panels below. The complete mockup is a destination, not a requirement that every element exist immediately. Missing capabilities should be omitted until real rather than replaced with fake content.
 
 ### 3.2 Activity review
 
 Activity review answers: **What happened during this ride, and what does it mean in context?**
 
-The supplied **Strava Activity screen** is the preferred visual/layout reference. The implemented screen should preserve its overall hierarchy as capabilities arrive: persistent left navigation; strong activity identity/header; a top row of important ride metrics; a large central ride chart; supporting analysis panels below; and a right-hand ride-summary/insight column. The interface may be thinner in early phases, but it should grow into this structure rather than being replaced by a different generic application layout.
+The approved Activity Review mockup at `docs/mockups/activity-review.png` is the preferred visual/layout reference. The implemented RideWorks screen should preserve its overall hierarchy as capabilities arrive: persistent left navigation; strong activity identity/header; a top row of important ride metrics; a large central ride chart; supporting analysis panels below; and a right-hand ride-summary/insight column. The interface may be thinner in early phases, but it should grow into this structure rather than being replaced by a different generic application layout.
 
 It must eventually support:
 
@@ -574,6 +588,6 @@ These questions should not be answered prematurely merely to complete a schema o
 
 ## 14. Working product statement
 
-> Build a durable personal cycling-training application that explains how today's ride went, shows how performance is changing over time, tracks progress toward goals, connects completed work with planned work, and eventually uses trustworthy historical evidence to decide what training should come next.
+> Build **RideWorks** as a durable personal cycling-training application that explains how today's ride went, shows how performance is changing over time, tracks progress toward goals, connects completed work with planned work, and eventually uses trustworthy historical evidence to decide what training should come next.
 
-The application owns the history. Sources provide evidence. Analysis explains what happened. Performance history shows what is changing. Planning determines what comes next.
+RideWorks owns the history. Sources provide evidence. Analysis explains what happened. Performance history shows what is changing. Planning determines what comes next.
