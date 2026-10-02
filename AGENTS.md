@@ -6,7 +6,9 @@ This repository is the development repository for **RideWorks**, the personal cy
 
 It began as a retired Strava application and was reused as the research and development workbench for the project's Strava-export discovery and design work. The same repository will now evolve into the new application; do not assume that the production application will move to a separate repository.
 
-The old Strava application is not a compatibility target. Its architecture, schema, behavior, UI, and package structure do not become requirements merely because they already exist. Existing code may be reused, changed, isolated, or removed when a task requires it.
+The old Strava application is not a compatibility target. Its architecture, schema, behavior, UI, package structure, dependencies, and runtime choices impose **no constraints** on RideWorks. None of the legacy application code is required to remain. It may be reused selectively, changed, isolated, or deleted wholesale when that is the simplest path for an authorized RideWorks task.
+
+The repository is being retained because it already contains the controlling RideWorks documents, research evidence, reports, mockups, reviews, and useful diagnostic tooling—not because the legacy application code has value or authority. Creating a separate repository is unnecessary unless a later concrete workflow or tooling reason makes it simpler.
 
 Research utilities, reports, and experiments may remain in this repository when useful. Research code is evidence and tooling, not automatically production architecture for the new application.
 
