@@ -2,26 +2,18 @@
 
 **Product:** RideWorks
 
-**Current task:** P1-01 — Durable single-FIT activity import
+**P1-01 — Durable single-FIT activity import:** done
 
-**Task state:** in_progress
+**Accepted implementation:** PR #10, implementation head `5c872ea`
 
-**Implementation state:** ready_for_review
+**Acceptance:** HARD — Analyst gate passed. The requested FIT activity-envelope correction is clean: import now requires exactly one `file_id` whose type is `activity`, with missing/duplicate regressions proving failure leaves no completed metadata, original, or staging artifact.
 
-**Branch:** `task/p1-01-durable-fit-import`
-
-**PR:** [#10](https://github.com/k14krug/my_strava/pull/10)
-
-**Implementation commit:** `1599058`
-
-**Implementation:** clean Python/SQLite Activity + Source store; exact originals; typed summary/native records/lap/event evidence; repeat-import integrity; failure-safe re-extraction; callable read API and CLI. Legacy runtime ignored.
-
-**Verification:** 39 tests passed (22 RideWorks + 17 research), including missing/duplicate `file_id` rejection without partial persistence. Representative local acceptance passed: 3,621 complete power/HR records, 3,620 one-second deltas, exact artifact preservation, restart/idempotency and successful/failed re-extraction.
+**Verification:** 39 tests passed (22 RideWorks + 17 research). Representative local acceptance passed with 3,621 complete power/HR records, 3,620 one-second timestamp deltas, exact original preservation, restart/idempotency, and successful/failed re-extraction behavior.
 
 **Evidence:** `reports/P1-01/verification.md`
 
-**Review feedback:** explicit single activity `file_id` validation implemented and verified.
+**Blockers:** none
 
-**Blockers:** none; final HARD — Analyst review outstanding.
+**P1-02 — Single-ride analysis core:** pending; JIT not yet authored.
 
-**Next action:** Analyst reviews the P1-01 correction and updated verification evidence on PR #10. Do not start P1-02 automatically.
+**Next action:** Analyst authors the deliberately narrow P1-02 JIT. Do not begin P1-02 implementation until that JIT is committed and explicitly invoked.
