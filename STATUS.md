@@ -1,41 +1,23 @@
 # STATUS.md
 
-## Current state
-
 **Product:** RideWorks
 
-**Repository:** `k14krug/my_strava` remains the RideWorks development repository. It is retained for its project documents, research evidence, reports, mockups, reviews, and useful diagnostics. The retired Strava application code imposes no compatibility or architecture constraints and may be removed during authorized RideWorks work.
+**Current task:** P1-01 — Durable single-FIT activity import
 
-**Workflow bootstrap:** done
+**Task state:** in_progress
 
-**STRAVA-001:** done
+**Implementation state:** ready_for_review
 
-**STRAVA-002:** done
+**Branch:** `task/p1-01-durable-fit-import`
 
-**STRAVA-003:** done
+**PR:** opening for Analyst review
 
-**DESIGN-001:** done — Durable activity and provenance model
+**Implementation:** clean Python/SQLite Activity + Source store; exact originals; typed summary/native records/lap/event evidence; repeat-import integrity; failure-safe re-extraction; callable read API and CLI. Legacy runtime ignored.
 
-**DESIGN-002:** done — Source-centered storage and import representation
+**Verification:** 37 tests passed (20 RideWorks + 17 research). Representative local acceptance passed: 3,621 complete power/HR records, 3,620 one-second deltas, exact artifact preservation, restart/idempotency and successful/failed re-extraction.
 
-**Product requirements:** approved — `docs/PRODUCT_REQUIREMENTS.md`
+**Evidence:** `reports/P1-01/verification.md`
 
-**Phase 1 definition:** done — `docs/PHASE_1_ACCEPTANCE.md`
+**Blockers:** none; final HARD — Analyst review outstanding.
 
-**Independent readiness reviews:** complete — `docs/reviews/2026-10-02-phase-1-readiness-astra.md`, `docs/reviews/2026-10-02-phase-1-readiness-astra-2.md`
-
-**Readiness corrections:** applied — repository-controlled mockups, illustrative-content clarification, retired legacy `.clinerules`, corrected Phase 1 traceability/timing/calculation boundaries, clarified DESIGN-002 Phase 1 boundary, UI-shell omission rule, and explicit zero legacy-code compatibility obligation.
-
-**Approved UI references:** `docs/mockups/activity-review.png`, `docs/mockups/dashboard.png`
-
-**P1-01 JIT:** authored — `docs/tasks/P1-01.md`
-
-**Implementation authorized:** no — awaiting an explicit `/TASK` or `/AUTOTASK` invocation
-
-**Blockers:** none
-
-## Next action
-
-Ken may invoke **`/TASK` or `/AUTOTASK`** for **P1-01 — Durable single-FIT activity import**. Both invocation paths are authorized by the committed JIT.
-
-P1-01 must stop for Analyst review after implementation and verification. Do not start P1-02 or P1-03 automatically.
+**Next action:** Analyst reviews P1-01 representation and verification evidence. Do not start P1-02 automatically.
