@@ -12,6 +12,8 @@ The controlling repository paths are:
 
 The mockups guide overall page structure, information hierarchy, density, panel/card organization, and visual character. They do not freeze every pixel, color, spacing value, label, or component detail. Capabilities that do not yet exist should be omitted rather than represented by fake placeholders.
 
+**Mockup content is illustrative.** Sample metric values, comparisons, trends, workout classifications, insight text, colors/arrows implying improvement, and other analytical statements shown in the images are not formulas, test fixtures, accepted training policy, or evidence that RideWorks must calculate those results. Controlling requirements and phase-specific analysis rules determine actual behavior.
+
 The screenshots were created before the product name **RideWorks** was selected. Any older application title or wordmark visible inside the images is superseded. New RideWorks UI must use the RideWorks name consistently.
 
 RideWorks also requires branded application iconography. The exact icon/mark artwork is not established by these mockups and must receive Owner visual approval before final Phase 1 UI acceptance.
