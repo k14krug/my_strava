@@ -1,4 +1,4 @@
-# Phase 1 Acceptance — Useful Single-Ride Review
+# RideWorks Phase 1 Acceptance — Useful Single-Ride Review
 
 **Status:** approved planning contract for Phase 1  
 **Controlling source:** `docs/PRODUCT_REQUIREMENTS.md`  
@@ -22,8 +22,10 @@ Phase 1 directly exercises:
 - PR-003 — Durable application-owned history
 - PR-004 through PR-010 — evidence/interpretation separation, originals, provenance, historical context boundary, reproducibility, competing evidence, explainability
 - PR-012 — visible missing data
+- PR-013 — approved mockups guide the visual product
+- PR-014 — RideWorks identity and branded iconography
 - ACT-001, ACT-004 through ACT-007
-- REV-001 through REV-004
+- REV-001 through REV-003
 - REV-009 and REV-010
 - DATA-001 through DATA-006 where they are relevant to this slice
 - Phase 1 outcomes in `docs/PRODUCT_REQUIREMENTS.md`
@@ -39,9 +41,9 @@ The primary Phase 1 acceptance activity is the existing Strava-export candidate:
 - **Date:** 2026-09-29
 - **Observed source type:** FIT
 - **Observed activity label in export research:** Virtual Ride
-- **Observed source evidence:** 3,621 record points with power, heart rate, cadence, position/altitude-related fields, and 1-second median timing; no large gaps were found in STRAVA-002.
+- **Observed source evidence:** 3,621 timestamped record points. STRAVA-002's detailed record evidence shows 3,620 positive timestamp deltas, all exactly 1 second; no duplicate, backward, or missing timestamps; and power and heart rate present on every record. Cadence and position/altitude-related fields are also present.
 
-This activity is intentionally chosen because it is recent, detailed, long enough for a 20-minute effort calculation, and contains the core signals needed for a useful first review.
+This activity is intentionally chosen because it is recent, detailed, long enough for a 20-minute effort calculation, and contains the core signals needed for a useful first review. The exact one-second record evidence—not merely the median-gap summary—is the Phase 1 justification for using this ride for the first 20-minute calculation. P1-02 must re-check calculation eligibility against the imported evidence rather than assuming the research result remains true.
 
 The raw source file remains local-only. Dex may require Ken to provide or confirm the local export path during implementation.
 
@@ -81,7 +83,7 @@ A polished naming system is not required in Phase 1.
 
 Show the following when the FIT source supplies the relevant summary evidence:
 
-- elapsed duration / timer duration as represented by the source;
+- elapsed duration and timer duration, labeled distinctly as represented by the source;
 - distance;
 - total ascent/elevation gain when supplied;
 - average power;
@@ -90,7 +92,7 @@ Show the following when the FIT source supplies the relevant summary evidence:
 - maximum heart rate;
 - average cadence.
 
-For Phase 1, these summary values should remain explicitly attributable to the FIT source/session evidence.
+For Phase 1, these summary values should remain explicitly attributable to the FIT source/session evidence. The representative ride is a useful boundary case because the research recorded 3,620 seconds elapsed and 3,621 seconds timer time. Preserve and label both source values; do not silently force them into agreement or relabel timer time as moving time.
 
 Do not create a general canonical-summary policy merely to fill a card.
 
@@ -111,14 +113,24 @@ Phase 1 does not require cadence, elevation, speed, map, or interval overlays in
 
 Calculate and display the activity's best 20-minute average power from the source record-power evidence.
 
-For the primary representative ride, STRAVA-002 found approximately 1-second native timing with no large gaps, so Phase 1 does not need to solve the general irregular-sampling/gap-policy problem.
+For the primary representative ride, STRAVA-002 established a complete regular one-second record sequence for the inspected evidence, so Phase 1 does not need to solve the general irregular-sampling/gap-policy problem.
+
+P1-02 must define and test the narrow 20-minute semantics needed for this regular series, including:
+
+- complete-window eligibility;
+- the window endpoint convention;
+- inclusion of legitimate zero-watt samples;
+- behavior when power values are missing;
+- result rounding/presentation;
+- the independent-verification tolerance.
 
 The calculation must:
 
 - use source record power rather than a vendor summary;
 - be implemented as an application derivation;
 - be independently testable/reproducible;
-- retain enough method/version/source context to distinguish it from source-supplied summaries.
+- retain enough method/version/source context to distinguish it from source-supplied summaries;
+- be verified by a separately expressed calculation rather than by calling the production rolling-window helper as its own oracle.
 
 General interpolation and gap semantics remain deferred until a case actually requires them.
 
@@ -136,7 +148,7 @@ This may initially be a simple details section rather than polished provenance U
 
 ### 4.6 Visual/layout direction
 
-The supplied **Strava Activity screen** mockup is the preferred visual reference for P1-03 and for later growth of the activity-review experience.
+The approved RideWorks Activity Review mockup at `docs/mockups/activity-review.png` is the preferred visual reference for P1-03 and for later growth of the activity-review experience. Its repository authority/version notes are in `docs/mockups/README.md`. Any older product title visible inside the image is superseded by **RideWorks**.
 
 Phase 1 should preserve the mockup's overall composition even though several later capabilities are intentionally absent:
 
@@ -228,8 +240,10 @@ Phase 1 is accepted only when all of the following are true.
 ### Product acceptance
 
 19. Ken reviews the Phase 1 activity page using the representative ride and agrees that it is useful enough to answer the narrow question: **"How did this ride go?"**
-20. The page recognizably follows the approved Strava Activity screen mockup's overall layout and visual hierarchy, while omitting capabilities not yet implemented.
-21. Any required Owner-facing visual/usability changes from that review are completed before Phase 1 is declared accepted.
+20. The page recognizably follows `docs/mockups/activity-review.png` in overall layout and visual hierarchy, while omitting capabilities not yet implemented.
+21. The user-facing application shell uses the **RideWorks** name consistently.
+22. A RideWorks branded application icon/mark has been designed and receives Owner visual approval for the Phase 1 application shell.
+23. Any required Owner-facing visual/usability changes from that review are completed before Phase 1 is declared accepted.
 
 ## 8. Planned Phase 1 task sequence
 
@@ -253,7 +267,7 @@ This task must not expand into zones, normalized power, training load, interval 
 
 **Outcome:** A rider-facing activity-review page/view combines the trusted Phase 1 evidence and analysis into a useful post-ride experience, with enough inspectability to understand where values came from.
 
-Primary requirements: REV-001 through REV-004 as applicable to one ride, REV-009, REV-010, PR-002, PR-010, Phase 1 product acceptance.
+Primary requirements: REV-001 through REV-003, REV-009, REV-010, PR-002, PR-010, PR-013, PR-014, Phase 1 product acceptance.
 
 This task includes the Owner visual/usability review boundary. It must stop for that review before Phase 1 is declared accepted.
 
