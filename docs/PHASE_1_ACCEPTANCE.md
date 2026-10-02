@@ -162,6 +162,8 @@ Phase 1 should preserve the mockup's overall composition even though several lat
 
 Phase 1 must **not** implement fake placeholders for later mockup features such as AI Insights, Compare to Recent, Next Workout, Zone Breakdown, or Laps/Intervals. Those areas may be absent or the remaining panels may naturally occupy the available space until the underlying capability is implemented.
 
+The same omission rule applies to the rest of the shell. Unsupported header actions, navigation destinations, sync indicators, notifications, account/profile controls, AI controls, or other mockup chrome should not appear as inert or misleading controls merely to match the image. Phase 1 should show only destinations/actions that actually work, while preserving the mockup's overall structural hierarchy.
+
 Exact pixel matching, colors, typography, and spacing are not frozen. The acceptance concern is recognizable structure, hierarchy, density, and visual character.
 
 A materially different generic developer/admin page does not satisfy the intended Phase 1 product direction merely because it contains the required data.
