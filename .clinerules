@@ -1,39 +1,16 @@
-# Project Intelligence
+# Retired Legacy Guidance
 
-## Key Patterns
+This file is retained only as historical context from the retired Strava application.
 
-1. **Training Load Calculations**
-   - CTL/ATL/TSB calculated daily
-   - Historical data processed in batches
-   - Calculations optimized for performance
-   - Data validation implemented
+It is **not active guidance for RideWorks**. In particular, its former Flask, SQLAlchemy, Chart.js, training-load, caching, and other technical decisions are legacy implementation details and must not be treated as current product or architecture decisions.
 
-2. **Visualization System**
-   - Chart.js used for rendering
-   - Fitness/fatigue charts implemented
-   - Responsive design patterns
-   - Data point accuracy optimized
+Current work is governed by:
 
-3. **Error Handling**
-   - Basic error recovery implemented
-   - Rate limit tracking
-   - Job retry mechanism
-   - Error logging
+1. `AGENTS.md`
+2. `docs/PRODUCT_REQUIREMENTS.md`
+3. accepted design decisions under `docs/design/`
+4. the applicable phase acceptance contract
+5. the current Analyst-authored JIT task brief
+6. `TASKS.md` and `STATUS.md` for execution state
 
-## Technical Decisions
-- Flask framework for web application
-- SQLAlchemy for database operations
-- Chart.js for visualizations
-- Modular architecture with clear separation of concerns
-
-## Implementation Insights
-- Visualizations benefit from data point caching
-- Error recovery should be comprehensive
--
-## Best Practices
-- Modular code organization
-- Clear separation of concerns
-- Comprehensive error handling
-- Performance optimizations
-- Data validation
-- Detailed logging
+If legacy code or this repository's older documentation conflicts with those current sources, follow the current sources and surface material ambiguity rather than preserving legacy behavior for compatibility.
