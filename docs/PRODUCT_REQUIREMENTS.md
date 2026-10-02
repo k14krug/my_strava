@@ -572,7 +572,7 @@ That sequence is the guardrail against returning to an infrastructure-first proj
 
 These remain deliberately open and should be answered when their phase approaches:
 
-1. Which exact metrics belong on the first activity-review page beyond power, HR, duration, and 20-minute performance?
+1. Which additional activity-review metrics, beyond the approved Phase 1 minimum, are valuable enough to add in later phases?
 2. What is the first useful ride-to-ride comparison interaction?
 3. Which goal types should be implemented first?
 4. What exact evidence should trigger statements such as "harder than intended"?
