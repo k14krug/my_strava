@@ -28,12 +28,14 @@
 
 **Approved UI references:** `docs/mockups/activity-review.png`, `docs/mockups/dashboard.png`
 
-**Implementation authorized:** no
+**P1-01 JIT:** authored — `docs/tasks/P1-01.md`
+
+**Implementation authorized:** no — awaiting an explicit `/TASK` or `/AUTOTASK` invocation
 
 **Blockers:** none
 
 ## Next action
 
-Author the Analyst JIT for **P1-01 — Durable single-FIT activity import**. It must establish the clean RideWorks application boundary and incorporate the accepted Astra readiness findings: durable original storage, stable private runtime-data location, input packaging, repeat-import/re-extraction and failure behavior, typed extraction and availability/provenance distinctions, native timing, parser/extraction identity, retrieval for P1-02, legacy-code exclusion/removal discretion, verification, and stop conditions.
+Ken may invoke **`/TASK` or `/AUTOTASK`** for **P1-01 — Durable single-FIT activity import**. Both invocation paths are authorized by the committed JIT.
 
-Do not begin P1-01 implementation until that JIT is committed. Do not start P1-02 or P1-03 automatically.
+P1-01 must stop for Analyst review after implementation and verification. Do not start P1-02 or P1-03 automatically.
