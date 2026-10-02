@@ -135,7 +135,8 @@ Only one implementation/research task should normally be `in_progress`.
 
 * expose the required FIT-backed summary evidence
 * expose native power and heart-rate streams
-* calculate reproducible best 20-minute power as an application derivation
+* define the narrow complete-window semantics for the representative ride and calculate reproducible best 20-minute power as an application derivation
+* independently verify the 20-minute result without using the production calculation as its own oracle
 * keep source summaries and application derivations distinct
 * provide verification suitable for later UI consumption
 
@@ -158,7 +159,9 @@ Only one implementation/research task should normally be `in_progress`.
 * native-timing power and heart-rate review
 * best 20-minute result
 * practical provenance/inspectability details
-* implement the approved Strava Activity screen mockup as the preferred layout/visual reference, using only capabilities genuinely available in Phase 1
+* implement `docs/mockups/activity-review.png` as the preferred layout/visual reference, using only capabilities genuinely available in Phase 1
+* use the **RideWorks** product name consistently in the user-facing application shell
+* design and apply RideWorks branded application icon/mark assets for Owner visual approval
 * Owner visual/usability acceptance against both the representative ride and the approved mockup
 
 **Acceptance:** `docs/PHASE_1_ACCEPTANCE.md` plus the future `docs/tasks/P1-03.md`.
