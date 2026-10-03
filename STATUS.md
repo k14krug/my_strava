@@ -4,18 +4,20 @@
 
 **P1-01:** done — accepted on PR #10
 
-**P1-02 — Single-ride analysis core:** done
+**P1-02:** done — accepted on PR #11
 
-**Accepted implementation:** PR #11, implementation commit `6851477`, reviewed at head `2756af1`
+**P1-03 — Activity review experience and Phase 1 acceptance:** pending
 
-**Acceptance:** HARD — Analyst gate passed. The implementation matches the committed P1-02 JIT: it consumes the P1-01 read boundary, preserves source summary/native records unchanged, calculates best 20-minute power on demand with explicit Source/extraction/method context, and introduces no analysis persistence or later-phase metrics.
+**P1-03 JIT:** authored — `docs/tasks/P1-03.md`
 
-**Verification:** 64 tests passed (25 P1-02 + 22 P1-01 + 17 research). Representative production and independent calculations both select records `[204, 1404)`, yielding 120.11916666666667 W and 120 W rounded, with 0.0 W difference. FIT session average remains a separate 118 W source value.
+**Allowed invocation:** `/TASK or /AUTOTASK`
 
-**Evidence:** `reports/P1-02/verification.md`
+**Scope:** first real local RideWorks browser screen: Activities landing page, stable Activity Review route, approved mockup hierarchy, source summary, native 3,621-point power/HR review, accepted best-20 derivation, provenance details, restart/reopen journey, and Phase 1 Owner usability review.
 
-**Blockers:** none
+**Branding:** parallel branding workstream remains authoritative for icon/mark artwork. No settled mark is currently committed in the repository. P1-03 must integrate settled assets when available and must not invent a competing identity. Owner-approved branding remains required before Phase 1 closeout.
 
-**P1-03 — Activity review experience and Phase 1 acceptance:** pending; JIT not yet authored.
+**Review gates:** HARD — Owner visual/usability/branding review, then HARD — Analyst final Phase 1 closeout.
 
-**Next action:** Analyst authors the P1-03 JIT using the approved activity-review mockup and current settled RideWorks branding assets/decisions. Do not begin P1-03 implementation until that JIT is committed and explicitly invoked.
+**Blockers:** none for functional P1-03 implementation; missing settled branding asset may block final Owner/Phase 1 acceptance, not initial UI construction.
+
+**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P1-03. Do not begin Phase 2 automatically.
