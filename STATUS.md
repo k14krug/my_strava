@@ -2,22 +2,22 @@
 
 **Product:** RideWorks
 
-**P1-01:** done — accepted on PR #10
+**P1-01 / P1-02:** done — accepted on PRs #10 / #11
 
-**P1-02:** done — accepted on PR #11
+**Current task:** P1-03 — Activity review experience and Phase 1 acceptance
 
-**P1-03 — Activity review experience and Phase 1 acceptance:** pending
+**Task state:** blocked
 
-**P1-03 JIT:** authored — `docs/tasks/P1-03.md`
+**Implementation state:** not started
 
-**Allowed invocation:** `/TASK or /AUTOTASK`
+**Branch:** `task/p1-03-activity-review`
 
-**Scope:** first real local RideWorks browser screen: Activities landing page, stable Activity Review route, approved mockup hierarchy, source summary, native 3,621-point power/HR review, accepted best-20 derivation, provenance details, restart/reopen journey, and Phase 1 Owner usability review.
+**PR:** opening a draft blocker handoff
 
-**Branding:** approved RideWorks brand direction is committed under `docs/branding/`, including the board and exact palette (`#0F2A44`, `#2563EB`, `#10B981`, `#E5E7EB`). P1-03 must follow that direction and must not invent a competing identity. Owner approval of the branding as applied in the shell remains required before Phase 1 closeout.
+**Blocker:** committed approved branding board cannot be decoded and does not match its documented SHA-256. Git blob and worktree agree; the RIFF header requires 6,888 bytes but only 6,887 are present. The mark cannot be faithfully implemented from this input.
 
-**Review gates:** HARD — Owner visual/usability/branding review, then HARD — Analyst final Phase 1 closeout.
+**Verification:** source integrity and image-decoder checks only; no implementation/browser acceptance or new test-suite run claimed.
 
-**Blockers:** none. The repository now contains the approved branding direction needed to begin P1-03.
+**Evidence:** `reports/P1-03/verification.md`
 
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P1-03. Do not begin Phase 2 automatically.
+**Next action:** Analyst restores a decodable approved board and consistent branding metadata in the repository. Resume P1-03 after refreshing the repaired source. Owner/Analyst acceptance gates have not been reached; do not begin Phase 2.
