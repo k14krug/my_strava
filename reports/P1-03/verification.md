@@ -1,4 +1,4 @@
-# P1-03 verification — Owner corrections implemented
+# P1-03 verification — Owner approved; Analyst review pending
 
 **Date:** 2026-10-03
 
@@ -6,7 +6,7 @@
 
 **Corrected implementation:** `cba2d0d` (supersedes the pre-correction `d2c5acd` build).
 
-**State:** `ready_for_owner_review`. P1-03 remains `in_progress`; no Owner visual approval or final Analyst acceptance is claimed. Phase 2 has not begun.
+**State:** `ready_for_review` at Gate 2 HARD — Analyst. P1-03 remains `in_progress`. Owner visual/usability/branding approval is recorded below; final Analyst acceptance remains pending. Phase 2 has not begun.
 
 **Authority:** the [HARD — Owner correction comment](https://github.com/k14krug/my_strava/pull/12#issuecomment-5971351156) and Analyst-authored P1-03 JIT. The Owner explicitly authorized the necessary verification/status publication within its privacy limits; the former publication blocker is resolved. Screenshots and private source/runtime artifacts remain local.
 
@@ -46,7 +46,7 @@ Exact command:
 python3 docs/branding/restore_board.py --output /tmp/rideworks-brand-direction-board.webp
 ```
 
-Result: **6,888 bytes**, SHA-256 **`4dd937e2dc46f929e91fc201c32d138da6395d5c4c22fbbee8965e4b5376a81c`**, RIFF/WebP identity and size verified. The previously decoded/inspected board is 350 × 262. The approved-direction local SVG mark/favicon is unchanged; only shell placement/scale changed. Navy `#0F2A44`, Blue `#2563EB`, Green accent `#10B981` and Light gray `#E5E7EB` remain the identity palette. Applied branding still requires Owner approval.
+Result: **6,888 bytes**, SHA-256 **`4dd937e2dc46f929e91fc201c32d138da6395d5c4c22fbbee8965e4b5376a81c`**, RIFF/WebP identity and size verified. The previously decoded/inspected board is 350 × 262. The approved-direction local SVG mark/favicon is unchanged; only shell placement/scale changed. Navy `#0F2A44`, Blue `#2563EB`, Green accent `#10B981` and Light gray `#E5E7EB` remain the identity palette. Ken explicitly approved the applied branding with the corrected visual/usability result on 2026-10-03, as recorded below.
 
 ## Automated verification
 
@@ -106,12 +106,28 @@ The existing seven-record privacy-safe synthetic browser case was repeated. Miss
 
 Browser automation used the Playwright skill's Chromium opener and underlying `npx --package @playwright/cli playwright-cli` commands for resize, snapshot, real link/disclosure clicks, requests, console and browser assertions. Local `run-code` assertions checked exact payload/count/metrics, pointer/keyboard inspection, timezone contexts, viewport overflow, provenance, synthetic breaks/fill and restart identity. The CLI tools are verification-only; no application Node/build tooling was added.
 
-## HARD — Owner handoff
+## Gate 1 — HARD — Owner approval
 
-Start the corrected application with the exact command above. The prepared review store needs no import. Open Activities or the exact representative URL. A corrected local-only preview is at `output/playwright/p1-03-corrected-desktop.png` (ignored).
+On **2026-10-03**, Ken explicitly approved the corrected build in the task conversation and authorized the Gate 2 handoff:
 
-Inspect the revised header/rail/card/chart/summary proportions and density; mark/wordmark/favicon; explicit derived title and separate type/subtype; chart pointer/keyboard usefulness; local timezone and elapsed/timer labels; **118 W FIT average versus 120 W calculated best-20**; and secondary provenance. Optional startup settings and their limitations are documented in `rideworks/README.md` / `.env.example`.
+> Owner review approved. The corrected P1-03 Activity Review visual/usability/branding result is acceptable. Proceed to Gate 2 — HARD Analyst review. Keep P1-03 `in_progress` until Analyst acceptance and do not begin Phase 2.
 
-**Decision required:** Owner visual/usability/branding approval or further bounded corrections. PR #12 remains draft for this review. Final Analyst acceptance remains a subsequent HARD gate. No acceptance or Phase 2 work is claimed.
+This approval covers the corrected visual/usability result and the RideWorks mark as applied. The reviewed branch head was **`207d7d8da7253a94513f5c3c3e15e090a3b7fe78`**, containing implementation `cba2d0d` and its verification handoff. The three earlier requested corrections are implemented and verified above; no further Owner correction accompanied this approval.
+
+This Gate 2 update changes handoff documentation only. The **94-test** and representative browser results above apply to the unchanged implementation; they were not rerun for this documentation update.
+
+With the desired data directory and port configured in the repository-root `.env`, normal startup needs no repeated CLI settings:
+
+```bash
+.venv/bin/python -m rideworks serve
+```
+
+Use the URL printed at startup. The explicit command in the verification procedure pins the prepared review store and port 8765 independently of local settings; its recorded URLs remain the reproducible review addresses.
+
+## Gate 2 — HARD — Analyst handoff
+
+Gate 1 is complete. `STATUS.md` is `ready_for_review`; `TASKS.md` keeps P1-03 `in_progress`. PR #12 is presented for final Analyst review. No final Analyst acceptance or Phase 1 closeout is claimed.
+
+**Decision required:** review the implementation and evidence against `docs/tasks/P1-03.md` and `docs/PHASE_1_ACCEPTANCE.md`, then explicitly accept P1-03 / Phase 1 or leave actionable feedback on GitHub. Owner approval is satisfied; source/evidence preservation, native chart behavior, accepted best-20 calculation, provenance, startup configuration, privacy and regressions remain the technical review scope. The future source-title requirement remains recorded follow-up work. Do not begin Phase 2.
 
 Only authorized compact verification/status evidence, implementation, synthetic tests and safe documentation/example settings are published. No screenshots, private absolute paths, coordinates, FIT/source files, raw streams, database files, secrets, actual `.env` contents or unrelated personal data are included.
