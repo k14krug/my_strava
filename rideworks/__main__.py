@@ -6,6 +6,7 @@ import sqlite3
 import sys
 
 from .analysis import analyze_activity, compact_analysis
+from .config import startup_config
 from .errors import RideWorksError
 from .store import Store
 
@@ -19,14 +20,15 @@ def main(argv=None):
     commands.add_parser("analyze", help="Source summary and best 20-minute result; no raw streams").add_argument("activity_id")
     commands.add_parser("reextract", help="Rebuild from the preserved original").add_argument("source_id")
     serve = commands.add_parser("serve", help="Open the local RideWorks browser application")
-    serve.add_argument("--port", type=int, default=8765, help="Loopback port (default: 8765)")
+    serve.add_argument("--port", type=int, help="Loopback port (overrides FLASK_RUN_PORT; default: 8765)")
     args = parser.parse_args(argv)
     try:
+        config = startup_config(args.data_dir, getattr(args, 'port', None))
         if args.command == "serve":
             from .web import serve as serve_web
-            serve_web(args.data_dir, args.port)
+            serve_web(config.data_dir, config.port, debug=config.debug)
             return 0
-        with Store(args.data_dir) as store:
+        with Store(config.data_dir) as store:
             if args.command == "import-fit":
                 result = store.import_fit(args.path)
             elif args.command == "inspect":

@@ -175,3 +175,8 @@ Only one implementation/research task should normally be `in_progress`.
 ## Follow-up work
 
 Phase 1 is now defined by a product acceptance contract and three ordered implementation tasks. No implementation task is authorized until the Analyst authors the corresponding JIT. Phase 2 remains historical context and ride comparison; do not pull Phase 2 features into Phase 1 merely because they are convenient to implement.
+
+Owner finding from P1-03: future durable history assembly should preserve and
+prefer actual source activity titles with provenance when available, retaining
+type/subtype separately. P1-03 uses an explicitly derived FIT-type/UTC-date fallback;
+no title persistence/reconciliation or Phase 2 implementation is started here.

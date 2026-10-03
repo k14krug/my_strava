@@ -46,7 +46,7 @@
     if (!records.length) return;
     selected = Math.max(0, Math.min(records.length - 1, index));
     const record = records[selected], t = elapsed[selected];
-    readout.textContent = `${formatDuration(t)} · Power ${sensor(record.power, 'W')} · Heart rate ${sensor(record.heart_rate, 'bpm')} · Native record ${record.record_index}`;
+    readout.textContent = `${formatDuration(t)} · Power ${sensor(record.power, 'W')} · Heart rate ${sensor(record.heart_rate, 'bpm')}`;
     readout.dataset.recordIndex = record.record_index;
     cursor.setAttribute('visibility', t === null ? 'hidden' : 'visible');
     if (t !== null) {
@@ -62,8 +62,8 @@
   }
   function draw() {
     svg.replaceChildren();
-    const width = Math.max(250, container.clientWidth), height = 360;
-    const left = 47, right = width - 43, top = 30, bottom = height - 40;
+    const width = Math.max(250, container.clientWidth), height = container.clientHeight;
+    const left = 43, right = width - 40, top = 26, bottom = height - 30;
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     svg.setAttribute('tabindex', '0');
     const limits = {};
@@ -73,29 +73,41 @@
     });
     geometry = {left, right, x: t => left + (t - minimum) / span * (right - left),
       y: (v, signal) => bottom - v / limits[signal] * (bottom - top)};
-    make('text', {x: left, y: 14}, 'Power (W)');
-    make('text', {x: right, y: 14, 'text-anchor': 'end'}, 'Heart rate (bpm)');
+    make('text', {x: left, y: 14, class: 'axis-power'}, 'Power (W)');
+    make('text', {x: right, y: 14, 'text-anchor': 'end', class: 'axis-hr'}, 'Heart rate (bpm)');
     for (let i = 0; i <= 4; i++) {
       const y = bottom - i / 4 * (bottom - top);
       make('line', {x1: left, x2: right, y1: y, y2: y, class: 'chart-grid'});
-      make('text', {x: left - 9, y: y + 4, 'text-anchor': 'end'}, String(limits.power * i / 4));
-      make('text', {x: right + 9, y: y + 4}, String(limits.heart_rate * i / 4));
+      make('text', {x: left - 9, y: y + 4, 'text-anchor': 'end', class: 'axis-power'}, String(limits.power * i / 4));
+      make('text', {x: right + 9, y: y + 4, class: 'axis-hr'}, String(limits.heart_rate * i / 4));
       const t = minimum + span * i / 4;
       make('text', {x: geometry.x(t), y: bottom + 22, 'text-anchor': 'middle'}, formatDuration(t));
     }
     ['power', 'heart_rate'].forEach((signal, signalIndex) => {
       let path = '', connected = false, previous = null, count = 0;
+      let area = '', segment = [], lastX;
+      const closeArea = () => {
+        if (segment.length) area += segment.join(' ') + ` L${lastX} ${bottom} Z `;
+        segment = [];
+      };
       records.forEach((record, index) => {
         const t = elapsed[index], value = record[signal];
-        if (t === null || value === null) { connected = false; previous = null; return; }
+        if (t === null || value === null) { closeArea(); connected = false; previous = null; return; }
         // A new subpath leaves missing values, timestamp gaps and backward
         // jumps visible. Zero is a valid sample. Order and duplicate times stay.
         if (previous !== null && (t - previous > 1 || t < previous)) connected = false;
-        path += `${connected ? 'L' : 'M'}${geometry.x(t)} ${geometry.y(value, signal)} `;
+        const x = geometry.x(t), y = geometry.y(value, signal);
+        if (!connected) { closeArea(); segment.push(`M${x} ${bottom}`); }
+        segment.push(`L${x} ${y}`); lastX = x;
+        path += `${connected ? 'L' : 'M'}${x} ${y} `;
         if (!connected) make('circle', {cx: geometry.x(t), cy: geometry.y(value, signal), r: 1.5,
           class: signalIndex ? 'chart-point-hr' : 'chart-point-power'});
         connected = true; previous = t; count++;
       });
+      closeArea();
+      // Fill each observed segment separately: no fill bridges a missing
+      // sample or time break, and the line still contains only native points.
+      if (!signalIndex) make('path', {d: area, class: 'chart-power-area'});
       make('path', {d: path, class: signalIndex ? 'chart-hr' : 'chart-power', 'data-native-points': count});
     });
     cursor = make('line', {x1: left, x2: left, y1: top, y2: bottom, class: 'chart-cursor', visibility: 'hidden'});

@@ -13,7 +13,7 @@ from unittest.mock import patch
 from fit_fixture import make_fit
 from rideworks.analysis import analyze_activity
 from rideworks.store import Store
-from rideworks.web import Application, ascent, chart_payload, create_server, distance, duration, review_page
+from rideworks.web import Application, activity_title, ascent, chart_payload, create_server, distance, duration, review_page
 
 
 class WebTests(unittest.TestCase):
@@ -139,6 +139,46 @@ class WebTests(unittest.TestCase):
         original = copy.deepcopy(analysis)
         self.assertIn('1.00 mi', review_page(analysis))
         self.assertEqual(analysis, original)
+
+    def test_derived_title_and_type_are_distinct_in_list_and_review(self):
+        activity_id, analysis = self.import_activity()
+        summary = analysis['source_summary']['values']
+        expected = activity_title(summary)
+        html = review_page(analysis)
+        self.assertIn(f'<h1>{expected}</h1>', html)
+        self.assertNotIn('<h1>Virtual Ride</h1>', html)
+        self.assertIn('Derived title', html)
+        self.assertIn('Type: Cycling', html)
+        self.assertIn('Subtype: Virtual Activity', html)
+        self.assertIn('source activity name unavailable', html)
+        self.assertIn('FIT activity type + source start date (UTC)', html)
+        self.assertIn(f'<title>{expected} · RideWorks</title>', html)
+        self.assertIn(expected, self.html('/')[1])
+        self.assertIn(activity_id, html)
+        for fake in ('Dashboard', 'Performance', 'Training Plan', 'AI Summary',
+                     'Compare', 'Normalized power', 'Training load', 'Zone breakdown',
+                     'Laps / Intervals', 'Next workout', 'Settings', 'Sync', 'Profile'):
+            self.assertNotIn(fake, html)
+
+    def test_title_fallback_is_deterministic_and_does_not_mutate_evidence(self):
+        summary = {'sport': 'cycling', 'sub_sport': 'virtual_activity',
+                   'start_time': '2026-09-29T18:17:54+00:00'}
+        original = copy.deepcopy(summary)
+        with patch('rideworks.web.datetime', wraps=__import__('datetime').datetime) as dates:
+            self.assertEqual(activity_title(summary), 'Virtual Ride — Sep 29, 2026')
+            self.assertEqual(activity_title(summary), 'Virtual Ride — Sep 29, 2026')
+            dates.now.assert_not_called()
+        self.assertEqual(summary, original)
+
+    def test_title_uses_source_utc_day_across_offsets(self):
+        summary = {'sport': 'cycling', 'start_time': '2026-09-29T23:30:00-07:00'}
+        self.assertEqual(activity_title(summary), 'Ride — Sep 30, 2026')
+        summary['start_time'] = '2026-09-30T06:30:00+00:00'
+        self.assertEqual(activity_title(summary), 'Ride — Sep 30, 2026')
+
+    def test_title_missing_date_and_type_stay_explicit(self):
+        self.assertEqual(activity_title({'sport': 'cycling'}), 'Ride — date unavailable')
+        self.assertEqual(activity_title({}), 'Activity — date unavailable')
 
     def test_source_text_is_escaped_and_not_executable(self):
         _, analysis = self.import_activity()

@@ -124,7 +124,7 @@ Import once, then start the server with that same private data directory:
 
 ```bash
 .venv/bin/python -m rideworks --data-dir local_data/p1-03-review import-fit local_data/p1-01-input/21538875902.fit.gz
-.venv/bin/python -m rideworks --data-dir local_data/p1-03-review serve
+.venv/bin/python -m rideworks --data-dir local_data/p1-03-review serve --port 8765
 ```
 
 Open the printed URL, normally `http://127.0.0.1:8765/`, and select a ride in
@@ -162,3 +162,56 @@ availability and unknown sensor origins without private paths or coordinates.
 The local SVG mark follows the verified compact brand board; Owner approval of
 the applied identity and screen is required before Phase 1 acceptance. See
 `reports/P1-03/verification.md` for the review procedure and evidence.
+
+## Optional repository .env startup configuration
+
+From the repository root, optionally copy the safe `.env.example` to `.env` and
+edit its local values. `.env` remains Git-ignored; do not commit its contents.
+The CLI finds this file next to the checkout's `pyproject.toml`, independently
+of the launch directory. Installed wheels without a checkout do not look for
+`.env`; exported environment variables and CLI flags still work.
+
+| Setting | Precedence / default | Meaning |
+| --- | --- | --- |
+| Data directory | `--data-dir` > exported `RIDEWORKS_DATA_DIR` > repository `.env` > `~/.rideworks` | Applies to all CLI commands. Original/source data stays private. |
+| Server port | `serve --port` > exported `FLASK_RUN_PORT` > repository `.env` > `8765` | Decimal integer 1–65535; always binds to `127.0.0.1`. |
+| Request diagnostics | exported `FLASK_DEBUG` > repository `.env` > off | Accepts 0/1, false/true, no/yes or off/on, case-insensitively. |
+
+`FLASK_DEBUG` retains the familiar variable name but enables only server-console
+GET status and response timing. Errors report the exception class without private
+paths, query strings, credentials or tracebacks in the browser. There is **no
+Flask debugger or automatic reloader**; restart the server to pick up Python
+changes. No Flask dependency was introduced.
+
+Only these three keys are read. Exported variables are not overwritten and the
+process environment is not mutated. The small file reader accepts `KEY=value`,
+optional `export `, single/double quotes, blank lines and `#` comments. Quote
+values with spaces or literal `#`. There is no shell execution, interpolation,
+variable expansion or multiline syntax. Unrelated legacy settings are ignored.
+The last file assignment wins. Selected invalid port/debug values fail before
+the server binds; higher-priority CLI/exported values bypass overridden file
+values. An empty data directory is rejected rather than treated as the checkout.
+Relative data-directory paths retain the existing resolution at invocation.
+
+The explicit review command above remains deterministic even if `.env` selects
+another data directory or port. With the example values, this shorthand also works:
+
+```bash
+.venv/bin/python -m rideworks serve
+```
+
+## Current activity titles and future source-title finding
+
+Phase 1 has no actual source activity-name field. Both Activities and review
+therefore show an explicitly **Derived title**: type label plus the FIT source
+start date in UTC, using fixed English month names (for example
+`Virtual Ride — Sep 29, 2026`). This does not depend on today's date, browser
+locale/timezone or import time. Missing date remains `date unavailable`; no
+calendar value is manufactured. Cycling type and Virtual Activity subtype stay
+separate. Title origin/basis are inspectable in Source details.
+
+The Owner correction records a future durable-history requirement: preserve and
+prefer an actual source activity title when available, with provenance (for
+example Strava export/API `Activity Name`), while retaining type/subtype separately.
+This task adds no source-title persistence/reconciliation, API/export enrichment
+or naming policy beyond the explicitly derived FIT-only fallback.

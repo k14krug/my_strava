@@ -1,10 +1,11 @@
 """Small loopback-only browser boundary; no retired application imports."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from html import escape
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 from pathlib import Path
+from time import perf_counter
 from urllib.parse import urlsplit
 from uuid import UUID
 
@@ -45,6 +46,31 @@ def label(summary):
     return (summary.get('sport') or 'Activity').replace('_', ' ').title()
 
 
+def activity_title(summary):
+    """Explicit fallback only: source type plus fixed English UTC source date.
+
+    No current FIT source-name evidence is persisted by Phase 1. This does not
+    establish a durable title/reconciliation policy or claim an original name.
+    """
+    timestamp = summary.get('start_time')
+    if timestamp is None:
+        return f'{label(summary)} — date unavailable'
+    date = datetime.fromisoformat(timestamp).astimezone(timezone.utc)
+    month = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')[date.month - 1]
+    return f'{label(summary)} — {month} {date.day}, {date.year}'
+
+
+def icon(name):
+    paths = {
+        'duration': '<circle cx="12" cy="13" r="8"/><path d="M12 9v5l3 2M9 2h6M12 2v3"/>',
+        'distance': '<path d="m6 3-3 18M18 3l3 18M12 3v3m0 4v4m0 4v3"/>',
+        'power': '<path d="m14 2-9 12h6l-1 8 9-13h-6Z"/>',
+        'heart': '<path d="M20 5c-3-3-6-1-8 1-2-2-5-4-8-1-5 5 3 11 8 15 5-4 13-10 8-15Z"/>',
+        'summary': '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/>',
+    }
+    return f'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>'
+
+
 def local_time(timestamp):
     if timestamp is None:
         return 'Date unavailable'
@@ -58,8 +84,8 @@ def shell(title, content):
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)} · RideWorks</title><link rel="icon" href="/static/mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script></head>
-<body><aside class="sidebar"><a class="brand" href="/" aria-label="RideWorks Activities"><img src="/static/mark.svg" alt="" width="58" height="38"><span>RideWorks</span></a>
-<nav aria-label="Main"><a class="active" href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h16M4 19h16"/></svg>Activities</a></nav></aside>
+<body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Activities"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
+<aside class="sidebar"><nav aria-label="Main"><a class="active" href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a></nav></aside>
 <main>{content}</main></body></html>'''
 
 
@@ -71,13 +97,13 @@ def activities_page(store):
     else:
         items = []
         for row in rows:
-            items.append(f'''<li><a class="activity-row" href="/activities/{escape(row['activity_id'])}"><div><h2>{escape(label(row))}</h2><p>{local_time(row['start_time'])}</p></div><div class="list-metrics"><span>{distance(row['total_distance'])}</span><span>{duration(row['total_elapsed_time'])} elapsed</span><span class="open-ride">Open ride →</span></div></a></li>''')
+            items.append(f'''<li><a class="activity-row" href="/activities/{escape(row['activity_id'])}"><div><h2>{escape(activity_title(row))}</h2><p class="title-origin">Derived title · source activity name unavailable</p><p>{local_time(row['start_time'])} · {escape(label(row))}</p></div><div class="list-metrics"><span>{distance(row['total_distance'])}</span><span>{duration(row['total_elapsed_time'])} elapsed</span><span class="open-ride">Open ride →</span></div></a></li>''')
         body = '<ul class="activity-list panel">' + ''.join(items) + '</ul>'
     return shell('Activities', '<header><h1>Activities</h1><p>Your imported rides</p></header>' + body)
 
 
-def metric(name, value):
-    return f'<div class="metric"><div>{escape(name)}</div><strong>{escape(value)}</strong></div>'
+def metric(name, value, symbol):
+    return f'<div class="metric"><div>{icon(symbol)}<span>{escape(name)}</span></div><strong>{escape(value)}</strong></div>'
 
 
 def detail_rows(rows):
@@ -95,13 +121,13 @@ def review_page(analysis):
     source, extraction = analysis['source'], analysis['extraction']
     best = analysis['best_20_minute_power']
     activity_id = analysis['activity']['activity_id']
-    title = label(summary)
+    title = activity_title(summary)
     subtype = (summary.get('sub_sport') or summary.get('sport') or 'Type unavailable').replace('_', ' ').title()
-    cards = ''.join(metric(name, value) for name, value in [
-        ('Elapsed duration', duration(summary.get('total_elapsed_time'))),
-        ('Distance', distance(summary.get('total_distance'))),
-        ('Average power', sensor(summary.get('avg_power'), 'W')),
-        ('Average heart rate', sensor(summary.get('avg_heart_rate'), 'bpm')),
+    cards = ''.join(metric(name, value, symbol) for name, value, symbol in [
+        ('Elapsed duration', duration(summary.get('total_elapsed_time')), 'duration'),
+        ('Distance', distance(summary.get('total_distance')), 'distance'),
+        ('Average power', sensor(summary.get('avg_power'), 'W'), 'power'),
+        ('Average heart rate', sensor(summary.get('avg_heart_rate'), 'bpm'), 'heart'),
     ])
     summary_rows = [
         ('Elapsed duration', duration(summary.get('total_elapsed_time'))),
@@ -114,7 +140,10 @@ def review_page(analysis):
         ('Maximum heart rate', sensor(summary.get('max_heart_rate'), 'bpm')),
         ('Average cadence', sensor(summary.get('avg_cadence'), 'rpm')),
     ]
-    source_rows = [('Activity ID', activity_id), ('Source ID', source['source_id']),
+    source_rows = [('Activity ID', activity_id), ('Displayed title', title),
+                   ('Title origin', 'Derived fallback; source activity name unavailable'),
+                   ('Title basis', 'FIT activity type + source start date (UTC); fixed English month names'),
+                   ('Source ID', source['source_id']),
                    ('Original basename', source['original_basename']), ('Artifact SHA-256', source['sha256']),
                    ('Artifact byte size', source['byte_size']), ('Packaging', source['packaging']),
                    ('Content format', source['content_format']),
@@ -146,18 +175,18 @@ def review_page(analysis):
     # Avoid closing the JSON script element with any source text. Never embed
     # private file/store paths, coordinates, or a raw application snapshot.
     payload = json.dumps(records, ensure_ascii=True, allow_nan=False).replace('<', '\\u003c').replace('&', '\\u0026')
-    return shell(title, f'''<header><a class="back" href="/">Activities /</a><h1>{escape(title)}</h1><p>{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>{escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
+    return shell(title, f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(title)}</h1><span class="title-origin">Derived title</span></div><p class="ride-meta">{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>Type: {escape((summary.get('sport') or 'Unavailable').replace('_', ' ').title())}<span class="meta-separator">·</span>Subtype: {escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
 <section class="metrics" aria-label="FIT session source summary">{cards}</section>
 <div class="review-layout"><div class="review-main"><section class="panel chart-panel" aria-labelledby="chart-title">
 <div class="panel-heading"><h2 id="chart-title">Ride power &amp; heart rate</h2><div class="legend"><span><i class="power-swatch"></i>Power · W</span><span><i class="hr-swatch"></i>Heart rate · bpm</span></div></div>
-<div id="ride-chart" data-record-count="{len(records)}" data-start-time="{escape(summary.get('start_time') or '', quote=True)}"><svg id="chart-svg" role="img" aria-label="Native power and heart rate over elapsed ride time"></svg></div>
-<div id="sample-readout" role="status" aria-live="polite">Inspect the chart for native sample values. Keyboard: focus the chart, then use arrow keys.</div>
-<p class="chart-note">{len(records):,} native records · elapsed ride time · missing samples remain gaps</p>
+<div id="ride-chart" data-record-count="{len(records)}" data-start-time="{escape(summary.get('start_time') or '', quote=True)}"><svg id="chart-svg" role="img" aria-label="Native power and heart rate over elapsed ride time" aria-describedby="chart-help"></svg></div>
+<div id="sample-readout" role="status" aria-live="polite">Move over the chart to inspect power and heart rate.</div>
+<div class="chart-footer"><span>{len(records):,} recorded samples · elapsed time</span><span id="chart-help">Focus chart + arrow keys to inspect</span></div>
 <noscript>Enable JavaScript to review the native chart and display dates in your local timezone.</noscript></section>
-<section class="panel best-panel"><div><h2>Best 20-minute power</h2><p>RideWorks-calculated</p></div><strong class="best-value">{sensor(best['rounded_watts'], 'W')}</strong><p class="window-context">{escape(window_text)}</p>
+<section class="panel best-panel"><div><h2>{icon('power')}Best 20-minute power</h2><p>RideWorks-calculated</p></div><strong class="best-value">{sensor(best['rounded_watts'], 'W')}</strong><p class="window-context">{escape(window_text)}</p>
 <details><summary>Calculation details</summary>{detail_rows(best_rows)}<p>Complete 1,200-sample windows with one-second timestamps and no missing power. Earliest window wins a tie; whole watts round half up. No repaired or estimated samples.</p></details></section>
 <details class="panel provenance"><summary>Source &amp; provenance</summary><p>Ride summary values are FIT session source evidence. Sensor origins remain unknown; presence does not establish measurement origin.</p>{detail_rows(source_rows)}</details></div>
-<aside class="panel ride-summary"><h2>Ride summary</h2><p class="source-caption">FIT session source evidence</p>{detail_rows(summary_rows)}</aside></div>
+<aside class="panel ride-summary"><h2>{icon('summary')}Ride summary</h2><p class="source-caption">FIT session source evidence</p>{detail_rows(summary_rows)}</aside></div>
 <script id="native-records" type="application/json">{payload}</script>''')
 
 
@@ -199,11 +228,12 @@ class Application:
         return 404, 'text/html', shell('Activity not found', '<header><h1>Activity not found</h1><p>Return to <a href="/">Activities</a> to open an imported ride.</p></header>').encode()
 
 
-def create_server(data_dir=None, port=8765):
+def create_server(data_dir=None, port=8765, *, debug=False):
     app = Application(data_dir)
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
+            started = perf_counter()
             try:
                 status, content_type, body = app.get(self.path)
             except Exception as exc:
@@ -219,6 +249,8 @@ def create_server(data_dir=None, port=8765):
             self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'")
             self.end_headers()
             self.wfile.write(body)
+            if debug:
+                print(f'RideWorks request: GET {status} ({(perf_counter() - started) * 1000:.1f} ms)', flush=True)
 
         def log_message(self, *_):
             pass
@@ -226,9 +258,11 @@ def create_server(data_dir=None, port=8765):
     return HTTPServer(('127.0.0.1', port), Handler)
 
 
-def serve(data_dir=None, port=8765):
-    with create_server(data_dir, port) as server:
+def serve(data_dir=None, port=8765, *, debug=False):
+    with create_server(data_dir, port, debug=debug) as server:
         print(f'RideWorks: http://127.0.0.1:{server.server_port}/ (Ctrl+C to stop)', flush=True)
+        if debug:
+            print('Request diagnostics enabled (FLASK_DEBUG); no debugger or reloader.', flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:
