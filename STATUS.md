@@ -2,22 +2,32 @@
 
 **Product:** RideWorks
 
-**P1-01:** done — accepted on PR #10
+**P1-01 / P1-02:** done — accepted on PRs #10 / #11
 
-**P1-02:** done — accepted on PR #11
+**Current task / state:** P1-03 — in_progress
 
-**P1-03 — Activity review experience and Phase 1 acceptance:** in_progress
+**Implementation state:** ready_for_review — Gate 1 HARD — Owner approved; stopped at Gate 2 HARD — Analyst for final review and acceptance.
 
-**Task branch / PR:** `task/p1-03-activity-review` / draft PR #12
+**Branch / PR:** `task/p1-03-activity-review` / [#12](https://github.com/k14krug/my_strava/pull/12)
 
-**Implementation state:** not started; the pre-implementation branding-source blocker has been repaired on `main`.
+**Corrected implementation:** `cba2d0d`, superseding pre-correction `d2c5acd`.
 
-**Branding source:** canonical approved compact board bytes are stored at `docs/branding/rideworks-brand-direction-board.webp.b64` with deterministic verification/restoration in `docs/branding/restore_board.py`. Verified decode: 6,888-byte RIFF/WebP, SHA-256 `4dd937e2dc46f929e91fc201c32d138da6395d5c4c22fbbee8965e4b5376a81c`, documented dimensions 350 × 262.
+**Owner approval:** Ken explicitly approved the corrected Activity Review visual/usability/branding result on 2026-10-03 in the task conversation and authorized proceeding to Gate 2. Reviewed head: `207d7d8da7253a94513f5c3c3e15e090a3b7fe78`. Final Analyst acceptance remains pending.
 
-**Palette:** Navy `#0F2A44`; Blue `#2563EB`; Green accent `#10B981`; Light gray `#E5E7EB`.
+**Corrections:** mockup-based shell/cards/chart/summary density; deterministic, visibly derived FIT-type/UTC-date title with separate type/subtype and future source-title finding; optional repo-root `.env` startup settings with explicit CLI/exported/file/default precedence, safe `.env.example`, narrow request diagnostics and validation.
 
-**Review gates:** HARD — Owner visual/usability/branding review, then HARD — Analyst final Phase 1 closeout.
+**Verification:** 94 tests passed; representative browser retains all 3,621 native records, 118 W FIT average versus 120 W calculated best-20, native hover/keyboard inspection, provenance, local assets and stable reopening after restart. Derived title is stable across Pacific/UTC browsers. No new runtime dependencies or unsupported capabilities.
 
-**Blockers:** none. The damaged direct binary/SVG transfer artifacts were removed; P1-03 should use the verified encoded source and restore utility.
+**Blockers:** none for implementation/publication. Branding-source integrity remains resolved on refreshed main `203597d`. Owner explicitly authorized the necessary verification/status publication; no repeated authorization needed. Screenshots, private paths and source/runtime data remain excluded.
 
-**Next action:** Dex refreshes `task/p1-03-activity-review` from current `main`, reruns the branding restore/integrity check, records the blocker as resolved, and resumes P1-03 implementation in PR #12. Do not begin Phase 2 automatically.
+**Evidence:** `reports/P1-03/verification.md`; local-only corrected preview `output/playwright/p1-03-corrected-desktop.png`.
+
+**Startup with configured repo-root `.env`:** `.venv/bin/python -m rideworks serve`
+
+**Exact verification command:** `.venv/bin/python -m rideworks --data-dir local_data/p1-03-review serve --port 8765` (explicitly selects the prepared review store and port; CLI overrides environment and `.env`).
+
+**Activities URL:** http://127.0.0.1:8765/
+
+**Activity URL:** http://127.0.0.1:8765/activities/367ced97-422d-4bd8-aa1a-22092ae1ae26
+
+**Next action:** Analyst reviews PR #12 against the P1-03 JIT and Phase 1 acceptance contract, then records explicit acceptance or actionable feedback on GitHub. P1-03 remains `in_progress`; Phase 1 is not yet declared accepted. Do not begin Phase 2.
