@@ -6,18 +6,18 @@
 
 **P1-02:** done — accepted on PR #11
 
-**P1-03 — Activity review experience and Phase 1 acceptance:** pending
+**P1-03 — Activity review experience and Phase 1 acceptance:** in_progress
 
-**P1-03 JIT:** authored — `docs/tasks/P1-03.md`
+**Task branch / PR:** `task/p1-03-activity-review` / draft PR #12
 
-**Allowed invocation:** `/TASK or /AUTOTASK`
+**Implementation state:** not started; the pre-implementation branding-source blocker has been repaired on `main`.
 
-**Scope:** first real local RideWorks browser screen: Activities landing page, stable Activity Review route, approved mockup hierarchy, source summary, native 3,621-point power/HR review, accepted best-20 derivation, provenance details, restart/reopen journey, and Phase 1 Owner usability review.
+**Branding source:** canonical approved compact board bytes are stored at `docs/branding/rideworks-brand-direction-board.webp.b64` with deterministic verification/restoration in `docs/branding/restore_board.py`. Verified decode: 6,888-byte RIFF/WebP, SHA-256 `4dd937e2dc46f929e91fc201c32d138da6395d5c4c22fbbee8965e4b5376a81c`, documented dimensions 350 × 262.
 
-**Branding:** approved RideWorks brand direction is committed under `docs/branding/`, including the board and exact palette (`#0F2A44`, `#2563EB`, `#10B981`, `#E5E7EB`). P1-03 must follow that direction and must not invent a competing identity. Owner approval of the branding as applied in the shell remains required before Phase 1 closeout.
+**Palette:** Navy `#0F2A44`; Blue `#2563EB`; Green accent `#10B981`; Light gray `#E5E7EB`.
 
 **Review gates:** HARD — Owner visual/usability/branding review, then HARD — Analyst final Phase 1 closeout.
 
-**Blockers:** none. The repository now contains the approved branding direction needed to begin P1-03.
+**Blockers:** none. The damaged direct binary/SVG transfer artifacts were removed; P1-03 should use the verified encoded source and restore utility.
 
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P1-03. Do not begin Phase 2 automatically.
+**Next action:** Dex refreshes `task/p1-03-activity-review` from current `main`, reruns the branding restore/integrity check, records the blocker as resolved, and resumes P1-03 implementation in PR #12. Do not begin Phase 2 automatically.
