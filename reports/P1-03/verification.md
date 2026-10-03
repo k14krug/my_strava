@@ -4,6 +4,10 @@
 
 **Branch:** `task/p1-03-activity-review`
 
+**PR:** [#12 — draft blocker handoff](https://github.com/k14krug/my_strava/pull/12)
+
+**Evidence commit:** `02f7f8b`
+
 **Refreshed main:** `d21a9fa`
 
 **State:** blocked before UI implementation; no Owner acceptance requested yet.

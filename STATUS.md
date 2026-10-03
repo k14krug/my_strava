@@ -12,7 +12,7 @@
 
 **Branch:** `task/p1-03-activity-review`
 
-**PR:** opening a draft blocker handoff
+**PR:** [#12 — draft blocker handoff](https://github.com/k14krug/my_strava/pull/12)
 
 **Blocker:** committed approved branding board cannot be decoded and does not match its documented SHA-256. Git blob and worktree agree; the RIFF header requires 6,888 bytes but only 6,887 are present. The mark cannot be faithfully implemented from this input.
 
