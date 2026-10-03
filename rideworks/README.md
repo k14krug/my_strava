@@ -1,4 +1,4 @@
-# RideWorks local FIT evidence
+# RideWorks
 
 P1-01 uses Python 3.10+, standard-library SQLite, and `fitdecode==0.11.0`.
 It runs independently of the retired Strava application and its dependencies.
@@ -117,3 +117,48 @@ directly sums their samples, and applies Decimal half-up rounding. It compares
 its result against the application, checks source/native evidence unchanged,
 and verifies analysis after re-extraction using a disposable store/input copy.
 Run verification with assertions enabled.
+
+## Local browser review (P1-03)
+
+Import once, then start the server with that same private data directory:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p1-03-review import-fit local_data/p1-01-input/21538875902.fit.gz
+.venv/bin/python -m rideworks --data-dir local_data/p1-03-review serve
+```
+
+Open the printed URL, normally `http://127.0.0.1:8765/`, and select a ride in
+Activities. The stable review URL is `/activities/<activity-id>`. Stop with
+Ctrl+C and run the same server command to reopen the activity without importing
+again. Use `serve --port 8767` to choose a different local port. The server binds
+only to `127.0.0.1`; it has no account, upload or remote-hosting workflow.
+
+The browser application uses Python's standard-library HTTP server, server-rendered
+HTML and packaged local CSS/JavaScript/SVG. No retired application imports,
+new runtime dependencies, frontend build step, CDN or external runtime requests
+are required. `Store.list_activities()` lists activities with exactly one current
+FIT Source/session; it does not choose among ambiguous Sources.
+
+Normal review uses miles, feet, W, bpm and rpm; original source SI values remain
+unchanged. Dates use the browser's local timezone with a visible offset (labeled
+source UTC fallback without JavaScript). FIT elapsed and timer durations are
+distinct. The best-20 panel consumes the accepted `analyze_activity` result and
+labels it RideWorks-calculated, separately from FIT session summaries.
+
+The chart receives native record indices, UTC timestamps, power and HR unchanged
+in native order. Elapsed time is a display transformation relative to the source
+session start (first available native timestamp if start is absent). Zero remains
+a sample; missing values/timestamps break paths, as do forward gaps greater than
+one second and backward jumps. Records without timestamps remain inspectable
+with arrow keys rather than being assigned invented times. Pointer inspection
+chooses the nearest timestamped native sample, with the first native record
+winning an equal-distance tie. Focus the chart and use arrow keys, Home or End
+to inspect every record, including duplicate timestamps. Each signal has its
+own labeled axis. No resampling, smoothing or analytical recalculation occurs
+in the browser.
+
+Source and calculation details expose identities, artifact integrity, versions,
+availability and unknown sensor origins without private paths or coordinates.
+The local SVG mark follows the verified compact brand board; Owner approval of
+the applied identity and screen is required before Phase 1 acceptance. See
+`reports/P1-03/verification.md` for the review procedure and evidence.

@@ -18,8 +18,14 @@ def main(argv=None):
     commands.add_parser("inspect", help="Compact source evidence; no raw streams").add_argument("activity_id")
     commands.add_parser("analyze", help="Source summary and best 20-minute result; no raw streams").add_argument("activity_id")
     commands.add_parser("reextract", help="Rebuild from the preserved original").add_argument("source_id")
+    serve = commands.add_parser("serve", help="Open the local RideWorks browser application")
+    serve.add_argument("--port", type=int, default=8765, help="Loopback port (default: 8765)")
     args = parser.parse_args(argv)
     try:
+        if args.command == "serve":
+            from .web import serve as serve_web
+            serve_web(args.data_dir, args.port)
+            return 0
         with Store(args.data_dir) as store:
             if args.command == "import-fit":
                 result = store.import_fit(args.path)
