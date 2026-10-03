@@ -6,18 +6,14 @@
 
 **Current task:** P1-03 — Activity review experience and Phase 1 acceptance
 
-**Task state:** blocked
+**Task state:** in_progress
 
-**Implementation state:** not started
+**Implementation state:** local browser implementation underway.
 
-**Branch:** `task/p1-03-activity-review`
+**Branch / PR:** `task/p1-03-activity-review` / [#12](https://github.com/k14krug/my_strava/pull/12)
 
-**PR:** [#12 — draft blocker handoff](https://github.com/k14krug/my_strava/pull/12)
-
-**Blocker:** committed approved branding board cannot be decoded and does not match its documented SHA-256. Git blob and worktree agree; the RIFF header requires 6,888 bytes but only 6,887 are present. The mark cannot be faithfully implemented from this input.
-
-**Verification:** source integrity and image-decoder checks only; no implementation/browser acceptance or new test-suite run claimed.
+**Branding blocker:** resolved after merging `203597d` from main. The canonical base64 board restores to 6,888 bytes, SHA-256 `4dd937e2dc46f929e91fc201c32d138da6395d5c4c22fbbee8965e4b5376a81c`; Pillow decodes WebP at 350 × 262. Restored board inspected successfully.
 
 **Evidence:** `reports/P1-03/verification.md`
 
-**Next action:** Analyst restores a decodable approved board and consistent branding metadata in the repository. Resume P1-03 after refreshing the repaired source. Owner/Analyst acceptance gates have not been reached; do not begin Phase 2.
+**Next action:** implement and verify the bounded P1-03 screen, then stop at HARD — Owner for visual/usability/mark review. Do not begin Phase 2.

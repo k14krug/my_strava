@@ -1,4 +1,4 @@
-# P1-03 pre-implementation verification — blocked
+# P1-03 verification — branding blocker resolved
 
 **Date:** 2026-10-03
 
@@ -10,7 +10,15 @@
 
 **Refreshed main:** `d21a9fa`
 
-**State:** blocked before UI implementation; no Owner acceptance requested yet.
+**State:** in_progress; previous source blocker resolved on 2026-10-03 after refreshing main through `203597d`.
+
+## Branding restore / integrity check — resolved
+
+Command: `python3 docs/branding/restore_board.py --output /tmp/rideworks-brand-direction-board.webp`.
+
+Result: 6,888 bytes; SHA-256 `4dd937e2dc46f929e91fc201c32d138da6395d5c4c22fbbee8965e4b5376a81c`; RIFF/WebP size validated. Pillow independently decoded the restored image at 350 × 262. The restored board was inspected successfully. No source substitution or branding redesign was needed. P1-03 implementation may resume.
+
+The section below records the historical failed transfer, now superseded by the canonical base64 source and restore utility.
 
 ## Required approved branding source is damaged
 

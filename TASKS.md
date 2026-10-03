@@ -149,7 +149,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P1-03 — Activity review experience and Phase 1 acceptance
 
-**Status:** blocked
+**Status:** in_progress
 
 **Purpose:** Turn the Phase 1 evidence and analysis into the first useful rider-facing post-ride review experience.
 
