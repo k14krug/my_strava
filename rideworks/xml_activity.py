@@ -65,7 +65,17 @@ def _timestamp(value):
     if value is None or not value.strip():
         return None
     try:
-        stamp = datetime.fromisoformat(value.strip().replace('Z', '+00:00'))
+        text = value.strip().replace('Z', '+00:00')
+        try:
+            stamp = datetime.fromisoformat(text)
+        except ValueError:
+            # Python 3.10 fromisoformat accepts only 3/6 fractional digits.
+            # strptime %f accepts 1–6 digits exactly: .12 seconds remains .12,
+            # with no rounding, timing repair or guessed offset.
+            try:
+                stamp = datetime.strptime(text, '%Y-%m-%dT%H:%M:%S.%f%z')
+            except ValueError:
+                stamp = datetime.strptime(text, '%Y-%m-%dT%H:%M:%S.%f')
         # A timestamp without offset remains offset-unknown; do not guess UTC.
         return stamp.astimezone(timezone.utc).isoformat() if stamp.tzinfo else stamp.isoformat()
     except ValueError as exc:

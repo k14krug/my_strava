@@ -180,6 +180,29 @@ class ExportTests(unittest.TestCase):
                               zip_input=False, prefix='wrapper/')
         self.assertEqual(self.store.import_strava_export(path)['format_counts'], {'GPX.GZ': 1, 'TCX': 1})
 
+    def test_xml_fractional_seconds_preserve_exact_native_timing(self):
+        from datetime import datetime
+        from rideworks.xml_activity import _timestamp
+        for digits in ('1','12','123','1234','12345','123456'):
+            with self.subTest(digits=digits):
+                parsed = _timestamp('2024-01-02T03:00:00.'+digits+'Z')
+                self.assertEqual(datetime.fromisoformat(parsed).microsecond, int(digits.ljust(6,'0')))
+                naive = _timestamp('2024-01-02T03:00:00.'+digits)
+                self.assertIsNone(datetime.fromisoformat(naive).tzinfo)
+        fixture = TCX.replace(b'2024-01-02T03:00:02Z', b'2024-01-02T03:00:00.12Z')
+        fixture = fixture.replace(b'2024-01-02T03:00:00Z', b'2024-01-02T03:00:00.39Z')
+        path,_ = self.export([row('1','activities/fractional')], {'activities/fractional':fixture})
+        report = self.store.import_strava_export(path)
+        self.assertEqual(report['failures'],[])
+        source_id = self.store.connection.execute('SELECT source_id FROM sources').fetchone()[0]
+        records = self.store.get_source(source_id)['records']
+        self.assertEqual((datetime.fromisoformat(records[2]['timestamp'])-
+                          datetime.fromisoformat(records[0]['timestamp'])).total_seconds(),0.27)
+        self.assertIsNone(records[1]['timestamp'])
+        self.assertEqual(records[2]['timestamp'],records[3]['timestamp'])
+        with self.assertRaises(RideWorksError):
+            _timestamp('2024-01-02T03:00:00.1234567Z')
+
     def test_changed_row_and_file_preserve_versions_and_external_identity(self):
         path, _ = self.export([row(filename='activities/one')], {'activities/one': GPX})
         self.store.import_strava_export(path)

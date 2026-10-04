@@ -66,7 +66,8 @@ def verify(export_path, work_dir=None):
             started = time.monotonic()
             first, code = cli('import-strava-export', export_path)
             first_seconds = time.monotonic() - started
-            require(code == 0 and first['status'] == 'completed', 'known files must import without failures')
+            require(code == 0 and first['status'] == 'completed',
+                    'known files must import without failures: '+json.dumps(first,sort_keys=True))
             require(first['csv_rows_seen'] == 1434 and first['referenced_artifacts_attempted'] == 1421, 'first import population')
             require(first['activities_created'] == 1433, 'seeded creation count')
             require(first['existing_activities_enriched'] == 1 and first['artifacts_reused'] == 1, 'representative enrichment')
