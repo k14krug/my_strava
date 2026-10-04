@@ -102,6 +102,8 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 1 — Useful single-ride review
 
+**Status:** accepted / complete — P1-03 accepted at Gate 2 and PR #12 merged on 2026-10-04.
+
 **Acceptance contract:** `docs/PHASE_1_ACCEPTANCE.md`
 
 ### P1-01 — Durable single-FIT activity import
@@ -149,7 +151,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P1-03 — Activity review experience and Phase 1 acceptance
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Turn the Phase 1 evidence and analysis into the first useful rider-facing post-ride review experience.
 
@@ -174,7 +176,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 is now defined by a product acceptance contract and three ordered implementation tasks. No implementation task is authorized until the Analyst authors the corresponding JIT. Phase 2 remains historical context and ride comparison; do not pull Phase 2 features into Phase 1 merely because they are convenient to implement.
+Phase 1 is accepted and complete. Phase 2 remains historical context and ride comparison; no Phase 2 implementation task has been authorized or started. The next step is a separate Analyst planning decision informed by the accepted Phase 1 product slice.
 
 Owner finding from P1-03: future durable history assembly should preserve and
 prefer actual source activity titles with provenance when available, retaining
