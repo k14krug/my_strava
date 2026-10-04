@@ -577,12 +577,12 @@ These remain deliberately open and should be answered when their phase approache
 
 1. Which additional activity-review metrics, beyond the approved Phase 1 minimum, are valuable enough to add in later phases?
 2. Which goal types should be implemented first?
-4. What exact evidence should trigger statements such as "harder than intended"?
-5. What planning source or representation should supply tomorrow's workout initially?
-6. Which performance/training-state metrics belong on the first dashboard subset?
-7. When should estimated power become eligible for longitudinal performance or training-load use?
-8. What training-state model best fits this rider and remains explainable?
-9. What parts of planning should remain deterministic versus AI-assisted, if AI is used at all?
+3. What exact evidence should trigger statements such as "harder than intended"?
+4. What planning source or representation should supply tomorrow's workout initially?
+5. Which performance/training-state metrics belong on the first dashboard subset?
+6. When should estimated power become eligible for longitudinal performance or training-load use?
+7. What training-state model best fits this rider and remains explainable?
+8. What parts of planning should remain deterministic versus AI-assisted, if AI is used at all?
 
 These questions should not be answered prematurely merely to complete a schema or architecture diagram.
 
