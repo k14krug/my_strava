@@ -10,20 +10,20 @@
 
 **P1-03:** done — accepted at Gate 2 on PR #12
 
-**PR #12:** merged to `main` as `7fce07b79c907910a514d1ea842921b047fee170`
+**Phase 2 — Historical context and performance history:** planned; implementation not started
 
-**Accepted implementation:** `cba2d0d`; Owner-reviewed corrected head `207d7d8da7253a94513f5c3c3e15e090a3b7fe78`; Gate 2 handoff head `472bd52dfa5ee66b0e354cf619c2d7545ffb595a`.
+**Phase 2 acceptance:** authored — `docs/PHASE_2_ACCEPTANCE.md`
 
-**Owner approval:** complete — corrected Activity Review visual/usability/branding result approved on 2026-10-03.
+**P2-01 — Historical Strava-export import and enrichment:** pending
 
-**Analyst acceptance:** complete — P1-03 and Phase 1 accepted on 2026-10-04 after review against `docs/tasks/P1-03.md` and `docs/PHASE_1_ACCEPTANCE.md`.
+**P2-01 JIT:** authored — `docs/tasks/P2-01.md`
 
-**Verification:** 94 tests passed; representative browser verification retained all 3,621 native records, separate 118 W FIT average and 120 W RideWorks-calculated best-20, native hover/keyboard inspection, provenance, local-only rendering, derived-title behavior, `.env` precedence, and restart/reopen persistence.
+**Allowed invocation:** `/TASK` or `/AUTOTASK`
 
-**Accepted product findings:** the Phase 1 FIT-only title is an explicit derived fallback. Future durable history assembly should preserve and prefer actual source activity titles with provenance when available, while retaining type/subtype separately.
+**Phase 2 settled decisions:** import all 1,434 known activities; preserve real source titles with provenance; scale the Activities browser with pagination/search/filter/sort; trusted best-20 history initially uses eligible Virtual Ride native source power under `best-average-power-v1`; outdoor power is excluded from that trusted trend as suspect; recent context is current best-20 versus prior 42-day best; manual pairwise ride comparison is not required; finish Phase 2 with normal forward-looking Strava synchronization for new activities.
 
-**Evidence:** `reports/P1-03/verification.md`
+**P2-01 representative enrichment proof:** seed the accepted Phase 1 representative FIT, then bulk-import the export and prove the same RideWorks Activity is enriched with Strava-export evidence rather than duplicated.
 
-**Blockers:** none for Phase 1.
+**Blockers:** none.
 
-**Next action:** separate Analyst planning for what follows Phase 1. No Phase 2 implementation task is authorized or started automatically.
+**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-01. Do not begin P2-02 automatically after P2-01 implementation/review, and do not begin Phase 3 automatically.
