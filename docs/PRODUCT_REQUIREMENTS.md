@@ -160,7 +160,6 @@ It must eventually support:
 - workout structure or intervals where known or detected;
 - comparison with intended workout purpose where known;
 - comparison with recent and historical performance;
-- comparison with a selected previous ride;
 - notable findings and explainable interpretations;
 - visibility into source/provenance when something looks wrong.
 
@@ -243,8 +242,8 @@ The application must calculate and present best efforts from detailed power data
 **REV-004 — Historical context**  
 The activity view must be able to place today's result against prior performance rather than presenting it in isolation.
 
-**REV-005 — Ride-to-ride comparison**  
-The user must be able to compare today's ride with a selected previous ride on meaningful common metrics and, where useful, comparable streams/efforts.
+**REV-005 — Optional future ride-to-ride comparison**  
+Manual pairwise comparison between two selected rides is not a required Phase 2 capability. It remains a possible later interaction if a concrete use case proves valuable, such as comparing repeated executions of the same workout, race, or route. Historical performance context is controlled by REV-004 and the PERF requirements.
 
 **REV-006 — Workout intent**  
 When a ride has a known planned purpose or workout target, the application must retain that intent separately from the completed activity evidence.
@@ -411,17 +410,21 @@ Minimum user-visible outcomes:
 
 Phase 1 is **not complete** merely because import/storage works.
 
-### Phase 2 — Historical context and ride comparison
+### Phase 2 — Historical context and performance history
 
-**Goal:** Stop treating a ride as an isolated event.
+**Goal:** Stop treating a ride as an isolated event and make the rider's existing history practically usable.
 
 Minimum user-visible outcomes:
 
-- 20-minute power history across multiple eligible rides;
-- today's 20-minute result shown against useful prior performance;
-- selected previous ride can be compared with today's ride;
-- multiple source/activity enrichment works in at least one real case;
-- missing or lower-quality evidence is handled visibly rather than silently substituted.
+- the complete known Strava-export activity population is imported into RideWorks durable history, including file-backed and CSV-only activities without manufacturing missing evidence;
+- the Activities browser remains usable across the resulting ~1,400-activity history through pagination plus practical search/filter/sort;
+- actual source activity titles are preserved and preferred with provenance when available, while type/subtype remain separate;
+- 20-minute power history is available across a conservative trusted cohort;
+- for the initial trusted trend, eligible Virtual Ride native source-power streams may contribute when they satisfy the accepted complete-window rules; outdoor power values are excluded from this trusted performance trend in Phase 2 because their provenance/quality is considered suspect;
+- today's eligible 20-minute result is shown against the **prior six-week best**, excluding the current activity, using neutral presentation rather than assuming higher/lower is inherently good/bad;
+- multiple-source/activity enrichment works in real history, including enrichment of an already-known Activity rather than creating a duplicate when the relationship is established;
+- missing, ineligible, ambiguous, or lower-quality evidence is handled visibly rather than silently substituted;
+- a normal forward-looking Strava synchronization path can bring in/enrich new activities after the historical export baseline without bulk-harvesting old API history.
 
 ### Phase 3 — Useful dashboard
 
@@ -573,8 +576,7 @@ That sequence is the guardrail against returning to an infrastructure-first proj
 These remain deliberately open and should be answered when their phase approaches:
 
 1. Which additional activity-review metrics, beyond the approved Phase 1 minimum, are valuable enough to add in later phases?
-2. What is the first useful ride-to-ride comparison interaction?
-3. Which goal types should be implemented first?
+2. Which goal types should be implemented first?
 4. What exact evidence should trigger statements such as "harder than intended"?
 5. What planning source or representation should supply tomorrow's workout initially?
 6. Which performance/training-state metrics belong on the first dashboard subset?
