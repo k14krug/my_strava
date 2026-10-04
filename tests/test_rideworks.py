@@ -7,6 +7,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -256,6 +257,21 @@ class ImportTests(unittest.TestCase):
         self.assertEqual(analysis['best_20_minute_power']['method'], 'best-average-power-v1')
         self.assertEqual(analysis['native_records'], evidence['records'])
         self.assertEqual(len(evidence['fit_lap_timestamps']), 1)
+
+    def test_conflicting_unused_speed_fields_do_not_reject_typed_fit_evidence(self):
+        self.input.write_bytes(make_fit(conflicting_unused_speed=True))
+        _, evidence = self.evidence()
+        self.assertEqual(len(evidence['records']), 3)
+        self.assertEqual(evidence['summary']['sport'], 'cycling')
+        self.assertNotIn('enhanced_avg_speed', evidence['summary'])
+
+    def test_conflicting_extracted_field_still_rejects_the_fit_mapping(self):
+        from rideworks.fit import _values
+        frame = SimpleNamespace(name='session', fields=[
+            SimpleNamespace(name='avg_power', value=100),
+            SimpleNamespace(name='avg_power', value=200)])
+        with self.assertRaisesRegex(InvalidFitError, 'Conflicting decoded FIT field: avg_power'):
+            _values(frame)
 
     def test_database_failure_rolls_back_metadata_and_original(self):
         self.store.connection.execute("""CREATE TRIGGER fail_record BEFORE INSERT ON records

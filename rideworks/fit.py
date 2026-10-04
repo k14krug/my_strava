@@ -75,6 +75,19 @@ class ParsedFit:
     uninterpreted_lap_timestamps: list[UninterpretedLapTimestamp] = field(default_factory=list)
 
 
+# Ignore fields outside the typed extraction envelope before checking conflicts.
+# fitdecode may expose both native and enhanced variants under an enhanced name;
+# disagreement in an unused speed field must not reject understood evidence.
+EXTRACTED_FIELDS = {
+    "file_id": {"type"},
+    "activity": {"num_sessions"},
+    "session": set(Session.__dataclass_fields__),
+    "record": {"timestamp", "power", "heart_rate"},
+    "lap": {"start_time", "timestamp", "total_elapsed_time", "total_timer_time"},
+    "event": {"timestamp", "event", "event_type", "timer_trigger"},
+}
+
+
 def _timestamp(value):
     if value is None:
         return None
@@ -92,7 +105,7 @@ def _label(value):
 def _values(frame):
     values = {}
     for field in frame.fields:
-        if field.value is None:
+        if field.name not in EXTRACTED_FIELDS[frame.name] or field.value is None:
             continue
         if field.name in values and values[field.name] != field.value:
             raise InvalidFitError(f"Conflicting decoded FIT field: {field.name}")

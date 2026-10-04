@@ -22,7 +22,7 @@ def make_fit(*, powers=(0, None, 180), heart_rates=(100, None, 110),
              file_type=4, num_sessions=1, file_ids=1,
              lap_timestamp=1100000002, lap_start_time=1100000000,
              session_timestamp=1100000002, session_start_time=1100000000,
-             event_timestamps=(1100000000, 1100000002)):
+             event_timestamps=(1100000000, 1100000002), conflicting_unused_speed=False):
     body = bytearray()
 
     def messages(number, fields, rows):
@@ -44,10 +44,14 @@ def make_fit(*, powers=(0, None, 180), heart_rates=(100, None, 110),
     messages(19, [(2, 'I', 0x86), (253, 'I', 0x86), (7, 'I', 0x86), (8, 'I', 0x86)],
              [(lap_start_time, 0xFFFFFFFF if lap_timestamp is None else lap_timestamp,
                elapsed * 1000, timer * 1000)])
-    messages(18, [(2, 'I', 0x86), (253, 'I', 0x86), (7, 'I', 0x86), (8, 'I', 0x86),
-                  (5, 'B', 0), (6, 'B', 0), (17, 'B', 2)],
-             [(session_start_time, session_timestamp, elapsed * 1000, timer * 1000, 2, 58,
-               0xFF if max_hr is None else max_hr)] * sessions)
+    session_fields = [(2, 'I', 0x86), (253, 'I', 0x86), (7, 'I', 0x86), (8, 'I', 0x86),
+                      (5, 'B', 0), (6, 'B', 0), (17, 'B', 2)]
+    session_values = (session_start_time, session_timestamp, elapsed * 1000, timer * 1000, 2, 58,
+                      0xFF if max_hr is None else max_hr)
+    if conflicting_unused_speed:
+        session_fields += [(14, 'H', 0x84), (124, 'I', 0x86)]
+        session_values += (1000, 2000)
+    messages(18, session_fields, [session_values] * sessions)
     messages(34, [(1, 'H', 0x84)], [(num_sessions,)])
     header = struct.pack('<BBHI4s', 14, 0x20, 2100, len(body), b'.FIT')
     header += struct.pack('<H', crc(header))
