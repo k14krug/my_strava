@@ -1,17 +1,22 @@
-"""SQLite source evidence and immutable originals for the bounded P1-01 slice."""
+"""SQLite source-centered evidence and immutable original artifacts."""
 
 from contextlib import contextmanager
 from dataclasses import asdict
 from datetime import datetime, timezone
 import hashlib
+import gzip
+import io
+import json
 import os
 from pathlib import Path
 import sqlite3
 import tempfile
+import zlib
 from uuid import uuid4
 
 from .errors import IntegrityError, RideWorksError
 from .fit import MAPPING_VERSION, PARSER_VERSION, decode_fit, packaging_for
+from . import xml_activity
 
 SCHEMA = """
 BEGIN IMMEDIATE;
@@ -94,6 +99,46 @@ PRAGMA user_version = 1;
 COMMIT;
 """
 
+# Additive, atomic migration: accepted Phase 1 tables and IDs stay intact.
+MIGRATION_2 = """
+BEGIN IMMEDIATE;
+CREATE TABLE export_snapshots (
+    sha256 TEXT PRIMARY KEY,
+    byte_size INTEGER NOT NULL,
+    stored_path TEXT NOT NULL UNIQUE,
+    imported_at TEXT NOT NULL
+);
+CREATE TABLE strava_export_sources (
+    source_id TEXT PRIMARY KEY,
+    activity_id TEXT NOT NULL REFERENCES activities(activity_id),
+    external_id TEXT NOT NULL,
+    row_sha256 TEXT NOT NULL,
+    association_basis TEXT NOT NULL,
+    imported_at TEXT NOT NULL,
+    title TEXT,
+    activity_type TEXT,
+    sport_type TEXT,
+    date_text TEXT,
+    filename TEXT,
+    evidence_json TEXT NOT NULL,
+    UNIQUE(external_id, row_sha256)
+);
+CREATE INDEX strava_sources_activity ON strava_export_sources(activity_id);
+CREATE INDEX strava_sources_external ON strava_export_sources(external_id);
+CREATE TABLE export_row_locations (
+    snapshot_sha256 TEXT NOT NULL REFERENCES export_snapshots(sha256),
+    row_index INTEGER NOT NULL,
+    source_id TEXT NOT NULL REFERENCES strava_export_sources(source_id),
+    PRIMARY KEY(snapshot_sha256, row_index)
+);
+CREATE TABLE xml_context (
+    extraction_id TEXT PRIMARY KEY REFERENCES extractions(extraction_id) ON DELETE CASCADE,
+    context_json TEXT NOT NULL
+);
+PRAGMA user_version = 2;
+COMMIT;
+"""
+
 SUMMARY_UNITS = {
     "total_elapsed_time": "s", "total_timer_time": "s", "total_distance": "m",
     "total_ascent": "m", "avg_power": "W", "max_power": "W",
@@ -141,12 +186,20 @@ class Store:
         self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.execute("PRAGMA synchronous = FULL")
         version = self.connection.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1):
+        if version not in (0, 1, 2):
             self.close()
             raise RideWorksError(f"Unsupported RideWorks schema version: {version}")
-        if version == 0:
-            self.connection.executescript(SCHEMA)
-        _sync_directory(self.data_dir)
+        try:
+            if version == 0:
+                self.connection.executescript(SCHEMA)
+                version = 1
+            if version == 1:
+                self.connection.executescript(MIGRATION_2)
+            _sync_directory(self.data_dir)
+        except BaseException:
+            self.connection.rollback()
+            self.close()
+            raise
 
     def close(self):
         self.connection.close()
@@ -178,20 +231,25 @@ class Store:
             raise IntegrityError("Established original artifact hash/size mismatch")
         return path
 
-    def _persist_extraction(self, source_id, digest, parsed):
+    def _persist_extraction(self, source_id, digest, parsed, *, xml=None):
         extraction_id = str(uuid4())
         count = len(parsed.records)
         power = sum(r.power is not None for r in parsed.records)
         hr = sum(r.heart_rate is not None for r in parsed.records)
         self.connection.execute(
             "INSERT INTO extractions VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (extraction_id, source_id, "fitdecode", PARSER_VERSION, MAPPING_VERSION,
+            (extraction_id, source_id, "ElementTree" if xml else "fitdecode",
+             xml_activity.PARSER_VERSION if xml else PARSER_VERSION,
+             xml_activity.MAPPING_VERSION if xml else MAPPING_VERSION,
              _now(), digest, count, power, hr, "unknown", "unknown"),
         )
         self._insert_rows("sessions", extraction_id, [parsed.session])
         self._insert_rows("records", extraction_id, parsed.records)
         self._insert_rows("laps", extraction_id, parsed.laps)
         self._insert_rows("events", extraction_id, parsed.events)
+        if xml is not None:
+            self.connection.execute("INSERT INTO xml_context VALUES (?, ?)",
+                                    (extraction_id, json.dumps(xml.context, sort_keys=True)))
         return extraction_id
 
     def _insert_rows(self, table, extraction_id, rows):
@@ -207,6 +265,11 @@ class Store:
         )
 
     def import_fit(self, input_path) -> dict:
+        """Accepted direct FIT import behavior; never interpret XML as FIT."""
+        return self.import_file(input_path, fit_only=True)
+
+    def import_file(self, input_path, *, activity_id=None, association_basis="direct_import",
+                    artifact_bytes=None, fit_only=False) -> dict:
         input_path = Path(input_path)
         staged = None
         created_original = None
@@ -215,7 +278,7 @@ class Store:
                 with tempfile.NamedTemporaryFile(dir=self.staging, delete=False) as target:
                     staged = Path(target.name)
                     digest, size = hashlib.sha256(), 0
-                    with input_path.open("rb") as supplied:
+                    with (input_path.open("rb") if artifact_bytes is None else io.BytesIO(artifact_bytes)) as supplied:
                         for block in iter(lambda: supplied.read(1024 * 1024), b""):
                             target.write(block)
                             digest.update(block)
@@ -227,6 +290,8 @@ class Store:
                     "SELECT * FROM sources WHERE sha256 = ?", (digest,),
                 ).fetchone()
                 if existing is not None:
+                    if activity_id is not None and existing["activity_id"] != activity_id:
+                        raise RideWorksError("Exact artifact belongs to a different established Activity; unresolved")
                     self._verify(existing)
                     extraction = self.connection.execute(
                         "SELECT extraction_id FROM extractions WHERE source_id = ?",
@@ -237,8 +302,14 @@ class Store:
                     return self._result("already_imported", existing["activity_id"],
                                         existing["source_id"], extraction[0])
                 packaging = packaging_for(staged)
-                parsed = decode_fit(staged, packaging)
-                extension = "fit.gz" if packaging == "gzip" else "fit"
+                xml = None
+                if fit_only or self._is_fit(staged, packaging):
+                    parsed = decode_fit(staged, packaging)
+                    content_format = "FIT"
+                else:
+                    xml = xml_activity.decode_xml(staged, packaging)
+                    parsed, content_format = xml.parsed, xml.content_format
+                extension = content_format.lower() + (".gz" if packaging == "gzip" else "")
                 relative = f"originals/{digest}.{extension}"
                 destination = self.data_dir / relative
                 try:
@@ -253,14 +324,18 @@ class Store:
                         raise IntegrityError("Existing original path has conflicting bytes")
                 if artifact_integrity(destination) != (digest, size):
                     raise IntegrityError("Stored original failed integrity verification")
-                activity_id, source_id, created = str(uuid4()), str(uuid4()), _now()
-                self.connection.execute("INSERT INTO activities VALUES (?, ?)", (activity_id, created))
+                source_id, created = str(uuid4()), _now()
+                if activity_id is None:
+                    activity_id = str(uuid4())
+                    self.connection.execute("INSERT INTO activities VALUES (?, ?)", (activity_id, created))
+                elif self.connection.execute("SELECT 1 FROM activities WHERE activity_id = ?", (activity_id,)).fetchone() is None:
+                    raise RideWorksError("Target Activity not found")
                 self.connection.execute(
                     "INSERT INTO sources VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (source_id, activity_id, "file_fit", "direct_import", input_path.name,
-                     size, digest, packaging, "FIT", relative, created),
+                    (source_id, activity_id, "file_" + content_format.lower(), association_basis, input_path.name,
+                     size, digest, packaging, content_format, relative, created),
                 )
-                extraction_id = self._persist_extraction(source_id, digest, parsed)
+                extraction_id = self._persist_extraction(source_id, digest, parsed, xml=xml)
                 result = self._result("imported", activity_id, source_id, extraction_id)
             return result
         except BaseException:
@@ -279,15 +354,29 @@ class Store:
             if staged is not None:
                 staged.unlink(missing_ok=True)
 
+    @staticmethod
+    def _is_fit(path, packaging):
+        opener = gzip.open if packaging == "gzip" else open
+        try:
+            with opener(path, "rb") as stream:
+                return stream.read(12)[8:12] == b".FIT"
+        except (OSError, EOFError, zlib.error) as exc:
+            raise RideWorksError("Invalid compressed activity artifact") from exc
+
     def reextract(self, source_id) -> dict:
         with self._transaction(write=True):
             source = self.connection.execute("SELECT * FROM sources WHERE source_id = ?", (source_id,)).fetchone()
             if source is None:
                 raise RideWorksError("Source not found")
             path = self._verify(source)
-            parsed = decode_fit(path, source["packaging"])
+            xml = None
+            if source["content_format"] == "FIT":
+                parsed = decode_fit(path, source["packaging"])
+            else:
+                xml = xml_activity.decode_xml(path, source["packaging"])
+                parsed = xml.parsed
             self.connection.execute("DELETE FROM extractions WHERE source_id = ?", (source_id,))
-            extraction_id = self._persist_extraction(source_id, source["sha256"], parsed)
+            extraction_id = self._persist_extraction(source_id, source["sha256"], parsed, xml=xml)
             return self._result("reextracted", source["activity_id"], source_id, extraction_id)
 
     def _result(self, status, activity_id, source_id, extraction_id):
@@ -316,6 +405,9 @@ class Store:
             evidence[table] = [dict(row) for row in self.connection.execute(
                 f"SELECT * FROM {table} WHERE extraction_id = ? ORDER BY {order}", (key,),
             )]
+        context = self.connection.execute("SELECT context_json FROM xml_context WHERE extraction_id = ?", (key,)).fetchone()
+        if context is not None:
+            evidence["xml_context"] = json.loads(context[0])
         return evidence
 
     def get_activity(self, activity_id) -> dict:
@@ -327,7 +419,12 @@ class Store:
             sources = self.connection.execute(
                 "SELECT * FROM sources WHERE activity_id = ? ORDER BY imported_at, source_id", (activity_id,),
             ).fetchall()
-            return dict(activity=dict(activity), sources=[self._source_evidence(s) for s in sources])
+            csv_sources = self.connection.execute(
+                "SELECT * FROM strava_export_sources WHERE activity_id = ? ORDER BY imported_at, source_id",
+                (activity_id,),
+            ).fetchall()
+            return dict(activity=dict(activity), sources=[self._source_evidence(s) for s in sources]
+                        + [self._csv_evidence(s) for s in csv_sources])
 
     def list_activities(self) -> list[dict]:
         """List only activities with one current Phase 1 FIT Source/session.
@@ -353,9 +450,12 @@ class Store:
     def get_source(self, source_id) -> dict:
         with self._transaction():
             source = self.connection.execute("SELECT * FROM sources WHERE source_id = ?", (source_id,)).fetchone()
+            if source is not None:
+                return self._source_evidence(source)
+            source = self.connection.execute("SELECT * FROM strava_export_sources WHERE source_id = ?", (source_id,)).fetchone()
             if source is None:
                 raise RideWorksError("Source not found")
-            return self._source_evidence(source)
+            return self._csv_evidence(source)
 
     def inspect(self, activity_id) -> dict:
         snapshot = self.get_activity(activity_id)
@@ -364,6 +464,157 @@ class Store:
             compact = {k: evidence[k] for k in ("source", "extraction", "summary", "availability")}
             compact["lap_count"] = len(evidence["laps"])
             compact["event_count"] = len(evidence["events"])
+            if "xml_context" in evidence:
+                compact["xml_context"] = evidence["xml_context"]
             compact_sources.append(compact)
+        timezone_label = ("UTC" if all(e["source"]["content_format"] == "FIT" for e in snapshot["sources"])
+                          else "explicit offsets retained/normalized; absent offsets unknown")
         return dict(activity=snapshot["activity"], sources=compact_sources,
-                    summary_units=SUMMARY_UNITS, timestamp_timezone="UTC")
+                    summary_units=SUMMARY_UNITS, timestamp_timezone=timezone_label)
+
+    def preserve_export_snapshot(self, payload):
+        """One exact CSV snapshot per byte identity, not one copy per row."""
+        digest = hashlib.sha256(payload).hexdigest()
+        relative = f'originals/{digest}.csv'
+        created = False
+        staged = None
+        try:
+            with self._transaction(write=True):
+                existing = self.connection.execute('SELECT * FROM export_snapshots WHERE sha256 = ?', (digest,)).fetchone()
+                if existing is not None:
+                    self._verify(existing)
+                    return digest
+                with tempfile.NamedTemporaryFile(dir=self.staging, delete=False) as stream:
+                    staged = Path(stream.name)
+                    stream.write(payload)
+                    stream.flush()
+                    os.fsync(stream.fileno())
+                destination = self.data_dir / relative
+                try:
+                    os.link(staged, destination)
+                    created = True
+                    _sync_directory(self.originals)
+                except FileExistsError:
+                    pass
+                if artifact_integrity(destination) != (digest, len(payload)):
+                    raise IntegrityError('CSV snapshot original hash/size mismatch')
+                self.connection.execute('INSERT INTO export_snapshots VALUES (?, ?, ?, ?)',
+                                        (digest, len(payload), relative, _now()))
+            return digest
+        except BaseException:
+            if created:
+                with self._transaction(write=True):
+                    if self.connection.execute('SELECT 1 FROM export_snapshots WHERE sha256 = ?', (digest,)).fetchone() is None:
+                        (self.data_dir / relative).unlink(missing_ok=True)
+                        _sync_directory(self.originals)
+            raise
+        finally:
+            if staged is not None:
+                staged.unlink(missing_ok=True)
+
+    def attach_export_row(self, snapshot_sha256, row_index, row, artifact_sha256=None):
+        """Resolve only established external/file identities, then retain row evidence.
+
+        File decode/persistence is separate so bad files do not erase valid CSV
+        observations. Conflicting established identities produce no association.
+        """
+        from .strava_export import AssociationError
+        with self._transaction(write=True):
+            external = self.connection.execute(
+                'SELECT DISTINCT activity_id FROM strava_export_sources WHERE external_id = ?',
+                (row['external_id'],),
+            ).fetchall()
+            file_source = self.connection.execute('SELECT * FROM sources WHERE sha256 = ?',
+                                                  (artifact_sha256,)).fetchone() if artifact_sha256 else None
+            candidates = {r[0] for r in external}
+            if file_source is not None:
+                self._verify(file_source)
+                candidates.add(file_source['activity_id'])
+            if len(candidates) > 1:
+                raise AssociationError('Conflicting established external/artifact identities')
+            existing = self.connection.execute(
+                'SELECT * FROM strava_export_sources WHERE external_id = ? AND row_sha256 = ?',
+                (row['external_id'], row['row_sha256']),
+            ).fetchone()
+            created = not candidates
+            activity_id = next(iter(candidates)) if candidates else str(uuid4())
+            # Never infer a merge from time, distance, sport or name similarity.
+            if created:
+                self.connection.execute('INSERT INTO activities VALUES (?, ?)', (activity_id, _now()))
+            if existing is None:
+                source_id = str(uuid4())
+                basis = ('established_strava_external_id' if external else
+                         'exact_artifact_and_explicit_csv_reference' if file_source is not None else
+                         'strava_export_row_identity')
+                self.connection.execute('INSERT INTO strava_export_sources VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                        (source_id, activity_id, row['external_id'], row['row_sha256'], basis, _now(),
+                                         row['title'], row['activity_type'], row['sport_type'], row['date_text'],
+                                         row['filename'], json.dumps(row['evidence'], sort_keys=True, ensure_ascii=True)))
+            else:
+                source_id = existing['source_id']
+            self.connection.execute('INSERT OR IGNORE INTO export_row_locations VALUES (?, ?, ?)',
+                                    (snapshot_sha256, row_index, source_id))
+            return dict(activity_id=activity_id, source_id=source_id, activity_created=created,
+                        csv_source_created=existing is None)
+
+    def _csv_evidence(self, row):
+        source = {key: row[key] for key in ('source_id', 'activity_id', 'external_id', 'row_sha256',
+                                          'association_basis', 'imported_at')}
+        source.update(kind='strava_export', content_format='CSV', packaging='plain')
+        locations = [dict(location) for location in self.connection.execute('''
+            SELECT l.snapshot_sha256, l.row_index, s.byte_size, s.stored_path
+            FROM export_row_locations l JOIN export_snapshots s ON s.sha256 = l.snapshot_sha256
+            WHERE l.source_id = ? ORDER BY s.imported_at, l.row_index
+        ''', (row['source_id'],))]
+        source['snapshot_rows'] = locations
+        evidence = json.loads(row['evidence_json'])
+        return dict(source=source,
+                    extraction=dict(mapping_version='strava-export-v1', row_sha256=row['row_sha256']),
+                    summary=dict(title=row['title'], activity_type=row['activity_type'], sport_type=row['sport_type'],
+                                 date_text=row['date_text'], filename=row['filename'], **evidence),
+                    availability={signal: dict(status='unavailable', origin='unknown',
+                                                reason='CSV metadata is not a native stream')
+                                  for signal in ('power', 'heart_rate')},
+                    records=None, laps=[], events=[])
+
+    def activity_history(self):
+        """Source-aware metadata for all Activities, without loading native records.
+
+        This boundary does not rank sources, choose titles or compute historical
+        metrics. Summary values retain their source-specific semantics/units.
+        """
+        with self._transaction():
+            activities = {row['activity_id']: dict(activity=dict(row), sources=[])
+                          for row in self.connection.execute('SELECT * FROM activities ORDER BY created_at, activity_id')}
+            for row in self.connection.execute('SELECT * FROM strava_export_sources ORDER BY imported_at, source_id'):
+                evidence = self._csv_evidence(row)
+                activities[row['activity_id']]['sources'].append({k: evidence[k] for k in
+                    ('source', 'extraction', 'summary', 'availability')} | {'native_power_stream_exists': False})
+            for row in self.connection.execute('''
+                SELECT f.*, e.extraction_id, e.parser_name, e.parser_version, e.mapping_version,
+                       e.record_count, e.power_present, e.heart_rate_present
+                FROM sources f JOIN extractions e ON e.source_id = f.source_id
+                ORDER BY f.imported_at, f.source_id
+            '''):
+                source = {key: row[key] for key in ('source_id', 'activity_id', 'kind', 'association_basis',
+                          'original_basename', 'byte_size', 'sha256', 'packaging', 'content_format', 'stored_path', 'imported_at')}
+                extraction = {key: row[key] for key in ('extraction_id', 'parser_name', 'parser_version',
+                              'mapping_version', 'record_count', 'power_present', 'heart_rate_present')}
+                summary = dict(self.connection.execute('SELECT * FROM sessions WHERE extraction_id = ?',
+                                                        (row['extraction_id'],)).fetchone())
+                context = self.connection.execute('SELECT context_json FROM xml_context WHERE extraction_id = ?',
+                                                   (row['extraction_id'],)).fetchone()
+                evidence = dict(source=source, extraction=extraction, summary=summary,
+                                native_power_stream_exists=row['power_present'] > 0,
+                                availability={signal: dict(present=row[f'{signal}_present'], total=row['record_count'],
+                                              status='observed_absent' if row[f'{signal}_present'] == 0 else
+                                              'present' if row[f'{signal}_present'] == row['record_count'] else 'present_with_missing',
+                                              origin='unknown') for signal in ('power', 'heart_rate')})
+                if context is not None:
+                    evidence['xml_context'] = json.loads(context[0])
+                activities[row['activity_id']]['sources'].append(evidence)
+            return list(activities.values())
+
+    def import_strava_export(self, path):
+        from .strava_export import import_export
+        return import_export(self, path)

@@ -215,3 +215,102 @@ prefer an actual source activity title when available, with provenance (for
 example Strava export/API `Activity Name`), while retaining type/subtype separately.
 This task adds no source-title persistence/reconciliation, API/export enrichment
 or naming policy beyond the explicitly derived FIT-only fallback.
+
+## Historical Strava-export import (P2-01)
+
+Import the original export ZIP in one command, or supply an extracted export
+root containing exactly one `activities.csv`:
+
+```bash
+.venv/bin/python -m rideworks --data-dir <data-dir> import-strava-export <export.zip-or-root>
+```
+
+The command emits a compact JSON report with row, creation, enrichment, reuse,
+CSV-only, artifact, format and failure counts. A partial import exits with status
+1 and keeps independent successful activities. Fix the reported row/file problem
+and rerun the same command; established IDs and equivalent evidence are reused.
+Row indexes are **1-based data-row positions**, excluding the CSV header. Reports
+use these indexes and fixed failure categories, rather than private title/path
+or parser-error text. `inspect <activity-id>` exposes locally retained evidence.
+
+The ZIP is read directly, without extracting it. Only exact `activities.csv`
+bytes and explicitly referenced activity artifacts are preserved; photos,
+account details, routes and other unrelated export contents are not imported.
+Unsafe references, symlinks, duplicate/ambiguous ZIP members, malformed-width CSV
+rows and duplicate activity IDs/file references are rejected before evidence is
+written. A structurally valid export with an unreadable or malformed individual
+activity file keeps that row's CSV source and reports the file failure. It does
+not create a successful file Source/extraction for the failed file.
+
+Opening an accepted schema-1 data directory migrates it atomically to schema 2.
+This is an additive SQLite migration: existing tables, Activity/Source IDs,
+artifacts and FIT extractions remain intact. A failed migration rolls back its
+DDL/version changes; it does not make a partially migrated store appear usable.
+Keep your usual local backup; the importer does not replace the existing store.
+
+Evidence remains source-centered:
+
+- The exact CSV is preserved once per byte identity. Each row Source records its
+  Strava external ID, actual title, separate type/sport-type/date/reference,
+  mapping version and links to its row in that snapshot.
+- Structured CSV extraction is an allowlist of useful identity/title/type/date
+  and distance/duration/elevation/power/HR/cadence fields. Description, private
+  notes and other arbitrary text are not normalized. The preserved CSV remains
+  the recovery path for omitted fields.
+- Repeated summary columns retain their original positions, raw values,
+  parsed numbers, missing/unparsed status and source units. Distance, duration
+  and elevation CSV units are explicitly unspecified where the export labels
+  do not establish them. No global km/metre or timer/moving-time equivalence is
+  guessed. CSV dates without offsets retain unknown timezone.
+- FIT decoding uses the accepted `fitdecode==0.11.0` / `fit-v1` path. TCX/GPX use
+  standard-library ElementTree / `xml-activity-v1`. Received gzip bytes remain
+  the original; decompression and leading XML whitespace removal are transient.
+- XML preserves point order, zero/missing power/HR, absent timestamps, duplicate
+  timestamps, backward jumps, gaps, fractional seconds and offset-unknown times.
+  Track segment boundaries are retained as record indexes in `xml_context`.
+- TCX lap timing/distance/power/HR summaries remain explicitly named lap source
+  fields in `xml_context.lap_summaries`; they are not relabeled as FIT elapsed or
+  timer time or silently aggregated into an Activity-wide summary.
+- Garmin qualified TCX Watts and GPX HR fields are mapped. The observed GPX
+  unqualified/core `power` and legacy `{TrackPointExtension}hr` dialect is also
+  mapped as source evidence with unknown origin. Private/unknown GPX summary
+  extensions are left in the original; summary watts never become point power.
+- CSV-only activities have a normal Activity and row Source. Native records are
+  unavailable (`records=None`), rather than an observed empty/absent stream.
+
+Exact established artifact identity plus its explicit CSV relationship, or an
+already-associated Strava ID, can enrich an existing Activity. Conflicting
+established identities are left unresolved. There is no fuzzy time/name/distance
+matcher: pre-existing local Activities still lacking an established export
+relationship are reported as unresolved, without guessing which row matches.
+The representative accepted Phase 1 FIT therefore keeps its Activity/Source/
+extraction IDs and gains separately attributable actual title evidence.
+
+Changed recognized row evidence creates a new row Source on the established
+Activity. Changed file bytes create separately preserved file evidence. Changed
+CSV bytes always preserve a new exact snapshot; equivalent recognized evidence
+can reuse its row Source while gaining a link to the new snapshot. Earlier
+source evidence is never overwritten.
+
+`Store.activity_history()` exposes **all** Activities, source titles/provenance,
+type/date/summary/missingness, kinds/formats, native-power availability and
+source/extraction identity, without loading raw record arrays or selecting one
+universal canonical source. `get_activity()` / `get_source()` expose detailed
+per-source evidence. This is the read boundary for later Phase 2 tasks; the
+accepted Phase 1 browser and derived title presentation remain their current
+bounded behavior until P2-02. This task adds no historical trend or API sync.
+
+Reproduce the disposable, seeded acceptance against the known export:
+
+```bash
+.venv/bin/python tools/verify_rideworks_export.py \
+  --export <local-export.zip-or-root> --work-dir <local-work-directory>
+```
+
+This verifier checks the known 1,434/1,421/13 population before import, seeds the
+accepted representative artifact, invokes the product bulk command, compares
+**all** preserved originals against received bytes/hash/size, checks enrichment,
+reads FIT/TCX/GPX/CSV-only examples through Store, then reruns in another process
+and checks every persisted identity/current extraction and the full read result.
+It removes its disposable store and prints aggregate evidence only. Neither the
+personal export, runtime database, source titles nor raw streams belong in Git.
