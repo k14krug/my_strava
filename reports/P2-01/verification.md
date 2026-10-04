@@ -1,11 +1,11 @@
-# P2-01 verification — ready for Analyst review
+# P2-01 verification — accepted
 
-**State:** authorized implementation and local acceptance complete; HARD — Analyst.
+**State:** accepted / complete.
 **Date:** 2026-10-04.
 **Branch / PR:** `task/p2-01-historical-import` / [#13](https://github.com/k14krug/my_strava/pull/13).
 **Implementation head:** `c131092`; the final publication commit updates documentation/evidence only.
 **Controlling JIT:** `docs/tasks/P2-01.md`, including Analyst-authored §16A from `main` at `4bf8f6e`.
-**Task lifecycle:** P2-01 remains `in_progress`; `STATUS.md` is `ready_for_review`. Final acceptance belongs to the Analyst. P2-02 has not begun.
+**Task lifecycle:** P2-01 accepted by the Analyst and merged to `main` as `57c00ae396bfb1e9c2c4c72ff42c5628afda9940`. P2-02 implementation has not begun.
 
 ## Result
 
@@ -212,7 +212,19 @@ screenshots are included. JIT controls and acceptance criteria are unchanged.
 The earlier `stop-evidence.json` is retained as historical structural evidence;
 its seven-file diagnosis is superseded for prevalence by the full-run result.
 
-**Next action:** Analyst reviews PR #13 against the updated P2-01 JIT and Phase 2
-historical-import contract, then explicitly accepts P2-01 or leaves actionable
-feedback on GitHub. Dex stops at HARD — Analyst. Keep P2-01 `in_progress` until
-that acceptance; do not start P2-02 automatically.
+## Analyst acceptance
+
+On **2026-10-04**, the Analyst reviewed PR #13 at head
+`64b4247a5545574feb9f24c50a90840d329ad4e7` against the updated P2-01 JIT and
+Phase 2 historical-import contract and **accepted P2-01**.
+
+The review confirmed the complete 1,434/1,421/13 population, exact-original
+preservation, representative enrichment without duplication, restart/idempotent
+rerun, source/evidence separation, schema migration safety, the authorized
+lossless FIT lap-timestamp handling, unchanged Phase 1 best-20 behavior, privacy
+boundary, and absence of P2-02/P2-03/API-sync scope creep.
+
+The durable Analyst decision is recorded on PR #13. PR #13 was then merged to
+`main` as `57c00ae396bfb1e9c2c4c72ff42c5628afda9940`.
+
+P2-02 implementation did not begin as part of this acceptance.
