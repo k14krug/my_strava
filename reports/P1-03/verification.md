@@ -1,4 +1,4 @@
-# P1-03 verification — Owner approved; Analyst review pending
+# P1-03 verification — accepted
 
 **Date:** 2026-10-03
 
@@ -6,7 +6,7 @@
 
 **Corrected implementation:** `cba2d0d` (supersedes the pre-correction `d2c5acd` build).
 
-**State:** `ready_for_review` at Gate 2 HARD — Analyst. P1-03 remains `in_progress`. Owner visual/usability/branding approval is recorded below; final Analyst acceptance remains pending. Phase 2 has not begun.
+**State:** accepted / complete. Owner visual/usability/branding approval and Gate 2 Analyst acceptance are complete. PR #12 was merged to `main` as `7fce07b79c907910a514d1ea842921b047fee170`. Phase 2 has not begun.
 
 **Authority:** the [HARD — Owner correction comment](https://github.com/k14krug/my_strava/pull/12#issuecomment-5971351156) and Analyst-authored P1-03 JIT. The Owner explicitly authorized the necessary verification/status publication within its privacy limits; the former publication blocker is resolved. Screenshots and private source/runtime artifacts remain local.
 
@@ -124,10 +124,14 @@ With the desired data directory and port configured in the repository-root `.env
 
 Use the URL printed at startup. The explicit command in the verification procedure pins the prepared review store and port 8765 independently of local settings; its recorded URLs remain the reproducible review addresses.
 
-## Gate 2 — HARD — Analyst handoff
+## Gate 2 — HARD — Analyst acceptance
 
-Gate 1 is complete. `STATUS.md` is `ready_for_review`; `TASKS.md` keeps P1-03 `in_progress`. PR #12 is presented for final Analyst review. No final Analyst acceptance or Phase 1 closeout is claimed.
+On **2026-10-04**, the Analyst reviewed PR #12 at head `472bd52dfa5ee66b0e354cf619c2d7545ffb595a` against `docs/tasks/P1-03.md` and `docs/PHASE_1_ACCEPTANCE.md` and **accepted P1-03 and Phase 1**.
 
-**Decision required:** review the implementation and evidence against `docs/tasks/P1-03.md` and `docs/PHASE_1_ACCEPTANCE.md`, then explicitly accept P1-03 / Phase 1 or leave actionable feedback on GitHub. Owner approval is satisfied; source/evidence preservation, native chart behavior, accepted best-20 calculation, provenance, startup configuration, privacy and regressions remain the technical review scope. The future source-title requirement remains recorded follow-up work. Do not begin Phase 2.
+The review confirmed the Owner-approved implementation was unchanged apart from Gate 2 documentation, the accepted P1-01/P1-02 data and analysis boundaries remained intact, the native chart preserved evidence without interpolation/resampling/smoothing, source summaries remained distinct from the 120 W RideWorks derivation, provenance/privacy/startup requirements were met, all 94 tests remained the recorded verification set, and no Phase 2 capability had been introduced.
+
+The durable Analyst decision is recorded on PR #12. GitHub does not permit the connected account to submit an `APPROVE` review on its own PR, so the Gate 2 decision was recorded as a top-level PR comment instead.
+
+PR #12 was then merged to `main` as `7fce07b79c907910a514d1ea842921b047fee170`. `TASKS.md` now records P1-03 = done and Phase 1 accepted/complete. `STATUS.md` records the accepted state. No Phase 2 implementation task was started.
 
 Only authorized compact verification/status evidence, implementation, synthetic tests and safe documentation/example settings are published. No screenshots, private absolute paths, coordinates, FIT/source files, raw streams, database files, secrets, actual `.env` contents or unrelated personal data are included.
