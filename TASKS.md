@@ -176,13 +176,13 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** in_progress — P2-01 historical import implementation.
+**Status:** in_progress — P2-01 accepted; P2-02 planning ready.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
 ### P2-01 — Historical Strava-export import and enrichment
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Import the complete known Strava-export activity history through one durable, idempotent RideWorks workflow, preserving real source titles, CSV evidence, referenced FIT/TCX/GPX artifacts, CSV-only activities, and conservative source associations.
 
@@ -202,7 +202,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** implementation/verification complete on PR #13 under Analyst-authorized lossless FIT lap-timestamp handling in JIT §16A. Complete 1,434/1,421/13 seeded acceptance and restart/idempotent rerun passed. Stopped at HARD — Analyst; final acceptance pending.
+**Acceptance result:** accepted by Analyst on PR #13 and merged to `main` as `57c00ae396bfb1e9c2c4c72ff42c5628afda9940`. Complete 1,434/1,421/13 seeded acceptance and restart/idempotent rerun passed.
 
 **Dependency:** Phase 1 accepted; Phase 2 acceptance contract complete.
 
@@ -225,7 +225,7 @@ Only one implementation/research task should normally be `in_progress`.
 * stable Activity Review navigation
 * preserve the approved RideWorks visual character without recreating irrelevant Strava management features
 
-**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-01 acceptance.
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-02.md`.
 
 **Dependency:** P2-01 complete.
 
@@ -297,7 +297,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 is accepted and complete. Phase 2 planning is complete enough to begin P2-01 when the Owner invokes `/TASK` or `/AUTOTASK`.
+Phase 1 is accepted and complete. P2-01 is accepted and complete. P2-02 is the next implementation boundary once its JIT is invoked with `/TASK` or `/AUTOTASK`.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
