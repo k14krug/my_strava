@@ -174,11 +174,131 @@ Only one implementation/research task should normally be `in_progress`.
 
 ---
 
+## Phase 2 — Historical context and performance history
+
+**Status:** planned — acceptance contract approved; P2-01 JIT authored; implementation not started.
+
+**Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
+
+### P2-01 — Historical Strava-export import and enrichment
+
+**Status:** pending
+
+**Purpose:** Import the complete known Strava-export activity history through one durable, idempotent RideWorks workflow, preserving real source titles, CSV evidence, referenced FIT/TCX/GPX artifacts, CSV-only activities, and conservative source associations.
+
+**Scope summary:**
+
+* account for all 1,434 known export rows
+* import/preserve all 1,421 referenced activity artifacts
+* retain the 13 CSV-only activities without fabricating streams
+* preserve actual source activity titles with provenance
+* support FIT/TCX/GPX production import for the known export envelope
+* migrate the accepted Phase 1 store safely
+* enrich the already-imported Phase 1 representative Activity rather than duplicating it
+* make reruns idempotent and failures explicit
+* expose a source-aware history read boundary for later Phase 2 work
+
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-01.md`.
+
+**Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Dependency:** Phase 1 accepted; Phase 2 acceptance contract complete.
+
+---
+
+### P2-02 — Scalable Activities browser
+
+**Status:** pending
+
+**Purpose:** Make the full imported history practical to browse rather than rendering an unbounded list.
+
+**Scope summary:**
+
+* newest-first bounded pagination
+* title search
+* activity type/subtype filtering
+* practical date filtering
+* useful sorting
+* source title presentation with derived fallback when necessary
+* stable Activity Review navigation
+* preserve the approved RideWorks visual character without recreating irrelevant Strava management features
+
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-01 acceptance.
+
+**Dependency:** P2-01 complete.
+
+---
+
+### P2-03 — Trusted 20-minute performance history
+
+**Status:** pending
+
+**Purpose:** Build the first trusted longitudinal performance view from eligible Virtual Ride native source-power evidence.
+
+**Scope summary:**
+
+* reuse accepted `best-average-power-v1` complete-window semantics
+* derive durable/versioned best-20 history from eligible Virtual Ride native streams
+* exclude outdoor Ride power from the trusted Phase 2 trend
+* never substitute CSV/source-summary watts for missing native streams
+* present chronological 20-minute-power history with links to contributing activities
+* make eligibility/provenance inspectable
+
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-02 acceptance.
+
+**Dependency:** P2-02 complete.
+
+---
+
+### P2-04 — Six-week historical context in Activity Review
+
+**Status:** pending
+
+**Purpose:** Put an eligible ride's best-20 result into recent historical context.
+
+**Scope summary:**
+
+* compare current eligible best-20 with the highest eligible result in the preceding 42 days
+* exclude the current activity from its own baseline
+* show unavailable when no eligible baseline exists
+* keep presentation neutral rather than assuming higher/lower is inherently good/bad
+* connect Activity Review to the trusted Performance history
+* no manual pairwise ride-comparison feature
+
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-03 acceptance.
+
+**Dependency:** P2-03 complete.
+
+---
+
+### P2-05 — Incremental Strava synchronization
+
+**Status:** pending
+
+**Purpose:** Bring post-export activities and useful Strava metadata into RideWorks through a normal forward-looking sync path.
+
+**Scope summary:**
+
+* current Strava OAuth/API behavior re-verified from authoritative documentation in the JIT
+* normal incremental/forward sync rather than historical bulk API harvesting
+* user-invoked sync is acceptable for the first private single-rider implementation
+* create new Activities or conservatively enrich existing local/FIT Activities
+* retain Strava source identity/title/type/useful metadata with provenance
+* keep credentials/tokens local and out of Git
+* obey current rate-limit/terms/webhook obligations without enterprise sync infrastructure
+
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-04 acceptance.
+
+**Dependency:** P2-04 complete.
+
+---
+
 ## Follow-up work
 
-Phase 1 is accepted and complete. Phase 2 remains historical context and ride comparison; no Phase 2 implementation task has been authorized or started. The next step is a separate Analyst planning decision informed by the accepted Phase 1 product slice.
+Phase 1 is accepted and complete. Phase 2 planning is complete enough to begin P2-01 when the Owner invokes `/TASK` or `/AUTOTASK`.
 
-Owner finding from P1-03: future durable history assembly should preserve and
-prefer actual source activity titles with provenance when available, retaining
-type/subtype separately. P1-03 uses an explicitly derived FIT-type/UTC-date fallback;
-no title persistence/reconciliation or Phase 2 implementation is started here.
+Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
+
+Outdoor power remains preserved source evidence but is excluded from the trusted Phase 2 performance trend. Outdoor estimated-power reconstruction remains separate future work.
+
+Phase 3 must not begin automatically after Phase 2.
