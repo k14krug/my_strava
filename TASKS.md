@@ -227,6 +227,8 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-02.md`.
 
+**Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
 **Dependency:** P2-01 complete.
 
 ---
