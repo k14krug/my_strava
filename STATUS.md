@@ -4,22 +4,26 @@
 
 **Phase 1:** accepted / complete — P1-01/P1-02/P1-03 done.
 
-**Current task:** P2-01 — in_progress
+**Phase 2 — Historical context and performance history:** in progress.
 
-**Implementation state:** ready_for_review — stopped at HARD — Analyst.
+**P2-01 — Historical Strava-export import and enrichment:** done — Analyst accepted PR #13 on 2026-10-04.
 
-**Branch / PR:** `task/p2-01-historical-import` / [#13](https://github.com/k14krug/my_strava/pull/13)
+**PR #13:** merged to `main` as `57c00ae396bfb1e9c2c4c72ff42c5628afda9940`.
 
-**Implementation head:** `c131092`; final publication changes contain documentation/evidence only.
+**P2-01 verification:** 123 tests passed; clean seeded full export passed with 1,434 Activities / 1,421 artifacts / 13 CSV-only Activities, zero failures/unresolved associations; restart/idempotent rerun passed; all originals verified; all 18 integer lap timestamps across 17 Sources preserved losslessly and reproduced.
 
-**Implemented:** one ZIP/root bulk import; exact shared CSV snapshot and file preservation; actual titles/provenance; conservative enrichment; FIT/TCX/GPX native extraction; schema-1/2 → 3 migration; source-aware history read boundary. Analyst-authorized integer lap timestamps are retained losslessly with unknown interpretation and null absolute timestamps (`fit-v2`). Other FIT timing remains strict.
+**P2-01 evidence:** `reports/P2-01/verification.md`, `reports/P2-01/acceptance.json`.
 
-**Verification:** 123 tests passed. Clean seeded full export and restarted rerun passed: 1,434 Activities, 1,421 artifacts, 13 CSV-only Activities, zero failures/unresolved associations. All originals match received bytes/hash/size. Representative Activity enriched without duplication; IDs/extractions stable across rerun. All 18 integer lap fields across 17 Sources independently verified and reproduced by re-extraction. Real Phase 1 import/best-20 regressions and all 157 XML production parser checks passed.
+**Current task:** P2-02 — pending implementation.
 
-**Runtime:** first bulk pass 616.55 seconds; restarted rerun 2.72 seconds.
+**P2-02 JIT:** authored — `docs/tasks/P2-02.md`.
 
-**Evidence:** `reports/P2-01/verification.md`, `reports/P2-01/acceptance.json`. No personal source/runtime data or private titles published.
+**P2-02 purpose:** turn the complete imported history into a practical RideWorks Activities browser with bounded pagination, actual source titles, title search, cycling/all and type filtering, date filtering, useful sorting, and stable Activity routes. FIT rides retain the accepted rich review; GPX/TCX/CSV-only history gets evidence-appropriate thin review rather than a dead end.
 
-**Blockers:** none for implementation/verification; final Analyst acceptance pending.
+**Review gates:** implementation stops first at HARD — Owner for full-history visual/usability review, then at HARD — Analyst for final acceptance.
 
-**Next action:** Analyst reviews PR #13 against the updated P2-01 JIT and Phase 2 historical-import contract, then records explicit acceptance or actionable feedback on GitHub. Keep P2-01 `in_progress`; do not begin P2-02 automatically.
+**Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Blockers:** none.
+
+**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-02. Do not begin P2-03 automatically.
