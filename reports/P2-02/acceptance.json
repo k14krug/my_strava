@@ -1,0 +1,70 @@
+{
+  "implementation_head": "24ffe69376a634cc9ebda46689cbffb8bf555780",
+  "automated_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests",
+    "passed": 138
+  },
+  "review_store_import": {
+    "csv_rows_seen": 1434,
+    "activities_created": 1433,
+    "existing_activities_reused": 1,
+    "existing_activities_enriched": 1,
+    "csv_sources_created": 1434,
+    "csv_sources_reused": 0,
+    "csv_only_activities": 13,
+    "referenced_artifacts_attempted": 1421,
+    "artifacts_imported": 1420,
+    "artifacts_reused": 1,
+    "format_counts": {
+      "FIT.GZ": 1264,
+      "GPX": 29,
+      "GPX.GZ": 76,
+      "TCX.GZ": 52
+    },
+    "failures": [],
+    "unresolved_associations": [],
+    "status": "completed"
+  },
+  "http_restart": {
+    "result": "passed",
+    "activity_count": 1434,
+    "cycling_count": 1410,
+    "type_counts": {
+      "Virtual Ride": 1264,
+      "Ride": 146,
+      "Run": 22,
+      "Walk": 1,
+      "Rowing": 1
+    },
+    "page_size": 30,
+    "cycling_pages": 47,
+    "all_pages": 48,
+    "query_filters_verified": true,
+    "source_title_search_and_display_verified": true,
+    "format_routes": {
+      "FIT": "rich",
+      "TCX": "thin",
+      "GPX": "thin",
+      "CSV-only": "thin"
+    },
+    "process_restart_verified": true,
+    "representative_fit_average_watts": 118,
+    "representative_best20_display_watts": 120,
+    "privacy_checks_passed": true
+  },
+  "chromium": {
+    "result": "passed",
+    "browser": "Chromium",
+    "pagination": true,
+    "typeFilters": true,
+    "titleSearch": true,
+    "dateRange": true,
+    "alternateSorts": true,
+    "richAndThinRoutes": true,
+    "nativeChartInteraction": true,
+    "browserBack": true,
+    "desktopTabletMobileNoOverflow": true
+  },
+  "owner_approval": "pending",
+  "analyst_acceptance": "pending"
+}

@@ -227,6 +227,8 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-02.md`.
 
+**Execution state:** implementation and full-history HTTP/Chromium/restart verification complete on PR #14 (138 tests). Stopped at Gate 1 HARD — Owner for visual/usability approval.
+
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
 **Dependency:** P2-01 complete.

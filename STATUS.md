@@ -16,18 +16,20 @@
 
 **Current task:** P2-02 — in_progress.
 
-**Implementation state:** in_progress.
+**Implementation state:** awaiting_owner_review — Gate 1 HARD — Owner.
 
-**Branch:** `task/p2-02-activities-browser`.
+**Branch / PR:** `task/p2-02-activities-browser` / [#14](https://github.com/k14krug/my_strava/pull/14) (draft).
 
-**P2-02 JIT:** authored — `docs/tasks/P2-02.md`.
+**Implementation head:** `24ffe69376a634cc9ebda46689cbffb8bf555780`; final handoff publication is documentation/evidence only.
 
-**P2-02 purpose:** turn the complete imported history into a practical RideWorks Activities browser with bounded pagination, actual source titles, title search, cycling/all and type filtering, date filtering, useful sorting, and stable Activity routes. FIT rides retain the accepted rich review; GPX/TCX/CSV-only history gets evidence-appropriate thin review rather than a dead end.
+**Implemented:** 30-row cycling-first Activities browser; GET title/type/subtype/date/sort/page state; preferred source titles with provenance; stable rich FIT and thin TCX/GPX/CSV-only/ambiguous-FIT reviews. Metadata browsing does not load native streams or rewrite source evidence.
 
-**Review gates:** implementation stops first at HARD — Owner for full-history visual/usability review, then at HARD — Analyst for final acceptance.
+**Verification:** 138 tests passed. Clean local review store contains all 1,434 Activities / 1,421 file Sources / 13 CSV-only Activities, zero failures/unresolved associations. Full-history HTTP/restart and actual Chromium acceptance passed. 1,410 cycling Activities, 47 cycling / 48 all pages. Representative FIT retains 118 W average / 120 W best-20. No horizontal overflow at desktop/tablet/phone widths.
 
-**Allowed invocation:** `/TASK` or `/AUTOTASK`.
+**Evidence:** `reports/P2-02/verification.md`, `reports/P2-02/acceptance.json`. Private screenshots remain under ignored `output/playwright/p2-02-*.png`.
 
-**Blockers:** none.
+**Local Owner review:** server running at `http://127.0.0.1:8766/`. Startup from repo root: `.venv/bin/python -m rideworks --data-dir local_data/p2-02-review serve --port 8766`.
 
-**Next action:** implement and verify the bounded browser under the P2-02 JIT, then stop at Gate 1 HARD — Owner. Do not begin P2-03 automatically.
+**Blockers:** Owner visual/usability approval pending; no implementation/verification blocker.
+
+**Next action:** Ken reviews the complete-history browser and rich/thin reviews, then records explicit approval or bounded corrections. After Owner approval, record it and stop at Gate 2 HARD — Analyst. Do not begin P2-03 automatically.
