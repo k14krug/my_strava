@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 import gzip
 import math
 from pathlib import Path
+import re
 import sys
 import xml.etree.ElementTree as ET
 import zlib
@@ -66,6 +67,10 @@ def _timestamp(value):
         return None
     try:
         text = value.strip().replace('Z', '+00:00')
+        if re.search(r'\d{2}:\d{2}:\d{2}[.,]\d{7,}', text):
+            # Newer Python versions may silently truncate excess digits. The
+            # bounded parser must reject precision it cannot retain exactly.
+            raise RideWorksError('Unsupported XML timestamp precision')
         try:
             stamp = datetime.fromisoformat(text)
         except ValueError:
