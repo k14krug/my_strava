@@ -329,6 +329,27 @@ class Store:
             ).fetchall()
             return dict(activity=dict(activity), sources=[self._source_evidence(s) for s in sources])
 
+    def list_activities(self) -> list[dict]:
+        """List only activities with one current Phase 1 FIT Source/session.
+
+        No source ranking or new evidence-selection policy. Ambiguous activities
+        are omitted rather than choosing among multiple FIT Sources.
+        """
+        with self._transaction():
+            return [dict(row) for row in self.connection.execute("""
+                SELECT a.activity_id, s.start_time, s.sport, s.sub_sport,
+                       s.total_distance, s.total_elapsed_time
+                FROM activities a
+                JOIN sources f ON f.activity_id = a.activity_id
+                JOIN extractions e ON e.source_id = f.source_id
+                JOIN sessions s ON s.extraction_id = e.extraction_id
+                WHERE f.kind = 'file_fit' AND f.content_format = 'FIT'
+                  AND (SELECT count(*) FROM sources c
+                       WHERE c.activity_id = a.activity_id
+                       AND c.kind = 'file_fit' AND c.content_format = 'FIT') = 1
+                ORDER BY s.start_time DESC, a.activity_id
+            """)]
+
     def get_source(self, source_id) -> dict:
         with self._transaction():
             source = self.connection.execute("SELECT * FROM sources WHERE source_id = ?", (source_id,)).fetchone()
