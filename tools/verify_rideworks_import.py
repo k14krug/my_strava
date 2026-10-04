@@ -48,7 +48,7 @@ def verify(input_path, work_dir=None):
             assert source['byte_size'] == len(original_bytes)
             assert source['packaging'] == 'gzip' and source['content_format'] == 'FIT'
             assert extraction['parser_name'] == 'fitdecode' and extraction['parser_version'] == '0.11.0'
-            assert extraction['mapping_version'] == 'fit-v1'
+            assert extraction['mapping_version'] == 'fit-v2'
             assert extraction['artifact_sha256'] == source['sha256']
             records = evidence['records']
             assert len(records) == 3621

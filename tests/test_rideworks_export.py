@@ -333,6 +333,43 @@ class ExportTests(unittest.TestCase):
 
 
 class MigrationTests(unittest.TestCase):
+    def test_schema2_migrates_additively_preserving_existing_fit_v1_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            seed = root/'seed.fit'
+            seed.write_bytes(make_fit())
+            with patch('rideworks.store.MIGRATION_3', ''):
+                with Store(root) as old:
+                    imported = old.import_fit(seed)
+                    old.connection.execute("UPDATE extractions SET mapping_version='fit-v1'")
+                    tables = ('activities','sources','extractions','sessions','records','laps','events')
+                    before = {table:[tuple(r) for r in old.connection.execute(f'SELECT * FROM {table}')]
+                              for table in tables}
+                    self.assertEqual(old.connection.execute('PRAGMA user_version').fetchone()[0],2)
+            with Store(root) as migrated:
+                self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],3)
+                self.assertEqual({table:[tuple(r) for r in migrated.connection.execute(f'SELECT * FROM {table}')]
+                                  for table in tables},before)
+                self.assertEqual(migrated.get_source(imported['source_id'])['extraction']['mapping_version'],'fit-v1')
+                self.assertEqual(migrated.connection.execute('SELECT COUNT(*) FROM fit_lap_timestamps').fetchone()[0],0)
+
+    def test_failed_schema3_migration_keeps_schema2_usable(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with sqlite3.connect(root/'rideworks.sqlite3') as connection:
+                connection.executescript(store_module.SCHEMA)
+                connection.executescript(store_module.MIGRATION_2)
+                connection.execute("INSERT INTO activities VALUES ('existing','2024-01-01')")
+            broken = store_module.MIGRATION_3.replace('PRAGMA user_version = 3;', 'INSERT INTO nonexistent VALUES (1);')
+            with patch('rideworks.store.MIGRATION_3', broken), self.assertRaises(sqlite3.Error):
+                Store(root)
+            with sqlite3.connect(root/'rideworks.sqlite3') as connection:
+                self.assertEqual(connection.execute('PRAGMA user_version').fetchone()[0],2)
+                self.assertEqual(connection.execute('SELECT activity_id FROM activities').fetchone()[0],'existing')
+                self.assertEqual(connection.execute("SELECT COUNT(*) FROM sqlite_master WHERE name='fit_lap_timestamps'").fetchone()[0],0)
+            with Store(root) as recovered:
+                self.assertEqual(recovered.connection.execute('PRAGMA user_version').fetchone()[0],3)
+
     def test_real_schema1_fixture_migrates_ids_bytes_extraction_and_review(self):
         from rideworks.analysis import analyze_activity
         from rideworks.web import review_page
@@ -353,7 +390,7 @@ class MigrationTests(unittest.TestCase):
                     original_bytes = (root / before['sources'][0][-2]).read_bytes()
                     self.assertEqual(old.connection.execute('PRAGMA user_version').fetchone()[0],1)
             with Store(root) as migrated:
-                self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],2)
+                self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],3)
                 after = {table: [tuple(r) for r in migrated.connection.execute(f'SELECT * FROM {table}')]
                          for table in tables}
                 self.assertEqual(after, before)
@@ -379,7 +416,7 @@ class MigrationTests(unittest.TestCase):
                 self.assertEqual(connection.execute('SELECT activity_id FROM activities').fetchone()[0],'existing')
                 self.assertEqual(connection.execute("SELECT COUNT(*) FROM sqlite_master WHERE name='export_snapshots'").fetchone()[0],0)
             with Store(root) as recovered:
-                self.assertEqual(recovered.connection.execute('PRAGMA user_version').fetchone()[0],2)
+                self.assertEqual(recovered.connection.execute('PRAGMA user_version').fetchone()[0],3)
 
 
 if __name__ == '__main__':

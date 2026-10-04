@@ -242,7 +242,7 @@ written. A structurally valid export with an unreadable or malformed individual
 activity file keeps that row's CSV source and reports the file failure. It does
 not create a successful file Source/extraction for the failed file.
 
-Opening an accepted schema-1 data directory migrates it atomically to schema 2.
+Opening an accepted schema-1 data directory migrates it atomically to schema 3.
 This is an additive SQLite migration: existing tables, Activity/Source IDs,
 artifacts and FIT extractions remain intact. A failed migration rolls back its
 DDL/version changes; it does not make a partially migrated store appear usable.
@@ -262,7 +262,7 @@ Evidence remains source-centered:
   and elevation CSV units are explicitly unspecified where the export labels
   do not establish them. No global km/metre or timer/moving-time equivalence is
   guessed. CSV dates without offsets retain unknown timezone.
-- FIT decoding uses the accepted `fitdecode==0.11.0` / `fit-v1` path. TCX/GPX use
+- FIT decoding uses the accepted `fitdecode==0.11.0` / `fit-v2` path. TCX/GPX use
   standard-library ElementTree / `xml-activity-v1`. Received gzip bytes remain
   the original; decompression and leading XML whitespace removal are transient.
 - XML preserves point order, zero/missing power/HR, absent timestamps, duplicate
@@ -314,3 +314,19 @@ reads FIT/TCX/GPX/CSV-only examples through Store, then reruns in another proces
 and checks every persisted identity/current extraction and the full read result.
 It removes its disposable store and prints aggregate evidence only. Neither the
 personal export, runtime database, source titles nor raw streams belong in Git.
+
+
+P2-01 JIT §16A authorizes one FIT timing exception: an integer-valued
+`lap.timestamp` is retained exactly in `fit_lap_timestamps`, tied to its
+extraction/lap source order and `timestamp` field. Its status is
+`present_uninterpreted_non_absolute`, and its absolute lap timestamp stays null.
+No timebase, replacement UTC instant or device-relative interpretation is inferred.
+Aware lap timestamps retain the accepted UTC normalization. Record, session,
+event and lap-start timing keep their existing strict handling.
+
+Schema 3 adds only this typed FIT table; schema-1 and schema-2 migration preserves
+all previous evidence and extraction versions. New FIT extraction uses `fit-v2`
+so the widened lap representation is identifiable. Existing `fit-v1` extraction
+is not silently rewritten; explicit `reextract` from the preserved original
+creates a current `fit-v2` revision and reproduces raw lap integers exactly.
+`get_source()`, `get_activity()` and compact `inspect` expose this evidence.

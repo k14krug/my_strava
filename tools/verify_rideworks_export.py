@@ -8,6 +8,8 @@ streams and stable source IDs are deliberately excluded.
 import argparse
 from collections import Counter
 import hashlib
+import gzip
+import io
 import json
 from pathlib import Path
 import sqlite3
@@ -16,6 +18,7 @@ import sys
 import tempfile
 import time
 
+import fitdecode
 from rideworks import Store, RideWorksError
 from rideworks.strava_export import ExportInput, read_rows
 
@@ -76,7 +79,7 @@ def verify(export_path, work_dir=None):
                 csv_sources = [s for s in enriched['sources'] if s['source']['kind'] == 'strava_export']
                 require(len(csv_sources) == 1 and bool(csv_sources[0]['summary']['title']), 'real source title available')
                 require(len(enriched['sources']) == 2, 'same Activity has FIT and CSV sources')
-                require(store.connection.execute('PRAGMA user_version').fetchone()[0] == 2, 'schema version')
+                require(store.connection.execute('PRAGMA user_version').fetchone()[0] == 3, 'schema version')
                 require(store.connection.execute('PRAGMA integrity_check').fetchone()[0] == 'ok', 'SQLite integrity')
                 require(not store.connection.execute('PRAGMA foreign_key_check').fetchall(), 'foreign-key integrity')
                 require(store.connection.execute('SELECT COUNT(*) FROM export_snapshots').fetchone()[0] == 1, 'single CSV snapshot')
@@ -111,8 +114,38 @@ def verify(export_path, work_dir=None):
                 require(set(samples) == {'FIT','TCX','GPX'}, 'FIT/TCX/GPX readable through Store')
                 require(store.get_activity(csv_only[0]['activity']['activity_id'])['sources'][0]['records'] is None,
                         'CSV-only Store read has no native records')
+                lap_sources = [r[0] for r in store.connection.execute('''
+                    SELECT DISTINCT e.source_id FROM fit_lap_timestamps t
+                    JOIN extractions e ON e.extraction_id=t.extraction_id
+                ''')]
+                lap_field_count = 0
+                for source_id in lap_sources:
+                    detail = store.get_source(source_id)
+                    source = detail['source']
+                    artifact = (data_dir/source['stored_path']).read_bytes()
+                    decoded = gzip.decompress(artifact) if source['packaging']=='gzip' else artifact
+                    # Independent raw-field oracle: do not invoke production
+                    # decode_fit/_timestamp as their own preservation check.
+                    raw_fields = []
+                    with fitdecode.FitReader(io.BytesIO(decoded), check_crc=fitdecode.CrcCheck.RAISE,
+                            error_handling=fitdecode.ErrorHandling.RAISE) as reader:
+                        for order, frame in enumerate(reader):
+                            if frame.frame_type != fitdecode.FIT_FRAME_DATA or frame.name != 'lap':
+                                continue
+                            for field in frame.fields:
+                                if field.name == 'timestamp' and type(field.value) is int:
+                                    raw_fields.append(dict(source_order=order, field_name='timestamp',
+                                        raw_integer=field.value, status='present_uninterpreted_non_absolute'))
+                    actual = [{k:v for k,v in field.items() if k != 'extraction_id'}
+                              for field in detail['fit_lap_timestamps']]
+                    require(actual == raw_fields, 'lap integers equal independent original-field decode')
+                    laps = {lap['source_order']:lap for lap in detail['laps']}
+                    require(all(laps[field['source_order']]['timestamp'] is None for field in actual),
+                            'uninterpreted lap absolute timestamp unavailable')
+                    require(detail['extraction']['mapping_version']=='fit-v2', 'versioned lap mapping')
+                    lap_field_count += len(actual)
                 before_ids = {table: [tuple(r) for r in store.connection.execute(f'SELECT * FROM {table} ORDER BY 1')]
-                              for table in ('activities','sources','extractions','strava_export_sources','export_snapshots','export_row_locations')}
+                              for table in ('activities','sources','extractions','strava_export_sources','export_snapshots','export_row_locations','fit_lap_timestamps')}
                 native_power_sources = sum(s['native_power_stream_exists'] for item in history for s in item['sources'])
             started = time.monotonic()
             second, code = cli('import-strava-export', export_path)
@@ -126,12 +159,27 @@ def verify(export_path, work_dir=None):
                 after_ids = {table: [tuple(r) for r in restarted.connection.execute(f'SELECT * FROM {table} ORDER BY 1')]
                              for table in before_ids}
                 require(after_ids == before_ids, 'all identities/extraction revisions/snapshot rows remain stable')
-            return dict(result='passed', schema_version=2, first_import=first, restarted_rerun=second,
+                # Re-extract only after proving restart/rerun identity stability;
+                # a new extraction revision is intentional, not a rerun mutation.
+                for source_id in lap_sources:
+                    before = restarted.get_source(source_id)
+                    restarted.reextract(source_id)
+                    after = restarted.get_source(source_id)
+                    require(after['source'] == before['source'], 're-extraction keeps source identity')
+                    for section in ('records','laps','events','fit_lap_timestamps'):
+                        without_id = lambda rows: [{k:v for k,v in row.items() if k!='extraction_id'} for row in rows]
+                        require(without_id(before[section]) == without_id(after[section]),
+                                're-extraction preserves native and uninterpreted lap evidence')
+            return dict(result='passed', schema_version=3, first_import=first, restarted_rerun=second,
                         final_activity_count=1434, file_source_count=1421, csv_source_count=1434,
                         csv_only_activity_count=13, csv_snapshot_count=1, all_originals_exact_and_verified=True,
                         representative_activity_id_preserved=True, representative_fit_evidence_unchanged=True,
                         representative_source_title_available=True, process_restart_history_unchanged=True,
                         all_identities_stable_on_rerun=True, sampled_store_read_formats=['FIT','TCX','GPX','CSV-only'],
+                        uninterpreted_lap_timestamp_source_count=len(lap_sources),
+                        uninterpreted_lap_timestamp_field_count=lap_field_count,
+                        lap_integer_independent_decode_verified=True,
+                        lap_integer_reextraction_verified=True,
                         native_power_source_count=native_power_sources,
                         first_import_elapsed_seconds=round(first_seconds,2), rerun_elapsed_seconds=round(second_seconds,2),
                         python_version=sys.version.split()[0], sqlite_version=sqlite3.sqlite_version)

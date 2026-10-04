@@ -139,6 +139,22 @@ PRAGMA user_version = 2;
 COMMIT;
 """
 
+MIGRATION_3 = """
+BEGIN IMMEDIATE;
+CREATE TABLE fit_lap_timestamps (
+    extraction_id TEXT NOT NULL,
+    source_order INTEGER NOT NULL,
+    field_name TEXT NOT NULL CHECK(field_name = 'timestamp'),
+    raw_integer INTEGER NOT NULL CHECK(typeof(raw_integer) = 'integer'),
+    status TEXT NOT NULL CHECK(status = 'present_uninterpreted_non_absolute'),
+    PRIMARY KEY(extraction_id, source_order),
+    FOREIGN KEY(extraction_id, source_order)
+        REFERENCES laps(extraction_id, source_order) ON DELETE CASCADE
+);
+PRAGMA user_version = 3;
+COMMIT;
+"""
+
 SUMMARY_UNITS = {
     "total_elapsed_time": "s", "total_timer_time": "s", "total_distance": "m",
     "total_ascent": "m", "avg_power": "W", "max_power": "W",
@@ -186,7 +202,7 @@ class Store:
         self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.execute("PRAGMA synchronous = FULL")
         version = self.connection.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1, 2):
+        if version not in (0, 1, 2, 3):
             self.close()
             raise RideWorksError(f"Unsupported RideWorks schema version: {version}")
         try:
@@ -195,6 +211,9 @@ class Store:
                 version = 1
             if version == 1:
                 self.connection.executescript(MIGRATION_2)
+                version = self.connection.execute("PRAGMA user_version").fetchone()[0]
+            if version == 2:
+                self.connection.executescript(MIGRATION_3)
             _sync_directory(self.data_dir)
         except BaseException:
             self.connection.rollback()
@@ -246,6 +265,7 @@ class Store:
         self._insert_rows("sessions", extraction_id, [parsed.session])
         self._insert_rows("records", extraction_id, parsed.records)
         self._insert_rows("laps", extraction_id, parsed.laps)
+        self._insert_rows("fit_lap_timestamps", extraction_id, parsed.uninterpreted_lap_timestamps)
         self._insert_rows("events", extraction_id, parsed.events)
         if xml is not None:
             self.connection.execute("INSERT INTO xml_context VALUES (?, ?)",
@@ -408,6 +428,10 @@ class Store:
         context = self.connection.execute("SELECT context_json FROM xml_context WHERE extraction_id = ?", (key,)).fetchone()
         if context is not None:
             evidence["xml_context"] = json.loads(context[0])
+        uninterpreted = [dict(row) for row in self.connection.execute(
+            "SELECT * FROM fit_lap_timestamps WHERE extraction_id = ? ORDER BY source_order", (key,))]
+        if uninterpreted:
+            evidence["fit_lap_timestamps"] = uninterpreted
         return evidence
 
     def get_activity(self, activity_id) -> dict:
@@ -466,9 +490,13 @@ class Store:
             compact["event_count"] = len(evidence["events"])
             if "xml_context" in evidence:
                 compact["xml_context"] = evidence["xml_context"]
+            if "fit_lap_timestamps" in evidence:
+                compact["fit_lap_timestamps"] = evidence["fit_lap_timestamps"]
             compact_sources.append(compact)
         timezone_label = ("UTC" if all(e["source"]["content_format"] == "FIT" for e in snapshot["sources"])
                           else "explicit offsets retained/normalized; absent offsets unknown")
+        if any("fit_lap_timestamps" in evidence for evidence in snapshot["sources"]):
+            timezone_label += "; uninterpreted FIT lap integers have no established timebase"
         return dict(activity=snapshot["activity"], sources=compact_sources,
                     summary_units=SUMMARY_UNITS, timestamp_timezone=timezone_label)
 
