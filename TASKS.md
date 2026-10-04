@@ -176,7 +176,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** in_progress — P2-01 accepted; P2-02 planning ready.
+**Status:** in_progress — P2-02 Activities browser implementation.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
@@ -210,7 +210,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-02 — Scalable Activities browser
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Make the full imported history practical to browse rather than rendering an unbounded list.
 

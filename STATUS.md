@@ -14,7 +14,11 @@
 
 **P2-01 evidence:** `reports/P2-01/verification.md`, `reports/P2-01/acceptance.json`.
 
-**Current task:** P2-02 — pending implementation.
+**Current task:** P2-02 — in_progress.
+
+**Implementation state:** in_progress.
+
+**Branch:** `task/p2-02-activities-browser`.
 
 **P2-02 JIT:** authored — `docs/tasks/P2-02.md`.
 
@@ -26,4 +30,4 @@
 
 **Blockers:** none.
 
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-02. Do not begin P2-03 automatically.
+**Next action:** implement and verify the bounded browser under the P2-02 JIT, then stop at Gate 1 HARD — Owner. Do not begin P2-03 automatically.

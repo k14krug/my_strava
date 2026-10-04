@@ -337,3 +337,45 @@ remain recoverable from its exact original. XML timestamps with 1–6 fractional
 decimal places are parsed exactly, including centiseconds on Python 3.10.
 Greater precision is rejected rather than silently truncated. Missing offsets
 remain unknown; no sample is resampled or moved to a different instant.
+
+### Activities browser
+
+Start the same loopback-only server against your imported store:
+
+```bash
+python -m rideworks --data-dir <data-dir> serve --port 8765
+```
+
+Open `http://127.0.0.1:8765/`. Activities defaults to cycling, newest first,
+with 30 rows per page. Select All activities to include non-cycling history;
+individual source type/subtype choices, partial case-insensitive title search,
+From/To dates and newest/oldest/longest-duration/longest-distance sorts use GET
+query state. Applying filters returns to page 1; previous/next retain them.
+Missing sort values come last and remain unavailable, including distances or
+durations whose CSV units have not been established. Date filters use the source
+calendar day (UTC for directly supported absolute timestamps); CSV-only dates
+without an offset retain their own date and unknown timezone.
+
+Display prefers the latest non-empty imported Strava-export title without
+changing any source observation. Type/subtype remain separate. Without a source
+name, the browser labels its type/date fallback as derived. Hover over list
+distance/duration to see the selected file summary context. This narrow display
+policy lives in `rideworks/history.py`; it is not a universal source ranking.
+
+Every row opens its stable `/activities/<Activity ID>` route. A single supported
+FIT source keeps the accepted chart and best-20 review, now with source-title
+provenance. TCX, GPX, CSV-only and ambiguous FIT evidence get a thin review of
+their associated source metadata/availability, with detailed analysis explicitly
+unavailable. CSV summary watts are never substituted for native streams.
+
+For the known imported history, local HTTP/restart acceptance is reproducible:
+
+```bash
+python tools/verify_rideworks_browser.py --data-dir <local-review-store> \
+  --representative <local-representative.fit.gz>
+```
+
+This starts two successive loopback verification servers on port 8767 (override
+with `--port`), checks the full known population/query/routes/restart and emits
+aggregate JSON. It leaves the store intact. Real-browser inspection and Owner
+visual/usability approval remain separate required P2-02 gates.
