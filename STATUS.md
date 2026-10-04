@@ -6,18 +6,20 @@
 
 **Current task:** P2-01 — in_progress
 
-**Implementation state:** blocked — mandatory source-timing stop; not ready for acceptance.
+**Implementation state:** ready_for_review — stopped at HARD — Analyst.
 
-**Branch / PR:** `task/p2-01-historical-import` / [#13](https://github.com/k14krug/my_strava/pull/13) (draft)
+**Branch / PR:** `task/p2-01-historical-import` / [#13](https://github.com/k14krug/my_strava/pull/13)
 
-**Implementation head:** `dd05905`; subsequent handoff changes contain documentation/evidence only.
+**Implementation head:** `c131092`; final publication changes contain documentation/evidence only.
 
-**Implemented foundation:** bulk ZIP/root import; shared exact CSV snapshots and source titles/provenance; FIT/TCX/GPX originals/native extraction; safe schema-1 migration; conservative enrichment; source-aware history reads.
+**Implemented:** one ZIP/root bulk import; exact shared CSV snapshot and file preservation; actual titles/provenance; conservative enrichment; FIT/TCX/GPX native extraction; schema-1/2 → 3 migration; source-aware history read boundary. Analyst-authorized integer lap timestamps are retained losslessly with unknown interpretation and null absolute timestamps (`fit-v2`). Other FIT timing remains strict.
 
-**Verification:** 113 tests passed (94 prior + 19 new). Known 1,434/1,421/13 population passed preflight. Disposable real-data import stopped with 241 Activities/CSV Sources and 233 completed file Sources. Representative seed Activity was enriched with actual title evidence; FIT remains 3,621 native records / 118 W average. All 233 completed artifact hashes/sizes verify. Full-population and restart/rerun acceptance remain pending.
+**Verification:** 123 tests passed. Clean seeded full export and restarted rerun passed: 1,434 Activities, 1,421 artifacts, 13 CSV-only Activities, zero failures/unresolved associations. All originals match received bytes/hash/size. Representative Activity enriched without duplication; IDs/extractions stable across rerun. All 18 integer lap fields across 17 Sources independently verified and reproduced by re-extraction. Real Phase 1 import/best-20 regressions and all 157 XML production parser checks passed.
 
-**Blocker:** seven diagnosed files strictly decode but supply an integer `lap.timestamp`; accepted `fit-v1` requires absolute UTC and rejects them. Native record timestamps in those files are absolute. No FIT timing interpretation/repair was invented. One additional row was interrupted; no whole-export failure prevalence is claimed.
+**Runtime:** first bulk pass 616.55 seconds; restarted rerun 2.72 seconds.
 
-**Evidence:** `reports/P2-01/verification.md`, `reports/P2-01/stop-evidence.json`.
+**Evidence:** `reports/P2-01/verification.md`, `reports/P2-01/acceptance.json`. No personal source/runtime data or private titles published.
 
-**Next action:** Analyst reviews PR #13 and specifies/authorizes lossless handling or an explicit disposition for non-absolute FIT lap timing under the P2-01 JIT and accepted Phase 1 contract. Dex has stopped. Keep P2-01 `in_progress`; do not start P2-02.
+**Blockers:** none for implementation/verification; final Analyst acceptance pending.
+
+**Next action:** Analyst reviews PR #13 against the updated P2-01 JIT and Phase 2 historical-import contract, then records explicit acceptance or actionable feedback on GitHub. Keep P2-01 `in_progress`; do not begin P2-02 automatically.

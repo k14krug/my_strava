@@ -330,3 +330,10 @@ so the widened lap representation is identifiable. Existing `fit-v1` extraction
 is not silently rewritten; explicit `reextract` from the preserved original
 creates a current `fit-v2` revision and reproduces raw lap integers exactly.
 `get_source()`, `get_activity()` and compact `inspect` expose this evidence.
+
+FIT conflict checks apply to the understood extraction fields; disagreement in
+unused native/enhanced speed fields does not reject the source. Those fields
+remain recoverable from its exact original. XML timestamps with 1–6 fractional
+decimal places are parsed exactly, including centiseconds on Python 3.10.
+Greater precision is rejected rather than silently truncated. Missing offsets
+remain unknown; no sample is resampled or moved to a different instant.

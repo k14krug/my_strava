@@ -202,7 +202,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution blocker:** Analyst disposition for non-absolute FIT lap timestamps discovered during seeded local acceptance; implementation/evidence on draft PR #13. Full-export completion and restart/rerun verification remain pending.
+**Execution state:** implementation/verification complete on PR #13 under Analyst-authorized lossless FIT lap-timestamp handling in JIT §16A. Complete 1,434/1,421/13 seeded acceptance and restart/idempotent rerun passed. Stopped at HARD — Analyst; final acceptance pending.
 
 **Dependency:** Phase 1 accepted; Phase 2 acceptance contract complete.
 
