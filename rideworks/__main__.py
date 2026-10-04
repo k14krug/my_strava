@@ -16,6 +16,7 @@ def main(argv=None):
     parser.add_argument("--data-dir", help="Data location (overrides RIDEWORKS_DATA_DIR and ~/.rideworks)")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("import-fit", help="Preserve and import one FIT/FIT.GZ").add_argument("path")
+    commands.add_parser("import-strava-export", help="Import historical activities from a Strava ZIP or extracted root").add_argument("path")
     commands.add_parser("inspect", help="Compact source evidence; no raw streams").add_argument("activity_id")
     commands.add_parser("analyze", help="Source summary and best 20-minute result; no raw streams").add_argument("activity_id")
     commands.add_parser("reextract", help="Rebuild from the preserved original").add_argument("source_id")
@@ -31,6 +32,8 @@ def main(argv=None):
         with Store(config.data_dir) as store:
             if args.command == "import-fit":
                 result = store.import_fit(args.path)
+            elif args.command == "import-strava-export":
+                result = store.import_strava_export(args.path)
             elif args.command == "inspect":
                 result = store.inspect(args.activity_id)
             elif args.command == "analyze":
@@ -38,6 +41,8 @@ def main(argv=None):
             else:
                 result = store.reextract(args.source_id)
         print(json.dumps(result, indent=2, ensure_ascii=True))
+        if args.command == "import-strava-export" and result["status"] != "completed":
+            return 1
     except (RideWorksError, OSError, sqlite3.Error) as exc:
         print(f"RideWorks: {exc}", file=sys.stderr)
         return 1

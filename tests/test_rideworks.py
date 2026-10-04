@@ -7,6 +7,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -187,6 +188,90 @@ class ImportTests(unittest.TestCase):
         with self.assertRaisesRegex(InvalidFitError, 'absolute UTC'):
             self.store.import_fit(self.input)
         self.assert_empty()
+
+    def test_integer_lap_timestamp_is_present_uninterpreted_and_reextracts_exactly(self):
+        for raw in (0, 73):
+            with self.subTest(raw=raw):
+                self.input.write_bytes(make_fit(lap_timestamp=raw))
+                imported, evidence = self.evidence()
+                lap = evidence['laps'][0]
+                self.assertIsNone(lap['timestamp'])
+                self.assertIsNotNone(lap['start_time'])
+                item = evidence['fit_lap_timestamps'][0]
+                self.assertEqual(item, dict(extraction_id=imported['extraction_id'],
+                    source_order=lap['source_order'], field_name='timestamp', raw_integer=raw,
+                    status='present_uninterpreted_non_absolute'))
+                self.assertIs(type(item['raw_integer']), int)
+                self.assertEqual(evidence['extraction']['mapping_version'], 'fit-v2')
+                self.assertEqual(self.store.inspect(imported['activity_id'])['sources'][0]['fit_lap_timestamps'], [item])
+                self.assertIn('no established timebase', self.store.inspect(imported['activity_id'])['timestamp_timezone'])
+                original = (self.store.data_dir/evidence['source']['stored_path']).read_bytes()
+                self.assertEqual(original, self.input.read_bytes())
+                self.input.unlink()
+                rebuilt = self.store.reextract(imported['source_id'])
+                after = self.store.get_source(imported['source_id'])
+                self.assertNotEqual(rebuilt['extraction_id'], imported['extraction_id'])
+                self.assertEqual([{k:v for k,v in r.items() if k != 'extraction_id'} for r in after['fit_lap_timestamps']],
+                                 [{k:v for k,v in r.items() if k != 'extraction_id'} for r in evidence['fit_lap_timestamps']])
+                self.assertIsNone(after['laps'][0]['timestamp'])
+                self.assertEqual(self.store.connection.execute(
+                    'SELECT COUNT(*) FROM fit_lap_timestamps WHERE extraction_id = ?',
+                    (imported['extraction_id'],)).fetchone()[0], 0)
+
+    def test_absolute_and_missing_lap_timestamps_have_no_uninterpreted_integer(self):
+        for timestamp in (1100000002, None):
+            self.input.write_bytes(make_fit(lap_timestamp=timestamp))
+            _, evidence = self.evidence()
+            self.assertNotIn('fit_lap_timestamps', evidence)
+            self.assertEqual(evidence['laps'][0]['timestamp'] is None, timestamp is None)
+            if timestamp is not None:
+                self.assertTrue(evidence['laps'][0]['timestamp'].endswith('+00:00'))
+
+    def test_lap_integer_exception_does_not_relax_other_fit_timing(self):
+        cases = [dict(timestamps=(100,101,102)), dict(session_timestamp=100),
+                 dict(session_start_time=100), dict(event_timestamps=(100,1100000002)),
+                 dict(lap_start_time=100)]
+        for fields in cases:
+            with self.subTest(fields=fields):
+                self.input.write_bytes(make_fit(lap_timestamp=73, **fields))
+                with self.assertRaisesRegex(InvalidFitError, 'absolute UTC'):
+                    self.store.import_fit(self.input)
+                self.assert_empty()
+
+    def test_failed_reextract_preserves_uninterpreted_lap_evidence(self):
+        self.input.write_bytes(make_fit(lap_timestamp=73))
+        imported, before = self.evidence()
+        self.store.connection.execute("""CREATE TRIGGER fail_record BEFORE INSERT ON records
+            BEGIN SELECT RAISE(ABORT, 'injected failure'); END""")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.store.reextract(imported['source_id'])
+        self.assertEqual(self.store.get_source(imported['source_id']), before)
+
+    def test_uninterpreted_lap_does_not_change_absolute_native_best20(self):
+        from rideworks.analysis import analyze_activity
+        self.input.write_bytes(make_fit(lap_timestamp=73, powers=(100,)*1200,
+            heart_rates=(110,)*1200, timestamps=tuple(range(1100000000,1100001200))))
+        imported, evidence = self.evidence()
+        analysis = analyze_activity(self.store, imported['activity_id'])
+        self.assertEqual(analysis['best_20_minute_power']['average_watts'], 100)
+        self.assertEqual(analysis['best_20_minute_power']['method'], 'best-average-power-v1')
+        self.assertEqual(analysis['native_records'], evidence['records'])
+        self.assertEqual(len(evidence['fit_lap_timestamps']), 1)
+
+    def test_conflicting_unused_speed_fields_do_not_reject_typed_fit_evidence(self):
+        self.input.write_bytes(make_fit(conflicting_unused_speed=True))
+        _, evidence = self.evidence()
+        self.assertEqual(len(evidence['records']), 3)
+        self.assertEqual(evidence['summary']['sport'], 'cycling')
+        self.assertNotIn('enhanced_avg_speed', evidence['summary'])
+
+    def test_conflicting_extracted_field_still_rejects_the_fit_mapping(self):
+        from rideworks.fit import _values
+        frame = SimpleNamespace(name='session', fields=[
+            SimpleNamespace(name='avg_power', value=100),
+            SimpleNamespace(name='avg_power', value=200)])
+        with self.assertRaisesRegex(InvalidFitError, 'Conflicting decoded FIT field: avg_power'):
+            _values(frame)
 
     def test_database_failure_rolls_back_metadata_and_original(self):
         self.store.connection.execute("""CREATE TRIGGER fail_record BEFORE INSERT ON records

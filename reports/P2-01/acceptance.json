@@ -1,0 +1,72 @@
+{
+  "result": "passed",
+  "schema_version": 3,
+  "first_import": {
+    "csv_rows_seen": 1434,
+    "activities_created": 1433,
+    "existing_activities_reused": 1,
+    "existing_activities_enriched": 1,
+    "csv_sources_created": 1434,
+    "csv_sources_reused": 0,
+    "csv_only_activities": 13,
+    "referenced_artifacts_attempted": 1421,
+    "artifacts_imported": 1420,
+    "artifacts_reused": 1,
+    "format_counts": {
+      "FIT.GZ": 1264,
+      "GPX": 29,
+      "GPX.GZ": 76,
+      "TCX.GZ": 52
+    },
+    "failures": [],
+    "unresolved_associations": [],
+    "status": "completed"
+  },
+  "restarted_rerun": {
+    "csv_rows_seen": 1434,
+    "activities_created": 0,
+    "existing_activities_reused": 1434,
+    "existing_activities_enriched": 0,
+    "csv_sources_created": 0,
+    "csv_sources_reused": 1434,
+    "csv_only_activities": 13,
+    "referenced_artifacts_attempted": 1421,
+    "artifacts_imported": 0,
+    "artifacts_reused": 1421,
+    "format_counts": {
+      "FIT.GZ": 1264,
+      "GPX": 29,
+      "GPX.GZ": 76,
+      "TCX.GZ": 52
+    },
+    "failures": [],
+    "unresolved_associations": [],
+    "status": "completed"
+  },
+  "final_activity_count": 1434,
+  "file_source_count": 1421,
+  "csv_source_count": 1434,
+  "csv_only_activity_count": 13,
+  "csv_snapshot_count": 1,
+  "all_originals_exact_and_verified": true,
+  "representative_activity_id_preserved": true,
+  "representative_fit_evidence_unchanged": true,
+  "representative_source_title_available": true,
+  "process_restart_history_unchanged": true,
+  "all_identities_stable_on_rerun": true,
+  "sampled_store_read_formats": [
+    "FIT",
+    "TCX",
+    "GPX",
+    "CSV-only"
+  ],
+  "uninterpreted_lap_timestamp_source_count": 17,
+  "uninterpreted_lap_timestamp_field_count": 18,
+  "lap_integer_independent_decode_verified": true,
+  "lap_integer_reextraction_verified": true,
+  "native_power_source_count": 1309,
+  "first_import_elapsed_seconds": 616.55,
+  "rerun_elapsed_seconds": 2.72,
+  "python_version": "3.10.12",
+  "sqlite_version": "3.37.2"
+}

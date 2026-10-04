@@ -2,28 +2,24 @@
 
 **Product:** RideWorks
 
-**Phase 1 — Useful single-ride review:** accepted / complete
+**Phase 1:** accepted / complete — P1-01/P1-02/P1-03 done.
 
-**P1-01:** done — accepted on PR #10
+**Current task:** P2-01 — in_progress
 
-**P1-02:** done — accepted on PR #11
+**Implementation state:** ready_for_review — stopped at HARD — Analyst.
 
-**P1-03:** done — accepted at Gate 2 on PR #12
+**Branch / PR:** `task/p2-01-historical-import` / [#13](https://github.com/k14krug/my_strava/pull/13)
 
-**Phase 2 — Historical context and performance history:** planned; implementation not started
+**Implementation head:** `c131092`; final publication changes contain documentation/evidence only.
 
-**Phase 2 acceptance:** authored — `docs/PHASE_2_ACCEPTANCE.md`
+**Implemented:** one ZIP/root bulk import; exact shared CSV snapshot and file preservation; actual titles/provenance; conservative enrichment; FIT/TCX/GPX native extraction; schema-1/2 → 3 migration; source-aware history read boundary. Analyst-authorized integer lap timestamps are retained losslessly with unknown interpretation and null absolute timestamps (`fit-v2`). Other FIT timing remains strict.
 
-**P2-01 — Historical Strava-export import and enrichment:** pending
+**Verification:** 123 tests passed. Clean seeded full export and restarted rerun passed: 1,434 Activities, 1,421 artifacts, 13 CSV-only Activities, zero failures/unresolved associations. All originals match received bytes/hash/size. Representative Activity enriched without duplication; IDs/extractions stable across rerun. All 18 integer lap fields across 17 Sources independently verified and reproduced by re-extraction. Real Phase 1 import/best-20 regressions and all 157 XML production parser checks passed.
 
-**P2-01 JIT:** authored — `docs/tasks/P2-01.md`
+**Runtime:** first bulk pass 616.55 seconds; restarted rerun 2.72 seconds.
 
-**Allowed invocation:** `/TASK` or `/AUTOTASK`
+**Evidence:** `reports/P2-01/verification.md`, `reports/P2-01/acceptance.json`. No personal source/runtime data or private titles published.
 
-**Phase 2 settled decisions:** import all 1,434 known activities; preserve real source titles with provenance; scale the Activities browser with pagination/search/filter/sort; trusted best-20 history initially uses eligible Virtual Ride native source power under `best-average-power-v1`; outdoor power is excluded from that trusted trend as suspect; recent context is current best-20 versus prior 42-day best; manual pairwise ride comparison is not required; finish Phase 2 with normal forward-looking Strava synchronization for new activities.
+**Blockers:** none for implementation/verification; final Analyst acceptance pending.
 
-**P2-01 representative enrichment proof:** seed the accepted Phase 1 representative FIT, then bulk-import the export and prove the same RideWorks Activity is enriched with Strava-export evidence rather than duplicated.
-
-**Blockers:** none.
-
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-01. Do not begin P2-02 automatically after P2-01 implementation/review, and do not begin Phase 3 automatically.
+**Next action:** Analyst reviews PR #13 against the updated P2-01 JIT and Phase 2 historical-import contract, then records explicit acceptance or actionable feedback on GitHub. Keep P2-01 `in_progress`; do not begin P2-02 automatically.

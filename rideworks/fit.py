@@ -1,6 +1,6 @@
 """Narrow typed FIT extraction. No signal repair or application calculations."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import gzip
 from pathlib import Path
@@ -10,7 +10,7 @@ import fitdecode
 
 from .errors import InvalidFitError
 
-MAPPING_VERSION = "fit-v1"
+MAPPING_VERSION = "fit-v2"
 PARSER_VERSION = "0.11.0"
 
 
@@ -59,18 +59,40 @@ class Event:
 
 
 @dataclass(frozen=True)
+class UninterpretedLapTimestamp:
+    source_order: int
+    field_name: str
+    raw_integer: int
+    status: str = "present_uninterpreted_non_absolute"
+
+
+@dataclass(frozen=True)
 class ParsedFit:
     session: Session
     records: list[Record]
     laps: list[Lap]
     events: list[Event]
+    uninterpreted_lap_timestamps: list[UninterpretedLapTimestamp] = field(default_factory=list)
+
+
+# Ignore fields outside the typed extraction envelope before checking conflicts.
+# fitdecode may expose both native and enhanced variants under an enhanced name;
+# disagreement in an unused speed field must not reject understood evidence.
+EXTRACTED_FIELDS = {
+    "file_id": {"type"},
+    "activity": {"num_sessions"},
+    "session": set(Session.__dataclass_fields__),
+    "record": {"timestamp", "power", "heart_rate"},
+    "lap": {"start_time", "timestamp", "total_elapsed_time", "total_timer_time"},
+    "event": {"timestamp", "event", "event_type", "timer_trigger"},
+}
 
 
 def _timestamp(value):
     if value is None:
         return None
     # fitdecode's DefaultDataProcessor decodes FIT date_time as aware UTC.
-    # Device-relative timestamps are integers and cannot be guessed into UTC.
+    # Non-absolute integers do not establish a timebase and cannot be guessed into UTC.
     if not isinstance(value, datetime) or value.tzinfo is None:
         raise InvalidFitError("Unsupported FIT timestamp: absolute UTC time is required")
     return value.astimezone(timezone.utc).isoformat()
@@ -83,7 +105,7 @@ def _label(value):
 def _values(frame):
     values = {}
     for field in frame.fields:
-        if field.value is None:
+        if field.name not in EXTRACTED_FIELDS[frame.name] or field.value is None:
             continue
         if field.name in values and values[field.name] != field.value:
             raise InvalidFitError(f"Conflicting decoded FIT field: {field.name}")
@@ -100,6 +122,7 @@ def decode_fit(path: Path, packaging: str) -> ParsedFit:
     if fitdecode.__version__ != PARSER_VERSION:
         raise InvalidFitError(f"fitdecode {PARSER_VERSION} is required")
     sessions, records, laps, events = [], [], [], []
+    uninterpreted_lap_timestamps = []
     header_count = 0
     file_types = []
     activity_sessions = []
@@ -136,8 +159,15 @@ def decode_fit(path: Path, packaging: str) -> ParsedFit:
                                               _timestamp(v.get("timestamp")),
                                               v.get("power"), v.get("heart_rate")))
                     elif frame.name == "lap":
+                        timestamp = v.get("timestamp")
+                        if type(timestamp) is int:
+                            uninterpreted_lap_timestamps.append(
+                                UninterpretedLapTimestamp(source_order, "timestamp", timestamp))
+                            absolute_timestamp = None
+                        else:
+                            absolute_timestamp = _timestamp(timestamp)
                         laps.append(Lap(source_order, _timestamp(v.get("start_time")),
-                                        _timestamp(v.get("timestamp")),
+                                        absolute_timestamp,
                                         v.get("total_elapsed_time"), v.get("total_timer_time")))
                     elif frame.name == "event":
                         events.append(Event(source_order, _timestamp(v.get("timestamp")),
@@ -151,4 +181,4 @@ def decode_fit(path: Path, packaging: str) -> ParsedFit:
         raise InvalidFitError("Exactly one file_id identifying a FIT activity file is required")
     if len(activity_sessions) > 1 or any(n not in (None, 1) for n in activity_sessions):
         raise InvalidFitError("Multiple activity sessions are unsupported")
-    return ParsedFit(sessions[0], records, laps, events)
+    return ParsedFit(sessions[0], records, laps, events, uninterpreted_lap_timestamps)
