@@ -2,28 +2,22 @@
 
 **Product:** RideWorks
 
-**Phase 1 — Useful single-ride review:** accepted / complete
+**Phase 1:** accepted / complete — P1-01/P1-02/P1-03 done.
 
-**P1-01:** done — accepted on PR #10
+**Current task:** P2-01 — in_progress
 
-**P1-02:** done — accepted on PR #11
+**Implementation state:** blocked — mandatory source-timing stop; not ready for acceptance.
 
-**P1-03:** done — accepted at Gate 2 on PR #12
+**Branch / PR:** `task/p2-01-historical-import` / [#13](https://github.com/k14krug/my_strava/pull/13) (draft)
 
-**Phase 2 — Historical context and performance history:** planned; implementation not started
+**Implementation head:** `dd05905`; subsequent handoff changes contain documentation/evidence only.
 
-**Phase 2 acceptance:** authored — `docs/PHASE_2_ACCEPTANCE.md`
+**Implemented foundation:** bulk ZIP/root import; shared exact CSV snapshots and source titles/provenance; FIT/TCX/GPX originals/native extraction; safe schema-1 migration; conservative enrichment; source-aware history reads.
 
-**P2-01 — Historical Strava-export import and enrichment:** pending
+**Verification:** 113 tests passed (94 prior + 19 new). Known 1,434/1,421/13 population passed preflight. Disposable real-data import stopped with 241 Activities/CSV Sources and 233 completed file Sources. Representative seed Activity was enriched with actual title evidence; FIT remains 3,621 native records / 118 W average. All 233 completed artifact hashes/sizes verify. Full-population and restart/rerun acceptance remain pending.
 
-**P2-01 JIT:** authored — `docs/tasks/P2-01.md`
+**Blocker:** seven diagnosed files strictly decode but supply an integer `lap.timestamp`; accepted `fit-v1` requires absolute UTC and rejects them. Native record timestamps in those files are absolute. No FIT timing interpretation/repair was invented. One additional row was interrupted; no whole-export failure prevalence is claimed.
 
-**Allowed invocation:** `/TASK` or `/AUTOTASK`
+**Evidence:** `reports/P2-01/verification.md`, `reports/P2-01/stop-evidence.json`.
 
-**Phase 2 settled decisions:** import all 1,434 known activities; preserve real source titles with provenance; scale the Activities browser with pagination/search/filter/sort; trusted best-20 history initially uses eligible Virtual Ride native source power under `best-average-power-v1`; outdoor power is excluded from that trusted trend as suspect; recent context is current best-20 versus prior 42-day best; manual pairwise ride comparison is not required; finish Phase 2 with normal forward-looking Strava synchronization for new activities.
-
-**P2-01 representative enrichment proof:** seed the accepted Phase 1 representative FIT, then bulk-import the export and prove the same RideWorks Activity is enriched with Strava-export evidence rather than duplicated.
-
-**Blockers:** none.
-
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-01. Do not begin P2-02 automatically after P2-01 implementation/review, and do not begin Phase 3 automatically.
+**Next action:** Analyst reviews PR #13 and specifies/authorizes lossless handling or an explicit disposition for non-absolute FIT lap timing under the P2-01 JIT and accepted Phase 1 contract. Dex has stopped. Keep P2-01 `in_progress`; do not start P2-02.

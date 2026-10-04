@@ -1,0 +1,132 @@
+{
+  "result": "stopped_for_analyst_review",
+  "known_population_preflight": {
+    "csv_rows": 1434,
+    "referenced_artifacts": 1421,
+    "csv_only": 13
+  },
+  "diagnosed_files": [
+    {
+      "csv_data_row_index": 136,
+      "non_absolute_fields": [
+        {
+          "message": "lap",
+          "field": "timestamp",
+          "decoded_type": "int",
+          "source_order": 2117
+        }
+      ],
+      "record_count": 2094,
+      "non_absolute_or_missing_record_timestamps": 0,
+      "strict_fit_frame_decode_passed": true,
+      "session_count": 1
+    },
+    {
+      "csv_data_row_index": 203,
+      "non_absolute_fields": [
+        {
+          "message": "lap",
+          "field": "timestamp",
+          "decoded_type": "int",
+          "source_order": 2024
+        }
+      ],
+      "record_count": 2010,
+      "non_absolute_or_missing_record_timestamps": 0,
+      "strict_fit_frame_decode_passed": true,
+      "session_count": 1
+    },
+    {
+      "csv_data_row_index": 204,
+      "non_absolute_fields": [
+        {
+          "message": "lap",
+          "field": "timestamp",
+          "decoded_type": "int",
+          "source_order": 2528
+        }
+      ],
+      "record_count": 2514,
+      "non_absolute_or_missing_record_timestamps": 0,
+      "strict_fit_frame_decode_passed": true,
+      "session_count": 1
+    },
+    {
+      "csv_data_row_index": 205,
+      "non_absolute_fields": [
+        {
+          "message": "lap",
+          "field": "timestamp",
+          "decoded_type": "int",
+          "source_order": 2614
+        }
+      ],
+      "record_count": 2600,
+      "non_absolute_or_missing_record_timestamps": 0,
+      "strict_fit_frame_decode_passed": true,
+      "session_count": 1
+    },
+    {
+      "csv_data_row_index": 206,
+      "non_absolute_fields": [
+        {
+          "message": "lap",
+          "field": "timestamp",
+          "decoded_type": "int",
+          "source_order": 3039
+        }
+      ],
+      "record_count": 3025,
+      "non_absolute_or_missing_record_timestamps": 0,
+      "strict_fit_frame_decode_passed": true,
+      "session_count": 1
+    },
+    {
+      "csv_data_row_index": 207,
+      "non_absolute_fields": [
+        {
+          "message": "lap",
+          "field": "timestamp",
+          "decoded_type": "int",
+          "source_order": 2913
+        }
+      ],
+      "record_count": 2899,
+      "non_absolute_or_missing_record_timestamps": 0,
+      "strict_fit_frame_decode_passed": true,
+      "session_count": 1
+    },
+    {
+      "csv_data_row_index": 209,
+      "non_absolute_fields": [
+        {
+          "message": "lap",
+          "field": "timestamp",
+          "decoded_type": "int",
+          "source_order": 2924
+        }
+      ],
+      "record_count": 2910,
+      "non_absolute_or_missing_record_timestamps": 0,
+      "strict_fit_frame_decode_passed": true,
+      "session_count": 1
+    }
+  ],
+  "interrupted_store_counts": {
+    "activities": 241,
+    "sources": 233,
+    "strava_export_sources": 241,
+    "export_snapshots": 1
+  },
+  "interrupted_without_same_diagnosis": [
+    241
+  ],
+  "partial_representative_checks": {
+    "representative_same_seed_activity_enriched": true,
+    "representative_source_title_available": true,
+    "representative_native_record_count": 3621,
+    "representative_fit_average_power": 118,
+    "representative_seed_artifact_exact": true,
+    "completed_file_source_hashes_sizes_verified": 233
+  }
+}

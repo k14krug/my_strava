@@ -176,13 +176,13 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** planned — acceptance contract approved; P2-01 JIT authored; implementation not started.
+**Status:** in_progress — P2-01 historical import implementation.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
 ### P2-01 — Historical Strava-export import and enrichment
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Import the complete known Strava-export activity history through one durable, idempotent RideWorks workflow, preserving real source titles, CSV evidence, referenced FIT/TCX/GPX artifacts, CSV-only activities, and conservative source associations.
 
@@ -201,6 +201,8 @@ Only one implementation/research task should normally be `in_progress`.
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-01.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Execution blocker:** Analyst disposition for non-absolute FIT lap timestamps discovered during seeded local acceptance; implementation/evidence on draft PR #13. Full-export completion and restart/rerun verification remain pending.
 
 **Dependency:** Phase 1 accepted; Phase 2 acceptance contract complete.
 
