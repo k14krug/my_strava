@@ -2,24 +2,34 @@
 
 **Product:** RideWorks
 
-**Phase 1:** accepted / complete. **Phase 2:** in progress; P2-01/P2-02 accepted and merged.
+**Phase 1:** accepted / complete.
 
-**Current task:** P2-03 — in_progress.
+**Phase 2 — Historical context and performance history:** in progress.
 
-**Implementation state:** ready_for_review — Gate 2 HARD — Analyst; Owner approved the final Performance visual/usability result.
+**P2-01 — Historical Strava-export import and enrichment:** done.
 
-**Branch / PR:** `task/p2-03-performance-history` / [#15](https://github.com/k14krug/my_strava/pull/15) (draft).
+**P2-02 — Scalable Activities browser:** done.
 
-**Implementation head:** `1c099aa607365fc35815fe69151b34174a53ad7c`; final publication adds status/evidence only.
+**P2-03 — Trusted 20-minute Performance history:** done — Owner and Analyst accepted PR #15 on 2026-10-05.
 
-**Implemented:** one Performance surface with five Ranges, Rolling 42-day / Monthly best / Yearly best Views, optional subdued ride dots in every view, four summaries with freshness and complete paged evidence. Monthly/Yearly use lines with point markers, breaking across missing calendar periods; stems are removed. Default: one year + Rolling 42-day + Trend only. Future Performance candidates is collapsed and clearly unimplemented. Schema 4 / `best-average-power-v1` / `virtual-native-power-v1` remain unchanged; outdoor/non-virtual and summary substitutes remain excluded. No P2-04 work.
+**PR #15:** merged to `main` as `4f1a58d39177887e965ddd1a74db95c62c17e0b0`.
 
-**Verification:** 28 focused / 170 full tests and full-history Chromium rerun passed, including marker/path agreement and missing-month/year breaks in Los Angeles and Tokyo. Native/rebuild/HTTP proof retained from `fa0d877` for unchanged analytical/persistence code: 1,434 evaluated / 1,264 Virtual candidates / 1,022 eligible FIT results; 198 short / 39 incomplete timing / 5 incomplete power; 146 outdoor and 24 non-cycling excluded. All eligible results agree exactly; rolling winners at 2,019 checkpoints and all four summaries agree. Idempotent rebuild, Store/HTTP restart, SQLite integrity/foreign keys and accepted Activities/rich/thin regressions passed. Chromium verified all 15 Range/View combinations, independent monthly/yearly winners, synthetic calendar/raw/tie/zero/empty/partial-range cases, all 1,022 ride results, pointer/keyboard/Activity/back, Los Angeles/Tokyo dates and desktop/tablet/phone without overflow.
+**P2-03 verification:** 170 full / 28 focused tests passed. Full-history accounting: 1,434 Activities / 1,264 Virtual Ride candidates / 1,022 eligible trusted best-20 results; all eligible results independently verified exactly. Outdoor/non-cycling power excluded; rebuild/restart/idempotence and Chromium acceptance passed. Final Performance UI uses one Range/View surface with Rolling 42-day / Monthly best / Yearly best and Owner-approved line-chart presentation.
 
-**Evidence:** `reports/P2-03/verification.md`, `reports/P2-03/acceptance.json`. Inputs/stores/private screenshots remain local and ignored.
+**P2-03 evidence:** `reports/P2-03/verification.md`, `reports/P2-03/acceptance.json`.
 
-**Owner review:** **http://127.0.0.1:8768/performance**, disposable `local_data/p2-03-review`. Startup: `.venv/bin/python -m rideworks --data-dir local_data/p2-03-review serve --port 8768`. Rebuild if needed: `.venv/bin/python -m rideworks --data-dir local_data/p2-03-review rebuild-performance`. Screenshots: `output/playwright/p2-03-performance-desktop.png`, `p2-03-performance-phone.png`, `p2-03-monthly-desktop.png`, `p2-03-yearly-desktop.png`, `p2-03-monthly-phone.png`, `p2-03-yearly-phone.png` in that same directory.
+**Current task:** P2-04 — pending implementation.
 
-**Blockers:** none; final Analyst acceptance pending.
+**P2-04 JIT:** authored — `docs/tasks/P2-04.md`.
 
-**Next action:** Analyst reviews PR #15 against the final P2-03 JIT and verification evidence, then accepts or leaves actionable feedback. Keep P2-03 `in_progress`; do not begin P2-04 automatically.
+**P2-04 purpose:** add neutral prior-six-week context to eligible Activity Review: current trusted best-20 versus the highest eligible raw best-20 in the exact prior `(t - 42 days, t)` interval, excluding the current Activity.
+
+**Data rule:** P2-04 consumes the accepted persisted RideWorks/P2-03 history. It must not reopen/re-import the historical Strava archive, rebuild the durable source store, or automatically rebuild Performance merely to render Activity Review.
+
+**Review gates:** implementation stops first at HARD — Owner for Activity Review usability, then at HARD — Analyst for final interval/eligibility/data-access acceptance.
+
+**Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Blockers:** none.
+
+**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-04. Do not begin P2-05 automatically.
