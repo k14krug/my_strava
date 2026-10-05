@@ -2,8 +2,8 @@
 
 **Date:** 2026-10-05.
 **Branch / PR:** `task/p2-05-strava-sync` / [#17](https://github.com/k14krug/my_strava/pull/17).
-**Implementation head:** `51c700c324deea7ca60a5b077055584e0f3d9300`; subsequent publication updates evidence/status only.
-**Controlling main:** `e631f9c`; Analyst-authored `docs/tasks/P2-05.md`.
+**Implementation head:** `dea29b97622fcdd21a392e071932fbc8b9b83a9c`; subsequent publication updates evidence/status only.
+**Controlling main:** `159b236`; Analyst-authored `docs/tasks/P2-05.md`.
 **State:** implementation and synthetic/copied-history verification complete; stopped at
 Gate 1 **HARD — Owner** under JIT §21's missing-credentials provision. P2-05 is
 `in_progress`; no real OAuth connection, sync or live idempotence is claimed.
@@ -90,8 +90,10 @@ historical signatures; no automatic native scan or Performance rebuild occurs.
 .venv/bin/python -m unittest discover -s tests
 ```
 
-**20 focused tests passed in 2.022 s; 206 full tests passed in 11.384 s.**
-The 186 accepted tests remain intact; migration expectations advance to schema 5.
+**20 focused tests passed in 2.000 s; 206 full tests passed in 10.892 s.**
+The copied-example credential test proves blank entries fail safely, filling the
+template with fake credentials succeeds, and exported environment overrides remain
+intact. The 186 accepted tests remain intact; migration expectations advance to schema 5.
 New tests use fake credentials/responses exclusively, including an actual
 loopback callback with fake token exchange. State/scope/athlete, private token
 storage/rotation/failure, refresh/revocation, endpoint/header/timeout/size rules,
@@ -99,6 +101,11 @@ window boundaries, pagination, exhausted limits/429, transaction rollback,
 idempotence/reversion, association, source/native preservation, browser metadata,
 API-only exclusion, no implicit rebuild, credential errors and atomic migration
 are covered. Automated tests make no Strava requests.
+
+The setup correction changes `.env.example`, documentation and the existing
+configuration test only; sync/runtime behavior is unchanged. Full/focused tests
+were rerun. Prior copied-history, HTTP/restart and Chromium evidence below is
+retained from sync implementation `51c700c324deea7ca60a5b077055584e0f3d9300`.
 
 ## Copied full history and isolated synthetic acceptance
 
@@ -156,9 +163,17 @@ new/enriched/unchanged counts and live restart/idempotence are **pending**, not 
 or passed. The unsynced Owner review copy still contains exactly 1,434 Activities.
 
 1. Register/use the Owner's Strava application at [API settings](https://www.strava.com/settings/api).
-   Configure a loopback-capable callback domain, `127.0.0.1` or `localhost`.
-2. Set `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` locally in exported environment
-   or ignored `.env`. Keep values out of chat/GitHub. Use the Owner's Strava account.
+   In **Authorization Callback Domain**, enter exactly **`127.0.0.1`** (host only;
+   omit scheme/port/path). RideWorks supplies the full redirect URI below.
+   The [Strava setup guide](https://developers.strava.com/docs/getting-started/)
+   describes this domain field; [authentication docs](https://developers.strava.com/docs/authentication/)
+   allow loopback redirects.
+2. From the repository root, run `cp -n .env.example .env`. The example now has
+   safe blank `STRAVA_CLIENT_ID=` / `STRAVA_CLIENT_SECRET=` entries. Open the
+   ignored `.env` and enter the application's Client ID and Client Secret.
+   If `.env` already exists, copy preserves it; add/update these entries there
+   while retaining other settings. Exported values still override `.env`.
+   Keep values out of chat/GitHub. Use the Owner's Strava account.
 3. Run the commands below and grant activity:read_all in the browser. The temporary
    callback is `http://127.0.0.1:8772/strava/callback`; use --callback-port if needed.
 4. Inspect aggregate sync output, restart the review server and rerun sync for live

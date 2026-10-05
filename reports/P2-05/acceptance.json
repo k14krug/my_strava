@@ -1,6 +1,6 @@
 {
-  "implementation_head": "51c700c324deea7ca60a5b077055584e0f3d9300",
-  "controlling_main": "e631f9c",
+  "implementation_head": "dea29b97622fcdd21a392e071932fbc8b9b83a9c",
+  "controlling_main": "159b236",
   "branch": "task/p2-05-strava-sync",
   "pr": "https://github.com/k14krug/my_strava/pull/17",
   "verification_date": "2026-10-05",
@@ -121,5 +121,21 @@
   },
   "owner_approval": "pending",
   "analyst_acceptance": "pending",
-  "phase_3_started": false
+  "phase_3_started": false,
+  "credential_setup_correction": {
+    "example_blank_entries": true,
+    "copy_edit_connect_documented": true,
+    "callback_domain": "127.0.0.1",
+    "callback_uri": "http://127.0.0.1:8772/strava/callback",
+    "exported_override_preserved": true,
+    "real_credentials_changed": false
+  },
+  "verification_basis": {
+    "rerun": [
+      "focused_tests",
+      "full_tests",
+      "copied_example_configuration"
+    ],
+    "retained_runtime_evidence_head": "51c700c324deea7ca60a5b077055584e0f3d9300"
+  }
 }

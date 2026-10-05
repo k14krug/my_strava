@@ -305,7 +305,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** implemented in draft PR #17 at `51c700c324deea7ca60a5b077055584e0f3d9300`; 206 full / 20 focused tests, copied-history preservation/restart and isolated synthetic sync/idempotence/Chromium pass. Stopped at HARD — Owner: real client credentials/authorization and live acceptance pending. No Phase 3 work.
+**Execution state:** implemented in draft PR #17; Owner credential setup correction at `dea29b97622fcdd21a392e071932fbc8b9b83a9c` under JIT `159b236` adds safe example entries and explicit copy/edit/connect/domain steps; 206 full / 20 focused tests, copied-history preservation/restart and isolated synthetic sync/idempotence/Chromium pass. Stopped at HARD — Owner: real client credentials/authorization and live acceptance pending. No Phase 3 work.
 
 **Dependency:** P2-04 complete.
 
