@@ -159,7 +159,7 @@
     "desktop_tablet_phone_no_overflow": true,
     "no_native_stream_payload": true
   },
-  "owner_approval": "pending",
+  "owner_approval": "approved",
   "analyst_acceptance": "pending",
   "controlling_jit_main": "c540165",
   "verification_date": "2026-10-05",
