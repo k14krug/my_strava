@@ -74,7 +74,7 @@
       "UTC"
     ]
   },
-  "owner_approval": "pending",
+  "owner_approval": "approved",
   "analyst_acceptance": "pending",
   "owner_corrections": {
     "jit_main_commit": "56e1f1c",
