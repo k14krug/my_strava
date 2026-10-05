@@ -1,8 +1,8 @@
 {
-  "implementation_head": "24ffe69376a634cc9ebda46689cbffb8bf555780",
+  "implementation_head": "594856d2fe3f50b996397bd68ae4859969ccc321",
   "automated_tests": {
     "command": ".venv/bin/python -m unittest discover -s tests",
-    "passed": 138
+    "passed": 142
   },
   "review_store_import": {
     "csv_rows_seen": 1434,
@@ -63,8 +63,22 @@
     "richAndThinRoutes": true,
     "nativeChartInteraction": true,
     "browserBack": true,
-    "desktopTabletMobileNoOverflow": true
+    "desktopTabletMobileNoOverflow": true,
+    "dedicatedDateColumn": true,
+    "localDateFiltering": true,
+    "timezoneUnknownDayPreserved": true,
+    "testedTimezones": [
+      "America/Los_Angeles",
+      "Asia/Tokyo",
+      "UTC"
+    ]
   },
   "owner_approval": "pending",
-  "analyst_acceptance": "pending"
+  "analyst_acceptance": "pending",
+  "owner_corrections": {
+    "jit_main_commit": "56e1f1c",
+    "dedicated_date_column": "implemented",
+    "browser_local_day_filtering": "implemented",
+    "review_instance_port": 8766
+  }
 }
