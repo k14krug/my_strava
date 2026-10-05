@@ -1,0 +1,86 @@
+{
+  "implementation_head": "a1a42eb767ab7434ef0a9f2890cd912054183441",
+  "automated_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests",
+    "passed": 142
+  },
+  "review_store_import": {
+    "csv_rows_seen": 1434,
+    "activities_created": 1433,
+    "existing_activities_reused": 1,
+    "existing_activities_enriched": 1,
+    "csv_sources_created": 1434,
+    "csv_sources_reused": 0,
+    "csv_only_activities": 13,
+    "referenced_artifacts_attempted": 1421,
+    "artifacts_imported": 1420,
+    "artifacts_reused": 1,
+    "format_counts": {
+      "FIT.GZ": 1264,
+      "GPX": 29,
+      "GPX.GZ": 76,
+      "TCX.GZ": 52
+    },
+    "failures": [],
+    "unresolved_associations": [],
+    "status": "completed"
+  },
+  "http_restart": {
+    "result": "passed",
+    "activity_count": 1434,
+    "cycling_count": 1410,
+    "type_counts": {
+      "Virtual Ride": 1264,
+      "Ride": 146,
+      "Run": 22,
+      "Walk": 1,
+      "Rowing": 1
+    },
+    "page_size": 30,
+    "cycling_pages": 47,
+    "all_pages": 48,
+    "query_filters_verified": true,
+    "source_title_search_and_display_verified": true,
+    "format_routes": {
+      "FIT": "rich",
+      "TCX": "thin",
+      "GPX": "thin",
+      "CSV-only": "thin"
+    },
+    "process_restart_verified": true,
+    "representative_fit_average_watts": 118,
+    "representative_best20_display_watts": 120,
+    "privacy_checks_passed": true
+  },
+  "chromium": {
+    "result": "passed",
+    "browser": "Chromium",
+    "pagination": true,
+    "typeFilters": true,
+    "titleSearch": true,
+    "dateRange": true,
+    "alternateSorts": true,
+    "richAndThinRoutes": true,
+    "nativeChartInteraction": true,
+    "browserBack": true,
+    "desktopTabletMobileNoOverflow": true,
+    "dedicatedDateColumn": true,
+    "singleLineDateWithoutTimezoneSuffix": true,
+    "localDateFiltering": true,
+    "timezoneUnknownDayPreserved": true,
+    "testedTimezones": [
+      "America/Los_Angeles",
+      "Asia/Tokyo",
+      "UTC"
+    ]
+  },
+  "owner_approval": "approved",
+  "analyst_acceptance": "pending",
+  "owner_corrections": {
+    "jit_main_commit": "56e1f1c",
+    "dedicated_date_column": "implemented",
+    "browser_local_day_filtering": "implemented",
+    "review_instance_port": 8766,
+    "single_line_date_without_timezone_suffix": "implemented"
+  }
+}

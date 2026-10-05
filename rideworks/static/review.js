@@ -1,6 +1,19 @@
 /* Local presentation only. Analysis values come from RideWorks unchanged. */
 (() => {
   'use strict';
+  const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const historyForm = document.querySelector('.history-filters');
+  if (historyForm) {
+    historyForm.elements.tz.value = browserTimezone;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('tz') !== browserTimezone) {
+      // Keep the server's bounded GET query in step with the displayed local
+      // day, including bookmarks/back navigation from another timezone.
+      url.searchParams.set('tz', browserTimezone);
+      window.location.replace(url);
+      return;
+    }
+  }
   document.querySelectorAll('[data-local-time]').forEach(element => {
     const date = new Date(element.dateTime);
     if (!Number.isFinite(date.getTime())) return;
@@ -10,8 +23,18 @@
     }).format(date);
     const offset = new Intl.DateTimeFormat(undefined, {timeZoneName: 'shortOffset'})
       .formatToParts(date).find(part => part.type === 'timeZoneName').value;
-    element.textContent = `${formatted} (${offset})`;
-    element.dataset.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const parts = new Intl.DateTimeFormat('en-CA', {year:'numeric', month:'2-digit', day:'2-digit'})
+      .formatToParts(date);
+    const part = type => parts.find(p => p.type === type).value;
+    element.dataset.localDay = `${part('year')}-${part('month')}-${part('day')}`;
+    element.dataset.timezone = browserTimezone;
+    if (element.hasAttribute('data-compact-time')) {
+      element.textContent = new Intl.DateTimeFormat(undefined, {
+        year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'
+      }).format(date);
+    } else {
+      element.textContent = `${formatted} (${offset})`;
+    }
   });
   const payload = document.getElementById('native-records');
   if (!payload) return;

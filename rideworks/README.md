@@ -337,3 +337,70 @@ remain recoverable from its exact original. XML timestamps with 1–6 fractional
 decimal places are parsed exactly, including centiseconds on Python 3.10.
 Greater precision is rejected rather than silently truncated. Missing offsets
 remain unknown; no sample is resampled or moved to a different instant.
+
+### Activities browser
+
+Start the same loopback-only server against your imported store:
+
+```bash
+python -m rideworks --data-dir <data-dir> serve --port 8765
+```
+
+Open `http://127.0.0.1:8765/`. Activities defaults to cycling, newest first,
+with 30 rows per page. Select All activities to include non-cycling history;
+individual source type/subtype choices, partial case-insensitive title search,
+From/To dates and newest/oldest/longest-duration/longest-distance sorts use GET
+query state. Applying filters returns to page 1; previous/next retain them.
+Missing sort values come last and remain unavailable, including distances or
+durations whose CSV units have not been established. Date has its own column,
+separate from Title. Known absolute instants display on one line in your browser's
+local timezone, without a timezone suffix. From/To matches that same displayed local calendar day, including
+historical daylight-saving rules. Dates without an offset retain their supplied
+calendar day and explicit unknown timezone.
+
+JavaScript establishes the browser timezone in GET state (`tz`) and keeps it in
+filter submissions/pagination. This is presentation context only: source times
+and provenance are never rewritten. Without a supported browser timezone,
+absolute instants do not enter a date-filter match under a guessed timezone;
+the page explains that local filtering needs JavaScript. Unknown-zone source
+dates can still filter by their supplied day.
+
+Display prefers the latest non-empty imported Strava-export title without
+changing any source observation. Type/subtype remain separate. Without a source
+name, the browser labels its type/date fallback as derived. Hover over list
+distance/duration to see the selected file summary context. This narrow display
+policy lives in `rideworks/history.py`; it is not a universal source ranking.
+
+Every row opens its stable `/activities/<Activity ID>` route. A single supported
+FIT source keeps the accepted chart and best-20 review, now with source-title
+provenance. TCX, GPX, CSV-only and ambiguous FIT evidence get a thin review of
+their associated source metadata/availability, with detailed analysis explicitly
+unavailable. CSV summary watts are never substituted for native streams.
+
+For the known imported history, local HTTP/restart acceptance is reproducible:
+
+```bash
+python tools/verify_rideworks_browser.py --data-dir <local-review-store> \
+  --representative <local-representative.fit.gz>
+```
+
+This starts two successive loopback verification servers on port 8767 (override
+with `--port`), checks the full known population/query/routes/restart and emits
+aggregate JSON. It leaves the store intact. Real-browser inspection and Owner
+visual/usability approval remain separate required P2-02 gates.
+
+### P2-02 full-history Owner review
+
+The prepared review store is `local_data/p2-02-review`. Use its dedicated
+**port 8766** instance:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-02-review serve --port 8766
+```
+
+Open **http://127.0.0.1:8766/**. The normal page reports **1,410 cycling Activities /
+1,434 in history**; All activities reports 1,434 matching Activities. If this
+server is already running, open its URL directly. An older Phase 1 process on
+port 8765 may point to the separate one-activity store; that is not the P2-02
+full-history review instance. Use the port and counts above to identify the
+correct store before reviewing the browser.

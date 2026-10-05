@@ -11,6 +11,7 @@ from uuid import UUID
 
 from .analysis import analyze_activity
 from .errors import RideWorksError
+from .history import SORTS, browse, presentation
 from .store import Store, resolve_data_dir
 
 STATIC = Path(__file__).with_name('static')
@@ -71,11 +72,12 @@ def icon(name):
     return f'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>'
 
 
-def local_time(timestamp):
+def local_time(timestamp, *, compact=False):
     if timestamp is None:
         return 'Date unavailable'
     # A labeled UTC fallback stays understandable without JavaScript.
-    return (f'<time datetime="{escape(timestamp, quote=True)}" data-local-time>'
+    compact_attr = ' data-compact-time' if compact else ''
+    return (f'<time datetime="{escape(timestamp, quote=True)}" data-local-time{compact_attr}>'
             f'{escape(timestamp)} (UTC source time)</time>')
 
 
@@ -89,17 +91,54 @@ def shell(title, content):
 <main>{content}</main></body></html>'''
 
 
-def activities_page(store):
-    rows = store.list_activities()
-    if not rows:
+def browser_time(row, *, compact=False):
+    if row['absolute_time']:
+        return local_time(row['start_time'], compact=compact)
+    if row['start_time']:
+        return f"{escape(row['start_time'].replace('T', ' '))} · timezone unknown"
+    return escape(row['date_text']) + ' · source date text · timezone unknown' if row['date_text'] else 'Date unavailable'
+
+
+def activities_page(store, query_string=''):
+    result = browse(store, query_string)
+    rows, query = result['rows'], result['query']
+    def options(choices, current):
+        return ''.join(f'<option value="{escape(value, quote=True)}"{" selected" if value == current else ""}>{escape(text)}</option>'
+                       for value, text in choices)
+    controls = f'''<form class="history-filters panel" action="/" method="get" aria-label="Filter activities">
+<input type="hidden" name="tz" value="{escape(query.timezone_name, quote=True)}">
+<label class="search-filter">Title search<input type="search" name="q" value="{escape(query.q, quote=True)}" placeholder="Search activity names" maxlength="200"></label>
+<label>Activity type<select name="type">{options([('cycling', 'Cycling'), ('all', 'All activities')] + [(t, t) for t in result['type_choices']], query.activity_type)}</select></label>
+<label>From<input type="date" name="from" value="{query.after}"></label>
+<label>To<input type="date" name="to" value="{query.before}"></label>
+<label>Sort<select name="sort">{options(list(SORTS.items()), query.sort)}</select></label>
+<div class="filter-actions"><button type="submit">Apply</button><a href="/">Reset</a></div>
+</form><p class="date-filter-note">Dates and filters use your local timezone. Timezone-unknown source dates stay as supplied.</p><noscript>Enable JavaScript to use your browser's local dates for absolute timestamps.</noscript>'''
+    if query.message:
+        controls += f'<p class="query-message" role="status">{escape(query.message)}</p>'
+    if not result['total']:
         body = '''<section class="panel empty"><h2>Import your first ride</h2><p>Preserve a FIT or FIT.GZ file with the RideWorks import command, then reload this page.</p>
 <pre>python -m rideworks --data-dir &lt;data-dir&gt; import-fit &lt;activity.fit.gz&gt;</pre><p>Use the same data directory when starting the server.</p></section>'''
+    elif not rows:
+        body = '<section class="panel empty"><h2>No matching activities</h2><p>Try a different title, type or date range.</p><p><a href="/">Reset filters</a></p></section>'
     else:
         items = []
         for row in rows:
-            items.append(f'''<li><a class="activity-row" href="/activities/{escape(row['activity_id'])}"><div><h2>{escape(activity_title(row))}</h2><p class="title-origin">Derived title · source activity name unavailable</p><p>{local_time(row['start_time'])} · {escape(label(row))}</p></div><div class="list-metrics"><span>{distance(row['total_distance'])}</span><span>{duration(row['total_elapsed_time'])} elapsed</span><span class="open-ride">Open ride →</span></div></a></li>''')
-        body = '<ul class="activity-list panel">' + ''.join(items) + '</ul>'
-    return shell('Activities', '<header><h1>Activities</h1><p>Your imported rides</p></header>' + body)
+            origin = f'<p class="title-origin">{escape(row["title_origin"])}</p>' if row['title_source'] is None else ''
+            types = row['activity_type'] + (f" · {row['subtype']}" if row['subtype'] and row['subtype'] != row['activity_type'] else '')
+            duration_context = row['duration_source']['context'] if row['duration_source'] else 'Duration unavailable'
+            distance_context = row['distance_source']['context'] if row['distance_source'] else 'Distance unavailable'
+            items.append(f'''<li><a class="activity-row" href="/activities/{escape(row['activity_id'])}"><div class="row-identity"><h2>{escape(row['title'])}</h2>{origin}</div><div class="row-date">{browser_time(row, compact=True)}</div><span class="row-type">{escape(types)}</span><div class="list-metrics"><span title="{escape(distance_context, quote=True)}">{distance(row['distance'])}</span><span title="{escape(duration_context, quote=True)}">{duration(row['duration'])}</span><span class="open-ride" aria-hidden="true">→</span></div></a></li>''')
+        columns = '<div class="activity-columns" aria-hidden="true"><span>Title</span><span>Date</span><span>Type</span><div class="list-metrics"><span>Distance</span><span>Duration</span><span></span></div></div>'
+        body = columns + '<ul class="activity-list panel">' + ''.join(items) + '</ul>'
+    count = result['count']
+    first = result['start'] + 1 if count else 0
+    last = result['start'] + len(rows)
+    context = f'<p class="result-count" role="status">{first:,}–{last:,} of {count:,} matching activities · {result["total"]:,} in history</p>'
+    previous = f'<a rel="prev" href="{escape(query.url(result["page"] - 1), quote=True)}">← Previous</a>' if result['page'] > 1 else '<span aria-disabled="true">← Previous</span>'
+    following = f'<a rel="next" href="{escape(query.url(result["page"] + 1), quote=True)}">Next →</a>' if result['page'] < result['pages'] else '<span aria-disabled="true">Next →</span>'
+    navigation = f'<nav class="pagination" aria-label="Activity pages">{previous}<span>Page {result["page"]} of {result["pages"]}</span>{following}</nav>'
+    return shell('Activities', '<header><h1>Activities</h1></header>' + controls + context + body + navigation)
 
 
 def metric(name, value, symbol):
@@ -116,12 +155,13 @@ def chart_payload(analysis):
             for record in analysis['native_records']]
 
 
-def review_page(analysis):
+def review_page(analysis, metadata=None):
     summary = analysis['source_summary']['values']
     source, extraction = analysis['source'], analysis['extraction']
     best = analysis['best_20_minute_power']
     activity_id = analysis['activity']['activity_id']
-    title = activity_title(summary)
+    title = metadata['title'] if metadata else activity_title(summary)
+    title_origin = metadata['title_origin'] if metadata else 'Derived title'
     subtype = (summary.get('sub_sport') or summary.get('sport') or 'Type unavailable').replace('_', ' ').title()
     cards = ''.join(metric(name, value, symbol) for name, value, symbol in [
         ('Elapsed duration', duration(summary.get('total_elapsed_time')), 'duration'),
@@ -151,6 +191,14 @@ def review_page(analysis):
                    ('Mapping version', extraction['mapping_version']),
                    ('Current extraction ID', extraction['extraction_id']),
                    ('Source start time (UTC)', summary.get('start_time'))]
+    if metadata and metadata['title_source']:
+        title_source = metadata['title_source']['source']
+        source_rows[2:4] = [('Title origin', 'Source-supplied Strava-export evidence'),
+                            ('Title Source ID', title_source['source_id']),
+                            ('Title display policy', 'Latest non-empty imported Strava-export title; observations retained')]
+    if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] == 'strava_export':
+        source_rows += [('Displayed type origin', 'Strava-export source evidence'),
+                        ('Type Source ID', metadata['type_source']['source']['source_id'])]
     for signal, name in [('power', 'Power'), ('heart_rate', 'Heart rate')]:
         a = analysis['availability'][signal]
         source_rows.extend([(f'{name} availability', a['status']),
@@ -175,7 +223,10 @@ def review_page(analysis):
     # Avoid closing the JSON script element with any source text. Never embed
     # private file/store paths, coordinates, or a raw application snapshot.
     payload = json.dumps(records, ensure_ascii=True, allow_nan=False).replace('<', '\\u003c').replace('&', '\\u0026')
-    return shell(title, f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(title)}</h1><span class="title-origin">Derived title</span></div><p class="ride-meta">{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>Type: {escape((summary.get('sport') or 'Unavailable').replace('_', ' ').title())}<span class="meta-separator">·</span>Subtype: {escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
+    type_text = metadata['activity_type'] if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] == 'strava_export' else (summary.get('sport') or 'Unavailable').replace('_', ' ').title()
+    if metadata and metadata['subtype']:
+        subtype = metadata['subtype']
+    return shell(title, f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(title)}</h1><span class="title-origin">{escape(title_origin)}</span></div><p class="ride-meta">{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>Type: {escape(type_text)}<span class="meta-separator">·</span>Subtype: {escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
 <section class="metrics" aria-label="FIT session source summary">{cards}</section>
 <div class="review-layout"><div class="review-main"><section class="panel chart-panel" aria-labelledby="chart-title">
 <div class="panel-heading"><h2 id="chart-title">Ride power &amp; heart rate</h2><div class="legend"><span><i class="power-swatch"></i>Power · W</span><span><i class="hr-swatch"></i>Heart rate · bpm</span></div></div>
@@ -190,6 +241,44 @@ def review_page(analysis):
 <script id="native-records" type="application/json">{payload}</script>''')
 
 
+def thin_review_page(row):
+    sources = []
+    for evidence in row['sources']:
+        source, summary = evidence['source'], evidence['summary']
+        csv = source['kind'] == 'strava_export'
+        name = 'Strava-export metadata' if csv else f"{source['content_format']} source evidence"
+        values = [('Source ID', source['source_id'])]
+        if csv:
+            values += [('Title', summary.get('title')), ('Activity type', summary.get('activity_type')),
+                       ('Sport type', summary.get('sport_type')), ('Source date text', summary.get('date_text'))]
+            values += [(f"{f['column']} (column {f['column_index'] + 1}; {f['unit'].replace('source_unspecified', 'units unspecified')})", f['raw_value'] or None)
+                       for f in summary.get('fields', []) if f['status'] != 'missing']
+            note = 'CSV summaries are source metadata. Where units are unspecified, values are shown as supplied. Native streams are unavailable from this source.'
+        else:
+            values += [('Source start time', summary.get('start_time')),
+                       ('Elapsed duration', duration(summary.get('total_elapsed_time'))),
+                       ('Timer duration', duration(summary.get('total_timer_time'))),
+                       ('Distance', distance(summary.get('total_distance')))]
+            extraction = evidence['extraction']
+            values += [('Parser', extraction['parser_name']), ('Parser version', extraction['parser_version']),
+                       ('Mapping version', extraction['mapping_version']), ('Native records preserved', extraction['record_count'])]
+            for signal, label_text in [('power', 'Power'), ('heart_rate', 'Heart rate')]:
+                a = evidence['availability'][signal]
+                values += [(f'{label_text} availability', a['status']), (f'{label_text} origin', a['origin'])]
+            for i, lap in enumerate(evidence.get('xml_context', {}).get('lap_summaries', []), 1):
+                values += [(f'Lap {i} source duration', duration(lap.get('total_time_seconds'))),
+                           (f'Lap {i} source distance', distance(lap.get('distance_m'))),
+                           (f'Lap {i} average power', sensor(lap.get('avg_power'), 'W')),
+                           (f'Lap {i} maximum power', sensor(lap.get('max_power'), 'W')),
+                           (f'Lap {i} average heart rate', sensor(lap.get('avg_heart_rate'), 'bpm')),
+                           (f'Lap {i} maximum heart rate', sensor(lap.get('max_heart_rate'), 'bpm'))]
+            note = 'Native source evidence is preserved. Detailed RideWorks review is not yet supported for this evidence. Signal presence does not establish measurement origin.'
+        sources.append(f'<details class="panel provenance" open><summary>{escape(name)}</summary><p>{escape(note)}</p>{detail_rows(values)}</details>')
+    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Activity details</div><h1>{escape(row['title'])}</h1><p class="title-origin">{escape(row['title_origin'])}</p><p class="ride-meta">{browser_time(row)} · Type: {escape(row['activity_type'])} · Subtype: {escape(row['subtype'] or 'Unavailable')}</p></header>
+<section class="panel review-unavailable"><h2>Detailed RideWorks review unavailable</h2><p>This activity does not currently have a single supported FIT analysis source. Available source evidence is shown below; no charts or best-20 result are substituted.</p></section>
+<section class="thin-sources" aria-label="Associated source evidence">{''.join(sources)}</section>''')
+
+
 class Application:
     """Read-only routes; each request gets its own short-lived Store snapshot."""
     def __init__(self, data_dir=None):
@@ -198,14 +287,15 @@ class Application:
             pass
 
     def get(self, target):
-        path = urlsplit(target).path
+        url = urlsplit(target)
+        path = url.path
         if path.startswith('/static/'):
             name = path.removeprefix('/static/')
             if name in ASSETS:
                 return 200, ASSETS[name], (STATIC / name).read_bytes()
         with Store(self.data_dir) as store:
             if path == '/':
-                return 200, 'text/html', activities_page(store).encode()
+                return 200, 'text/html', activities_page(store, url.query).encode()
             if path.startswith('/activities/'):
                 activity_id = path.removeprefix('/activities/')
                 try:
@@ -214,12 +304,17 @@ class Application:
                         raise ValueError
                 except ValueError:
                     return self.not_found()
-                if not any(row['activity_id'] == activity_id for row in store.list_activities()):
+                snapshots = store.activity_history(activity_id)
+                if not snapshots:
                     return self.not_found()
+                metadata = presentation(snapshots[0])
+                fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
+                if len(fit_sources) != 1:
+                    return 200, 'text/html', thin_review_page(metadata).encode()
                 try:
-                    html = review_page(analyze_activity(store, activity_id))
+                    html = review_page(analyze_activity(store, activity_id), metadata)
                 except RideWorksError:
-                    return 422, 'text/html', shell('Evidence unavailable', '<header><h1>Evidence unavailable</h1><p>This activity cannot currently be reviewed from a single usable FIT Source.</p></header>').encode()
+                    html = thin_review_page(metadata)
                 return 200, 'text/html', html.encode()
         return self.not_found()
 

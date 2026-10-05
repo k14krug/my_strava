@@ -14,16 +14,22 @@
 
 **P2-01 evidence:** `reports/P2-01/verification.md`, `reports/P2-01/acceptance.json`.
 
-**Current task:** P2-02 — pending implementation.
+**Current task:** P2-02 — in_progress.
 
-**P2-02 JIT:** authored — `docs/tasks/P2-02.md`.
+**Implementation state:** ready_for_review — Gate 2 HARD — Analyst; Owner approved the corrected visual/usability result.
 
-**P2-02 purpose:** turn the complete imported history into a practical RideWorks Activities browser with bounded pagination, actual source titles, title search, cycling/all and type filtering, date filtering, useful sorting, and stable Activity routes. FIT rides retain the accepted rich review; GPX/TCX/CSV-only history gets evidence-appropriate thin review rather than a dead end.
+**Branch / PR:** `task/p2-02-activities-browser` / [#14](https://github.com/k14krug/my_strava/pull/14) (draft).
 
-**Review gates:** implementation stops first at HARD — Owner for full-history visual/usability review, then at HARD — Analyst for final acceptance.
+**Implementation head:** `a1a42eb767ab7434ef0a9f2890cd912054183441`; final handoff publication is documentation/evidence only.
 
-**Allowed invocation:** `/TASK` or `/AUTOTASK`.
+**Implemented:** dedicated Date column beside Title, with known dates on one line and no timezone suffix; absolute times and From/To use the same browser-local calendar day; unknown-zone dates retain their supplied day. 30-row cycling-first browser; GET title/type/subtype/date/timezone/sort/page state; preferred source titles with provenance; stable rich FIT and thin TCX/GPX/CSV-only/ambiguous-FIT reviews. Metadata browsing does not load native streams or rewrite source evidence.
 
-**Blockers:** none.
+**Verification:** 142 tests passed. Clean local review store contains all 1,434 Activities / 1,421 file Sources / 13 CSV-only Activities, zero failures/unresolved associations. Full-history HTTP/restart and actual Chromium acceptance passed. 1,410 cycling Activities, 47 cycling / 48 all pages. Representative FIT retains 118 W average / 120 W best-20. Local-day display/filtering verified in Los Angeles, Tokyo and UTC, including UTC-midnight crossing; DST boundary tests pass. No horizontal overflow at desktop/tablet/phone widths.
 
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-02. Do not begin P2-03 automatically.
+**Evidence:** `reports/P2-02/verification.md`, `reports/P2-02/acceptance.json`. Private screenshots remain under ignored `output/playwright/p2-02-*.png`.
+
+**Local Owner review:** use the full-history server at **http://127.0.0.1:8766/** (1,410 cycling / 1,434 total). Port 8765 is the separate older one-activity instance and must not be used for this review. Startup from repo root: `.venv/bin/python -m rideworks --data-dir local_data/p2-02-review serve --port 8766`.
+
+**Blockers:** none; final Analyst acceptance pending.
+
+**Next action:** Analyst reviews PR #14 against the final P2-02 JIT and verification evidence, then accepts or leaves actionable feedback. Keep P2-02 `in_progress`; do not begin P2-03 automatically.

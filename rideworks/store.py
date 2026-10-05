@@ -605,25 +605,27 @@ class Store:
                                   for signal in ('power', 'heart_rate')},
                     records=None, laps=[], events=[])
 
-    def activity_history(self):
+    def activity_history(self, activity_id=None):
         """Source-aware metadata for all Activities, without loading native records.
 
         This boundary does not rank sources, choose titles or compute historical
         metrics. Summary values retain their source-specific semantics/units.
         """
         with self._transaction():
+            where = ' WHERE activity_id = ?' if activity_id is not None else ''
+            args = (activity_id,) if activity_id is not None else ()
             activities = {row['activity_id']: dict(activity=dict(row), sources=[])
-                          for row in self.connection.execute('SELECT * FROM activities ORDER BY created_at, activity_id')}
-            for row in self.connection.execute('SELECT * FROM strava_export_sources ORDER BY imported_at, source_id'):
+                          for row in self.connection.execute('SELECT * FROM activities' + where + ' ORDER BY created_at, activity_id', args)}
+            for row in self.connection.execute('SELECT * FROM strava_export_sources' + where + ' ORDER BY imported_at, source_id', args):
                 evidence = self._csv_evidence(row)
                 activities[row['activity_id']]['sources'].append({k: evidence[k] for k in
                     ('source', 'extraction', 'summary', 'availability')} | {'native_power_stream_exists': False})
+            file_where = ' WHERE f.activity_id = ?' if activity_id is not None else ''
             for row in self.connection.execute('''
                 SELECT f.*, e.extraction_id, e.parser_name, e.parser_version, e.mapping_version,
                        e.record_count, e.power_present, e.heart_rate_present
                 FROM sources f JOIN extractions e ON e.source_id = f.source_id
-                ORDER BY f.imported_at, f.source_id
-            '''):
+            ''' + file_where + ' ORDER BY f.imported_at, f.source_id', args):
                 source = {key: row[key] for key in ('source_id', 'activity_id', 'kind', 'association_basis',
                           'original_basename', 'byte_size', 'sha256', 'packaging', 'content_format', 'stored_path', 'imported_at')}
                 extraction = {key: row[key] for key in ('extraction_id', 'parser_name', 'parser_version',
