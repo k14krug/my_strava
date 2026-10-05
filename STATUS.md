@@ -2,32 +2,24 @@
 
 **Product:** RideWorks
 
-**Phase 1:** accepted / complete — P1-01/P1-02/P1-03 done.
+**Phase 1:** accepted / complete. **Phase 2:** in progress; P2-01/P2-02 accepted and merged.
 
-**Phase 2 — Historical context and performance history:** in progress.
+**Current task:** P2-03 — in_progress.
 
-**P2-01 — Historical Strava-export import and enrichment:** done — Analyst accepted PR #13.
+**Implementation state:** awaiting_owner_review — Gate 1 HARD — Owner. Implementation and required local verification complete.
 
-**P2-02 — Scalable Activities browser:** done — Owner and Analyst accepted PR #14 on 2026-10-04.
+**Branch / PR:** `task/p2-03-performance-history` / [#15](https://github.com/k14krug/my_strava/pull/15) (draft).
 
-**PR #14:** merged to `main` as `683c9880bb0b6ed1cd9569a58be61093ec2cce0e`.
+**Implementation head:** `6a8d41277be839a6b316a8066940d36a857ea4e8`; final publication is documentation/evidence only.
 
-**P2-02 verification:** 142 tests passed; full 1,434-Activity browser accepted with 30-row pages, source titles, search/type/date/sort, browser-local Date column/filter semantics, stable rich/thin Activity routes, and full-history restart/Chromium verification.
+**Implemented:** schema 4 durable performance statuses/results, `rebuild-performance`, `virtual-native-power-v1` classification/source selection, unchanged `best-average-power-v1`; stale-input suppression and atomic failure-safe rebuild. Real Performance navigation/page displays all dated eligible points with pointer/keyboard inspection, Activity links, local dates and inspectable provenance. Outdoor/non-virtual power and summary substitutes excluded; no P2-04 work.
 
-**P2-02 evidence:** `reports/P2-02/verification.md`, `reports/P2-02/acceptance.json`.
+**Verification:** 162 tests passed. Disposable full history: 1,434 evaluated, 1,264 Virtual Ride candidates, 1,022 eligible FIT results; 198 short / 39 incomplete timing / 5 incomplete power; 146 outdoor and 24 non-cycling excluded. Every eligible result independently verified exactly. Representative retains 3,621 records / 120 W best-20 / 118 W FIT average. Rebuild idempotence, Store and HTTP process restart, SQLite integrity/foreign keys, accepted Activities/rich/thin regressions and Chromium checks passed. No Virtual/native classification conflicts or missing result dates. Date span 2018-05-13–2026-09-29; desktop/phone no overflow; local dates verified in Los Angeles and Tokyo.
 
-**Current task:** P2-03 — pending implementation.
+**Evidence:** `reports/P2-03/verification.md`, `reports/P2-03/acceptance.json`. Inputs/stores/private screenshots remain local and ignored.
 
-**P2-03 JIT:** authored — `docs/tasks/P2-03.md`.
+**Owner review:** **http://127.0.0.1:8768/performance**, disposable `local_data/p2-03-review`, 1,022 points. Startup: `.venv/bin/python -m rideworks --data-dir local_data/p2-03-review serve --port 8768`. Rebuild if needed: `.venv/bin/python -m rideworks --data-dir local_data/p2-03-review rebuild-performance`. Screenshots: `output/playwright/p2-03-performance-desktop.png` and `output/playwright/p2-03-performance-phone.png`.
 
-**P2-03 purpose:** build durable trusted 20-minute performance history from eligible Virtual Ride native source power using unchanged `best-average-power-v1`; exclude all outdoor Ride power and summary substitutes; add a real Performance page containing every current eligible historical result and links to contributing Activities.
+**Blockers:** Owner visual/usability approval pending; no implementation/verification blocker.
 
-**Key evidence policy:** Virtual Ride native power is eligible for this Phase 2 longitudinal purpose when a complete native 1,200-record one-second window exists. This is not a claim that the stream is measured. Outdoor Ride power remains preserved but is excluded as suspect.
-
-**Review gates:** implementation stops first at HARD — Owner for the new Performance view, then at HARD — Analyst for final evidence/calculation acceptance.
-
-**Allowed invocation:** `/TASK` or `/AUTOTASK`.
-
-**Blockers:** none.
-
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-03. Do not begin P2-04 automatically.
+**Next action:** Ken reviews the Performance history and cohort explanation and records approval or bounded corrections. After explicit Owner approval, record it and stop at Gate 2 HARD — Analyst. Do not begin P2-04 automatically.

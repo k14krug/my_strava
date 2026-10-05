@@ -1,0 +1,143 @@
+{
+  "implementation_head": "6a8d41277be839a6b316a8066940d36a857ea4e8",
+  "schema_version": 4,
+  "method": "best-average-power-v1",
+  "policy": "virtual-native-power-v1",
+  "automated_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests",
+    "passed": 162
+  },
+  "rebuild": {
+    "status": "completed",
+    "evaluated": 1434,
+    "virtual_candidates": 1264,
+    "outdoor_activities": 146,
+    "non_cycling_activities": 24,
+    "eligible": 1022,
+    "ineligible_by_reason": {
+      "activity_shorter_than_required": 198,
+      "no_complete_power_window": 5,
+      "no_complete_timestamp_contiguous_window": 39,
+      "non_virtual_activity": 24,
+      "outdoor_ride_excluded": 146
+    },
+    "eligible_source_formats": {
+      "FIT": 1022
+    },
+    "policy": "virtual-native-power-v1",
+    "method": "best-average-power-v1",
+    "duration_seconds": 1200
+  },
+  "independent": {
+    "result": "passed",
+    "independently_evaluated": 1434,
+    "independently_verified_eligible": 1022,
+    "virtual_candidates": 1264,
+    "outdoor_activities": 146,
+    "outdoor_eligible": 0,
+    "non_cycling_eligible": 0,
+    "classification_native_disagreements": 0,
+    "counts_by_status_reason": {
+      "activity_shorter_than_required": 198,
+      "eligible": 1022,
+      "no_complete_power_window": 5,
+      "no_complete_timestamp_contiguous_window": 39,
+      "non_virtual_activity": 24,
+      "outdoor_ride_excluded": 146
+    },
+    "eligible_source_formats": {
+      "FIT": 1022
+    },
+    "raw_average_range_watts": [
+      61.75083333333333,
+      218.39666666666668
+    ],
+    "eligible_date_span": [
+      "2018-05-13",
+      "2026-09-29"
+    ],
+    "representative_display_watts": 120,
+    "representative_records": 3621,
+    "all_source_extraction_identities_verified": true,
+    "exact_ties_verified": true,
+    "no_summary_substitution": true,
+    "idempotent_rebuild": true,
+    "restart_preserved": true,
+    "sqlite_integrity": true,
+    "foreign_keys": true,
+    "rerun_report": {
+      "status": "completed",
+      "evaluated": 1434,
+      "virtual_candidates": 1264,
+      "outdoor_activities": 146,
+      "non_cycling_activities": 24,
+      "eligible": 1022,
+      "ineligible_by_reason": {
+        "activity_shorter_than_required": 198,
+        "no_complete_power_window": 5,
+        "no_complete_timestamp_contiguous_window": 39,
+        "non_virtual_activity": 24,
+        "outdoor_ride_excluded": 146
+      },
+      "eligible_source_formats": {
+        "FIT": 1022
+      },
+      "policy": "virtual-native-power-v1",
+      "method": "best-average-power-v1",
+      "duration_seconds": 1200
+    }
+  },
+  "http_restart": {
+    "result": "passed",
+    "performance_points": 1022,
+    "performance_process_restart": true,
+    "performance_payload_matches_persistence": true,
+    "no_native_streams_or_private_paths": true,
+    "accepted_browser_and_activity_regression": {
+      "result": "passed",
+      "activity_count": 1434,
+      "cycling_count": 1410,
+      "type_counts": {
+        "Virtual Ride": 1264,
+        "Ride": 146,
+        "Run": 22,
+        "Walk": 1,
+        "Rowing": 1
+      },
+      "page_size": 30,
+      "cycling_pages": 47,
+      "all_pages": 48,
+      "query_filters_verified": true,
+      "source_title_search_and_display_verified": true,
+      "format_routes": {
+        "FIT": "rich",
+        "TCX": "thin",
+        "GPX": "thin",
+        "CSV-only": "thin"
+      },
+      "process_restart_verified": true,
+      "representative_fit_average_watts": 118,
+      "representative_best20_display_watts": 120,
+      "privacy_checks_passed": true
+    }
+  },
+  "chromium": {
+    "result": "passed",
+    "browser": "Chromium",
+    "chart_points": 1022,
+    "navigation": true,
+    "first_middle_last_pointer": true,
+    "keyboard_inspection": true,
+    "point_activity_and_back": true,
+    "source_title_date_watts": true,
+    "eligibility_provenance": true,
+    "local_date_zones": [
+      "America/Los_Angeles",
+      "Asia/Tokyo"
+    ],
+    "desktop_phone_no_overflow": true,
+    "no_native_stream_payload": true
+  },
+  "owner_approval": "pending",
+  "analyst_acceptance": "pending"
+}

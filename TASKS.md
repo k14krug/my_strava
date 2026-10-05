@@ -176,7 +176,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** in_progress — P2-02 accepted; P2-03 planning ready.
+**Status:** in_progress — P2-03 Performance history awaiting Owner review.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
@@ -237,7 +237,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-03 — Trusted 20-minute performance history
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Build the first trusted longitudinal performance view from eligible Virtual Ride native source-power evidence.
 
@@ -253,6 +253,8 @@ Only one implementation/research task should normally be `in_progress`.
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-03.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Execution state:** implemented and verified on PR #15; 162 tests, 1,434 evaluated / 1,022 eligible, full independent verification, restart/idempotent rerun and Chromium passed. Stopped at Gate 1 HARD — Owner.
 
 **Dependency:** P2-02 complete.
 
