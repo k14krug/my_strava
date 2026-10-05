@@ -3,7 +3,7 @@
 **Date:** 2026-10-04.  
 **Branch / PR:** `task/p2-02-activities-browser` / [#14](https://github.com/k14krug/my_strava/pull/14).  
 **Implementation head:** `a1a42eb767ab7434ef0a9f2890cd912054183441`; final handoff publication is documentation/evidence only.
-**State:** implementation and local verification complete; stopped at **Gate 1 HARD — Owner**. P2-02 remains `in_progress`. Owner approval and final Analyst acceptance are pending.
+**State:** Owner Gate 1 approved; stopped at **Gate 2 HARD — Analyst**. P2-02 remains `in_progress`. Final Analyst acceptance is pending.
 
 ## Result and implementation
 
@@ -195,9 +195,12 @@ are ignored and are not attached, published or committed. `acceptance.json` cont
 exact aggregate import/HTTP/Chromium outputs and test count, without private titles,
 Activity IDs, native streams, coordinates, credentials or personal input paths.
 
-## Required next decision
+## Owner approval and Gate 2 handoff
 
-Under JIT §22 Gate 1, Owner reviews the full-history browser's visual/usability
-result and records approval or bounded corrections. Keep P2-02 `in_progress` and
-PR #14 open. After explicit Owner approval, record it and stop at Gate 2
-**HARD — Analyst**. P2-03 has not begun.
+On **2026-10-04**, the Owner explicitly approved the corrected P2-02
+visual/usability result after reviewing the full-history browser with the requested
+Date-column, browser-local date/filtering, and single-line/no-GMT formatting
+corrections.
+
+P2-02 remains `in_progress`. Final acceptance belongs to the Analyst at Gate 2.
+P2-03 has not begun.
