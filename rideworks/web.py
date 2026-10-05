@@ -15,7 +15,7 @@ from .history import SORTS, browse, presentation
 from .store import Store, resolve_data_dir
 
 STATIC = Path(__file__).with_name('static')
-ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'mark.svg': 'image/svg+xml'}
+ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml'}
 
 
 def duration(seconds):
@@ -81,13 +81,15 @@ def local_time(timestamp, *, compact=False):
             f'{escape(timestamp)} (UTC source time)</time>')
 
 
-def shell(title, content):
+def shell(title, content, *, active='activities'):
+    def nav_state(name):
+        return ' class="active" aria-current="page"' if active == name else ''
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)} · RideWorks</title><link rel="icon" href="/static/mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script></head>
 <body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Activities"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
-<aside class="sidebar"><nav aria-label="Main"><a class="active" href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a></nav></aside>
+<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a></nav></aside>
 <main>{content}</main></body></html>'''
 
 
@@ -279,6 +281,68 @@ def thin_review_page(row):
 <section class="thin-sources" aria-label="Associated source evidence">{''.join(sources)}</section>''')
 
 
+def performance_page(store):
+    from .performance import performance_history
+    from .performance_view import performance_view
+    history = performance_history(store)
+    points = history['points']
+    view = performance_view(points)
+    def safe_json(value):
+        return json.dumps(value, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
+    def summary_card(key, label):
+        index = view['summaries'][key]
+        if index is None:
+            return f'<article class="performance-card" data-summary="{key}"><h2>{label}</h2><strong>Unavailable</strong><p>No qualifying result in this period</p></article>'
+        point = points[index]
+        age = view['ages_days'].get(str(index))
+        freshness = f"{age} days ago" if age is not None else 'Timezone unknown'
+        return f'''<article class="performance-card" data-summary="{key}" data-point-index="{index}"><h2>{label}</h2>
+<strong>{point['rounded_watts']} <span>W</span></strong><p class="performance-card-date">{browser_time(point, compact=True)}</p>
+<a href="/activities/{point['activity_id']}" title="{escape(point['title'], quote=True)}">{escape(point['title'])}</a><p class="performance-freshness">{freshness}</p></article>'''
+    if points:
+        cards = ''.join(summary_card(key, label) for key, label in [('current','Current 42-day best'),
+                        ('latest','Latest eligible ride'),('year','Best in last 12 months'),('lifetime','Lifetime best')])
+        chart = f'''<div class="performance-workspace">
+<section class="performance-summary" aria-label="Trusted power summaries">{cards}</section>
+<section class="panel performance-chart-panel">
+<div class="performance-controls">
+<div class="performance-control-group"><span>Range</span><div class="performance-ranges" role="group" aria-label="Range"><button type="button" data-range="3mo">3 mo</button><button type="button" data-range="6mo">6 mo</button><button type="button" data-range="1yr" aria-pressed="true">1 yr</button><button type="button" data-range="3yr">3 yr</button><button type="button" data-range="all">All</button></div></div>
+<div class="performance-control-group"><span>View</span><div class="performance-views" role="group" aria-label="View"><button type="button" data-view="rolling" aria-pressed="true">Rolling 42-day</button><button type="button" data-view="monthly">Monthly best</button><button type="button" data-view="yearly">Yearly best</button></div></div>
+<div class="performance-control-group"><span>Evidence</span><div class="performance-evidence-control" role="group" aria-label="Chart evidence"><button type="button" data-evidence="trend" aria-pressed="true">Trend only</button><button type="button" data-evidence="rides">Trend + rides</button></div></div>
+</div>
+<div class="performance-chart-heading"><div><h2 id="performance-chart-title">Rolling 42-day best</h2><p id="performance-chart-caption">Strongest qualifying ride in each trailing 42-day window</p></div><span id="performance-visible-count"></span></div>
+<svg id="performance-chart" role="img" tabindex="0" aria-label="20-minute power history in watts. Arrow keys inspect results; Enter opens the selected Activity."></svg>
+<p id="performance-chart-empty" hidden>No eligible evidence in this period. Choose a longer range.</p>
+<div class="performance-selection"><p id="performance-selection-label">Selected result</p><div id="performance-readout" aria-live="polite"><time id="performance-date"></time><a id="performance-activity"></a><strong id="performance-watts"></strong></div>
+<details id="performance-point-details"><summary>Selected result provenance</summary><dl id="performance-point-context"></dl></details></div>
+<p class="chart-footer" id="performance-chart-help">Hover or use arrow keys to inspect. Click a result or press Enter to open the Activity.</p>
+<noscript>Enable JavaScript to view the chart and use Performance modes.</noscript></section>
+<details class="panel performance-evidence"><summary>Eligible ride results <span id="performance-evidence-count"></span></summary>
+<div class="performance-evidence-table"><table><thead><tr><th>Date</th><th>Activity</th><th>Best 20 min</th></tr></thead><tbody id="performance-rides"></tbody></table></div>
+<div class="performance-evidence-pages"><button type="button" id="performance-rides-prev">Previous</button><span id="performance-rides-page"></span><button type="button" id="performance-rides-next">Next</button></div></details></div>'''
+    else:
+        message = ('Performance history has not been rebuilt yet.' if history['current'] == 0 else
+                   'No current ride result qualifies for the trusted 20-minute history.')
+        chart = f'<section class="panel empty"><h2>20-minute power history</h2><p>{message}</p></section>'
+    notices = []
+    if history['pending']:
+        notices.append(f"{history['pending']:,} Activities need a performance rebuild; changed inputs are not plotted.")
+    if history['missing_dates']:
+        notices.append(f"{history['missing_dates']:,} eligible results lack a supported Activity date and are not plotted.")
+    if view['unknown_timezones']:
+        notices.append(f"{view['unknown_timezones']:,} results have source dates with unknown timezones: available in period views, unavailable for exact timed-window summaries.")
+    return shell('Performance', f'''<header><h1>Performance</h1><p class="performance-count">20-minute power · {len(points):,} eligible ride results · Virtual Ride native power</p></header>{chart}
+<p class="performance-notice">{escape(' '.join(notices))}</p>
+<details class="panel performance-policy"><summary>Eligibility &amp; method</summary>
+<p>Virtual Ride native source power is eligible for this Phase 2 history. Native power presence does not establish that it was measured. Outdoor Ride power is excluded because its evidence quality is suspect.</p>
+<p>RideWorks calculates the highest average over exactly 1,200 consecutive records with one-second timestamps and complete power. Zero watts count; missing power, gaps and duplicate or backward timestamps invalidate affected windows. No interpolation, resampling or repair occurs. Exact ties choose the earliest window; display rounds whole watts half up.</p>
+<p>The trend retains the strongest qualifying result in the trailing 42 days, changing when a ride enters or leaves the window. A result expires exactly 42 days after its Activity start. Gaps mean there is no qualifying result; the line is demonstrated evidence rather than an estimated daily performance series. Time ranges end at the page's current time; monthly and yearly bests use displayed calendar periods and only rides within the selected range. Period-best lines connect consecutive calendar periods at the contributing ride dates, with point markers. Missing periods have no mark and break the line. Raw values choose the best; exact ties retain the earliest Activity.</p>
+<p>Method: best-average-power-v1 · Policy: virtual-native-power-v1. One eligible native file Source must support each Activity result. Multiple eligible Sources are ambiguous and excluded. CSV and source summaries never substitute for native power. Ineligible or missing results are not plotted as zero.</p>
+</details>
+<details class="panel performance-future"><summary>Future Performance candidates</summary><p>Possible future direction includes additional performance durations and broader power history, FTP and historical athlete context, richer recent-versus-historical comparisons, and explainable performance or training-state signals. These are candidates, not implemented features or delivery commitments.</p></details>
+<script id="performance-points" type="application/json">{safe_json(points)}</script><script id="performance-view" type="application/json">{safe_json(view)}</script><script src="/static/performance.js" defer></script>''', active='performance')
+
+
 class Application:
     """Read-only routes; each request gets its own short-lived Store snapshot."""
     def __init__(self, data_dir=None):
@@ -296,6 +360,8 @@ class Application:
         with Store(self.data_dir) as store:
             if path == '/':
                 return 200, 'text/html', activities_page(store, url.query).encode()
+            if path == '/performance':
+                return 200, 'text/html', performance_page(store).encode()
             if path.startswith('/activities/'):
                 activity_id = path.removeprefix('/activities/')
                 try:

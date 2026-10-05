@@ -161,6 +161,24 @@ SUMMARY_UNITS = {
     "avg_heart_rate": "bpm", "max_heart_rate": "bpm", "avg_cadence": "rpm",
 }
 
+MIGRATION_4 = """
+BEGIN IMMEDIATE;
+CREATE TABLE performance_history (
+    activity_id TEXT NOT NULL REFERENCES activities(activity_id),
+    duration_seconds INTEGER NOT NULL,
+    policy TEXT NOT NULL,
+    method TEXT NOT NULL,
+    source_id TEXT REFERENCES sources(source_id),
+    extraction_id TEXT REFERENCES extractions(extraction_id) ON DELETE CASCADE,
+    input_signature TEXT NOT NULL,
+    calculated_at TEXT NOT NULL,
+    result_json TEXT NOT NULL,
+    PRIMARY KEY(activity_id, duration_seconds, policy)
+);
+PRAGMA user_version = 4;
+COMMIT;
+"""
+
 
 def resolve_data_dir(data_dir=None) -> Path:
     """Resolve once; default does not depend on the working directory."""
@@ -202,7 +220,7 @@ class Store:
         self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.execute("PRAGMA synchronous = FULL")
         version = self.connection.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1, 2, 3):
+        if version not in (0, 1, 2, 3, 4):
             self.close()
             raise RideWorksError(f"Unsupported RideWorks schema version: {version}")
         try:
@@ -214,6 +232,9 @@ class Store:
                 version = self.connection.execute("PRAGMA user_version").fetchone()[0]
             if version == 2:
                 self.connection.executescript(MIGRATION_3)
+                version = self.connection.execute("PRAGMA user_version").fetchone()[0]
+            if version == 3:
+                self.connection.executescript(MIGRATION_4)
             _sync_directory(self.data_dir)
         except BaseException:
             self.connection.rollback()
@@ -231,6 +252,11 @@ class Store:
 
     @contextmanager
     def _transaction(self, *, write=False):
+        # A performance rebuild holds one write snapshot while using existing
+        # read boundaries. Only the outer transaction commits or rolls back.
+        if self.connection.in_transaction:
+            yield
+            return
         # Serialize import/re-extraction and file placement across store instances.
         self.connection.execute("BEGIN IMMEDIATE" if write else "BEGIN")
         try:

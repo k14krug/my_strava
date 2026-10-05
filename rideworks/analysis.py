@@ -20,9 +20,9 @@ def _timestamp(value):
     try:
         parsed = datetime.fromisoformat(value)
     except (TypeError, ValueError) as exc:
-        raise AnalysisError("Invalid timestamp in current FIT extraction") from exc
+        raise AnalysisError("Invalid timestamp in current native extraction") from exc
     if parsed.tzinfo is None:
-        raise AnalysisError("Current FIT extraction timestamp has no timezone")
+        raise AnalysisError("Current native extraction timestamp has no timezone")
     return parsed
 
 
@@ -45,7 +45,7 @@ def best_20_minute_power(records, *, activity_id, source_id, extraction_id):
     for record in records:
         power = record["power"]
         if power is not None and (not isinstance(power, int) or power < 0):
-            raise AnalysisError("Unexpected power value in current FIT extraction; analysis stopped")
+            raise AnalysisError("Unexpected power value in current native extraction; analysis stopped")
     if len(records) < WINDOW_SAMPLES:
         result["reason"] = "activity_shorter_than_required"
         return result

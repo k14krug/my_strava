@@ -45,7 +45,8 @@ class WebTests(unittest.TestCase):
         self.assertIn('import-fit', html)
         self.assertIn('RideWorks', html)
         self.assertIn('href="/"', html)
-        for fake in ('Dashboard', 'Performance', 'Training Plan', 'Settings', 'Sync', 'AI insights', 'Profile'):
+        self.assertIn('href="/performance"', html)
+        for fake in ('Dashboard', 'Training Plan', 'Settings', 'Sync', 'AI insights', 'Profile'):
             self.assertNotIn(fake, html)
 
     def test_list_stable_route_and_missing_route(self):
@@ -155,7 +156,8 @@ class WebTests(unittest.TestCase):
         self.assertIn(f'<title>{expected} · RideWorks</title>', html)
         self.assertIn(expected, self.html('/')[1])
         self.assertIn(activity_id, html)
-        for fake in ('Dashboard', 'Performance', 'Training Plan', 'AI Summary',
+        self.assertIn('href="/performance"', html)
+        for fake in ('Dashboard', 'Training Plan', 'AI Summary',
                      'Compare', 'Normalized power', 'Training load', 'Zone breakdown',
                      'Laps / Intervals', 'Next workout', 'Settings', 'Sync', 'Profile'):
             self.assertNotIn(fake, html)

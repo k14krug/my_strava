@@ -1,0 +1,180 @@
+{
+  "implementation_head": "1c099aa607365fc35815fe69151b34174a53ad7c",
+  "schema_version": 4,
+  "method": "best-average-power-v1",
+  "policy": "virtual-native-power-v1",
+  "automated_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests",
+    "passed": 170
+  },
+  "rebuild": {
+    "status": "completed",
+    "evaluated": 1434,
+    "virtual_candidates": 1264,
+    "outdoor_activities": 146,
+    "non_cycling_activities": 24,
+    "eligible": 1022,
+    "ineligible_by_reason": {
+      "activity_shorter_than_required": 198,
+      "no_complete_power_window": 5,
+      "no_complete_timestamp_contiguous_window": 39,
+      "non_virtual_activity": 24,
+      "outdoor_ride_excluded": 146
+    },
+    "eligible_source_formats": {
+      "FIT": 1022
+    },
+    "policy": "virtual-native-power-v1",
+    "method": "best-average-power-v1",
+    "duration_seconds": 1200
+  },
+  "independent": {
+    "result": "passed",
+    "independently_evaluated": 1434,
+    "independently_verified_eligible": 1022,
+    "virtual_candidates": 1264,
+    "outdoor_activities": 146,
+    "outdoor_eligible": 0,
+    "non_cycling_eligible": 0,
+    "classification_native_disagreements": 0,
+    "counts_by_status_reason": {
+      "activity_shorter_than_required": 198,
+      "eligible": 1022,
+      "no_complete_power_window": 5,
+      "no_complete_timestamp_contiguous_window": 39,
+      "non_virtual_activity": 24,
+      "outdoor_ride_excluded": 146
+    },
+    "eligible_source_formats": {
+      "FIT": 1022
+    },
+    "raw_average_range_watts": [
+      61.75083333333333,
+      218.39666666666668
+    ],
+    "eligible_date_span": [
+      "2018-05-13",
+      "2026-09-29"
+    ],
+    "representative_display_watts": 120,
+    "representative_records": 3621,
+    "all_source_extraction_identities_verified": true,
+    "exact_ties_verified": true,
+    "no_summary_substitution": true,
+    "idempotent_rebuild": true,
+    "restart_preserved": true,
+    "sqlite_integrity": true,
+    "foreign_keys": true,
+    "presentation": {
+      "result": "passed",
+      "independently_checked_event_times": 2019,
+      "rolling_changes": 208,
+      "all_four_summaries_verified": true,
+      "exact_42_day_expiry": true,
+      "raw_comparison": true,
+      "unknown_activity_timezones": 0
+    },
+    "rerun_report": {
+      "status": "completed",
+      "evaluated": 1434,
+      "virtual_candidates": 1264,
+      "outdoor_activities": 146,
+      "non_cycling_activities": 24,
+      "eligible": 1022,
+      "ineligible_by_reason": {
+        "activity_shorter_than_required": 198,
+        "no_complete_power_window": 5,
+        "no_complete_timestamp_contiguous_window": 39,
+        "non_virtual_activity": 24,
+        "outdoor_ride_excluded": 146
+      },
+      "eligible_source_formats": {
+        "FIT": 1022
+      },
+      "policy": "virtual-native-power-v1",
+      "method": "best-average-power-v1",
+      "duration_seconds": 1200
+    }
+  },
+  "http_restart": {
+    "result": "passed",
+    "performance_points": 1022,
+    "performance_process_restart": true,
+    "performance_payload_matches_persistence": true,
+    "no_native_streams_or_private_paths": true,
+    "accepted_browser_and_activity_regression": {
+      "result": "passed",
+      "activity_count": 1434,
+      "cycling_count": 1410,
+      "type_counts": {
+        "Virtual Ride": 1264,
+        "Ride": 146,
+        "Run": 22,
+        "Walk": 1,
+        "Rowing": 1
+      },
+      "page_size": 30,
+      "cycling_pages": 47,
+      "all_pages": 48,
+      "query_filters_verified": true,
+      "source_title_search_and_display_verified": true,
+      "format_routes": {
+        "FIT": "rich",
+        "TCX": "thin",
+        "GPX": "thin",
+        "CSV-only": "thin"
+      },
+      "process_restart_verified": true,
+      "representative_fit_average_watts": 118,
+      "representative_best20_display_watts": 120,
+      "privacy_checks_passed": true
+    }
+  },
+  "chromium": {
+    "result": "passed",
+    "browser": "Chromium",
+    "payload_eligible_results": 1022,
+    "all_range_ride_points": 1022,
+    "default_rolling_one_year": true,
+    "rolling_line_dominant": true,
+    "single_performance_surface": true,
+    "all_range_view_combinations": true,
+    "summaries_and_freshness": true,
+    "monthly_yearly_bests_independently_verified": true,
+    "synthetic_calendar_raw_tie_range_tests": true,
+    "monthly_yearly_lines_with_markers": true,
+    "missing_month_year_breaks_verified": true,
+    "supporting_rides_in_all_views": true,
+    "future_candidates_secondary": true,
+    "complete_paged_evidence": true,
+    "first_middle_last_pointer": true,
+    "keyboard_inspection": true,
+    "point_activity_and_back": true,
+    "source_title_date_watts": true,
+    "eligibility_provenance": true,
+    "local_date_zones": [
+      "America/Los_Angeles",
+      "Asia/Tokyo"
+    ],
+    "desktop_tablet_phone_no_overflow": true,
+    "no_native_stream_payload": true
+  },
+  "owner_approval": "approved",
+  "analyst_acceptance": "pending",
+  "controlling_jit_main": "c540165",
+  "verification_date": "2026-10-05",
+  "focused_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests -p 'test_rideworks_performance*.py'",
+    "passed": 28
+  },
+  "retained_analytical_evidence": {
+    "implementation_head": "fa0d877dc301dd605f612670e6595aafe4e7fc14",
+    "verification_date": "2026-10-05",
+    "applies_to": [
+      "rebuild",
+      "independent",
+      "http_restart"
+    ],
+    "basis": "Native calculation, classification, summary selection and persistence modules are unchanged by the line-rendering correction."
+  }
+}

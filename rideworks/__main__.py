@@ -20,6 +20,7 @@ def main(argv=None):
     commands.add_parser("inspect", help="Compact source evidence; no raw streams").add_argument("activity_id")
     commands.add_parser("analyze", help="Source summary and best 20-minute result; no raw streams").add_argument("activity_id")
     commands.add_parser("reextract", help="Rebuild from the preserved original").add_argument("source_id")
+    commands.add_parser("rebuild-performance", help="Rebuild durable trusted Virtual Ride best-20 history")
     serve = commands.add_parser("serve", help="Open the local RideWorks browser application")
     serve.add_argument("--port", type=int, help="Loopback port (overrides FLASK_RUN_PORT; default: 8765)")
     args = parser.parse_args(argv)
@@ -38,6 +39,9 @@ def main(argv=None):
                 result = store.inspect(args.activity_id)
             elif args.command == "analyze":
                 result = compact_analysis(analyze_activity(store, args.activity_id))
+            elif args.command == "rebuild-performance":
+                from .performance import rebuild_performance
+                result = rebuild_performance(store)
             else:
                 result = store.reextract(args.source_id)
         print(json.dumps(result, indent=2, ensure_ascii=True))
