@@ -176,7 +176,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** in_progress — P2-02 Activities browser implementation.
+**Status:** in_progress — P2-02 accepted; P2-03 planning ready.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
@@ -210,7 +210,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-02 — Scalable Activities browser
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Make the full imported history practical to browse rather than rendering an unbounded list.
 
@@ -227,7 +227,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-02.md`.
 
-**Execution state:** Owner Date-column/local-calendar corrections implemented on PR #14 under clarified JIT at `56e1f1c`. 142 tests and full-history HTTP/restart/Chromium checks pass, including multiple timezones and single-line date/time without timezone suffixes. Stopped again at Gate 1 HARD — Owner for visual/usability approval.
+**Acceptance result:** Owner and Analyst accepted the corrected browser on PR #14; merged to `main` as `683c9880bb0b6ed1cd9569a58be61093ec2cce0e`. 142 tests and full-history HTTP/restart/Chromium checks passed, including multiple timezones and single-line local date/time.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
@@ -250,7 +250,7 @@ Only one implementation/research task should normally be `in_progress`.
 * present chronological 20-minute-power history with links to contributing activities
 * make eligibility/provenance inspectable
 
-**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-02 acceptance.
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-03.md`.
 
 **Dependency:** P2-02 complete.
 
@@ -301,7 +301,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 is accepted and complete. P2-01 is accepted and complete. P2-02 is the next implementation boundary once its JIT is invoked with `/TASK` or `/AUTOTASK`.
+Phase 1 is accepted and complete. P2-01 and P2-02 are accepted and complete. P2-03 is the next implementation boundary once its JIT is invoked with `/TASK` or `/AUTOTASK`.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
