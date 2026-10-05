@@ -176,7 +176,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** in_progress — P2-03 Performance history awaiting Owner review.
+**Status:** in_progress — P2-03 accepted; P2-04 planning ready.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
@@ -237,7 +237,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-03 — Trusted 20-minute performance history
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Build the first trusted longitudinal performance view from eligible Virtual Ride native source-power evidence.
 
@@ -254,7 +254,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** Monthly/Yearly line-with-markers correction implemented on PR #15 under JIT `c540165`; 28 focused / 170 full tests and full-history Chromium rerun passed, including missing-month/year breaks. Prior 1,434 evaluated / 1,022 eligible native/restart proof remains applicable to unchanged analytical code. Stopped again at Gate 1 HARD — Owner.
+**Acceptance result:** Owner and Analyst accepted the final Performance experience on PR #15; merged to `main` as `4f1a58d39177887e965ddd1a74db95c62c17e0b0`. 170 full / 28 focused tests passed; all 1,434 Activities accounted for and all 1,022 eligible trusted results independently verified.
 
 **Dependency:** P2-02 complete.
 
@@ -275,7 +275,9 @@ Only one implementation/research task should normally be `in_progress`.
 * connect Activity Review to the trusted Performance history
 * no manual pairwise ride-comparison feature
 
-**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-03 acceptance.
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-04.md`.
+
+**Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
 **Dependency:** P2-03 complete.
 
@@ -305,7 +307,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 is accepted and complete. P2-01 and P2-02 are accepted and complete. P2-03 is in progress on PR #15 and stopped at Gate 1 HARD — Owner. P2-04 remains pending.
+Phase 1 is accepted and complete. P2-01/P2-02/P2-03 are accepted and complete. P2-04 is the next implementation boundary once its JIT is invoked with `/TASK` or `/AUTOTASK`.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
