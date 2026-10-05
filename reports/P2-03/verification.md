@@ -4,7 +4,7 @@
 **Branch / PR:** `task/p2-03-performance-history` / [#15](https://github.com/k14krug/my_strava/pull/15).
 **Implementation head:** `1c099aa607365fc35815fe69151b34174a53ad7c`; final publication adds documentation/evidence only.
 **Controlling correction:** Owner comments on PR #15 and Analyst JIT refreshed from `main` at `c540165`.
-**State:** Owner-directed correction implemented and required local verification complete. Stopped at **Gate 1 HARD — Owner**. P2-03 stays `in_progress`; Owner approval and Analyst acceptance are pending.
+**State:** Owner Gate 1 approved; stopped at **Gate 2 HARD — Analyst**. P2-03 remains `in_progress`; final Analyst acceptance is pending.
 
 ## Behavior and analytical context
 
@@ -299,3 +299,14 @@ three views and summaries make the data practical, and the page meets the visual
 quality bar. After explicit
 Owner approval, record it and stop at Gate 2 HARD — Analyst for evidence,
 calculation/persistence and UI acceptance. **P2-04 has not begun.**
+
+
+## Owner approval and Gate 2 handoff
+
+On **2026-10-05**, the Owner explicitly approved the final P2-03
+Performance visual/usability result after reviewing the corrected one-surface
+Range/View design, Rolling 42-day trend, Monthly/Yearly line charts, summary
+cards, evidence controls and supporting details.
+
+P2-03 remains `in_progress`. Final acceptance belongs to the Analyst at Gate 2.
+P2-04 has not begun.
