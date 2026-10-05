@@ -29,11 +29,9 @@
     element.dataset.localDay = `${part('year')}-${part('month')}-${part('day')}`;
     element.dataset.timezone = browserTimezone;
     if (element.hasAttribute('data-compact-time')) {
-      const day = document.createElement('span'), clock = document.createElement('span');
-      day.className = 'date-day'; clock.className = 'date-clock';
-      day.textContent = new Intl.DateTimeFormat(undefined, {year:'numeric', month:'short', day:'numeric'}).format(date);
-      clock.textContent = new Intl.DateTimeFormat(undefined, {hour:'numeric', minute:'2-digit', timeZoneName:'short'}).format(date) + ` (${offset})`;
-      element.replaceChildren(day, clock);
+      element.textContent = new Intl.DateTimeFormat(undefined, {
+        year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'
+      }).format(date);
     } else {
       element.textContent = `${formatted} (${offset})`;
     }

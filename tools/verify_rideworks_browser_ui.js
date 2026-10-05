@@ -84,6 +84,9 @@ async (page) => {
       await probe.waitForFunction(() => !!document.querySelector('.row-date time')?.dataset.localDay);
       check(await time.getAttribute('data-local-day')===day,'Displayed day differs from filtered day');
       check(await time.getAttribute('data-timezone')===zone,'Known time not browser-local');
+      check(await time.evaluate(node => node.textContent === new Intl.DateTimeFormat(undefined, {
+        year:'numeric', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'
+      }).format(new Date(node.dateTime))), 'Compact date includes unwanted timezone text');
       check(await anchor.locator('.row-identity time').count()===0,'Date nested under Title');
       if (zone==='America/Los_Angeles') {
         const utcDay=boundary.start.slice(0,10);
@@ -110,6 +113,10 @@ async (page) => {
   for (const [width,height] of [[1448,1086],[1024,900],[390,844]]) {
     await page.setViewportSize({width,height});
     check(await page.evaluate(() => document.documentElement.scrollWidth<=innerWidth), 'Horizontal overflow');
+    check(await page.locator('.row-date time[data-compact-time]').evaluateAll(nodes => nodes.every(node => {
+      const range=document.createRange(); range.selectNodeContents(node);
+      return range.getClientRects().length===1;
+    })), 'Activity date wraps to multiple lines');
   }
   await page.setViewportSize({width:1448,height:1086});
   await page.screenshot({path:'output/playwright/p2-02-activities-desktop.png'});
@@ -122,5 +129,5 @@ async (page) => {
   await page.screenshot({path:'output/playwright/p2-02-csv-only-desktop.png'});
   await page.goto(base);
   await waitForLocalQuery(page);
-  return ({result:'passed', browser:'Chromium', pagination:true, typeFilters:true, titleSearch:true, dateRange:true, alternateSorts:true, richAndThinRoutes:true, nativeChartInteraction:true, browserBack:true, desktopTabletMobileNoOverflow:true, dedicatedDateColumn:true, localDateFiltering:true, timezoneUnknownDayPreserved:true, testedTimezones:['America/Los_Angeles','Asia/Tokyo','UTC']});
+  return ({result:'passed', browser:'Chromium', pagination:true, typeFilters:true, titleSearch:true, dateRange:true, alternateSorts:true, richAndThinRoutes:true, nativeChartInteraction:true, browserBack:true, desktopTabletMobileNoOverflow:true, dedicatedDateColumn:true, singleLineDateWithoutTimezoneSuffix:true, localDateFiltering:true, timezoneUnknownDayPreserved:true, testedTimezones:['America/Los_Angeles','Asia/Tokyo','UTC']});
 }
