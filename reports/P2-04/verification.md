@@ -1,9 +1,9 @@
 # P2-04 verification — Gate 1 Owner review
 
-**Date:** 2026-10-05.  
-**Branch / PR:** `task/p2-04-recent-context` / [#16](https://github.com/k14krug/my_strava/pull/16).  
-**Implementation head:** `8ef30c93ce797f4a0e019c34b6663fb3f00c84be`; final publication adds status/evidence only.  
-**Controlling JIT:** Analyst-authored `docs/tasks/P2-04.md` on refreshed `main` at `8d573e3`.  
+**Date:** 2026-10-05.
+**Branch / PR:** `task/p2-04-recent-context` / [#16](https://github.com/k14krug/my_strava/pull/16).
+**Implementation head:** `443ab424aba4a468fd0f7cbb6b828174039b57cd`; final publication adds status/evidence only.
+**Controlling JIT:** Analyst-authored `docs/tasks/P2-04.md` on refreshed `main` at `c3c9b7e`.
 **State:** implementation and required verification complete; stopped at **Gate 1 HARD — Owner**. P2-04 remains `in_progress`; Owner usability and Analyst acceptance are pending. P2-05 has not begun.
 
 ## Behavior and evidence basis
@@ -23,13 +23,23 @@ Unknown-zone prior dates cannot establish timed-window membership. Missing/stale
 current results require a Performance rebuild; missing/unknown current dates or
 empty prior windows show honest unavailable reasons without fallback or zero.
 
-Activity Review adds compact **Recent context** inside the existing Best
-20-minute power panel: This ride / Prior 42-day best, a contributing date/title/
-Activity link, View Performance, and closed secondary details. Details retain
-method/policy/duration, current/prior input identities, raw values, exclusive
-bounds and current exclusion. Values are neutral; no difference score, percentage,
+Activity Review shows a distinct **Compared with previous 6 weeks** inset inside
+the existing Best 20-minute power panel. This ride / Prior 42-day best use prominent
+values, followed by a neutral raw-derived watt difference, compact prior date/title,
+explicit Open prior ride and visible View Performance. Method/input/window
+provenance stays collapsed under Comparison details. No-baseline Unavailable uses
+the same prominent value treatment, with no invented difference or prior link.
+
+The difference subtracts raw averages and rounds absolute whole watts half up.
+When that rounds to zero, equal displayed values say Same displayed watts;
+a rounded-label boundary instead says Less than 1 W above/below. No percentage,
 good/bad colors or fitness interpretation is introduced. Ordinary current FIT
-analysis remains separate. Thin reviews keep their existing behavior.
+analysis remains separate; thin reviews keep their existing behavior.
+
+This addresses the Owner usability correction in PR #16 and the Analyst JIT
+revision at `c3c9b7e`: the previous small Recent context row was visually buried.
+Only this presentation and its verification changed; interval selection, trusted
+eligibility, persisted results and data access remain unchanged.
 
 The Activity route holds one read snapshot across metadata, ordinary current
 analysis and comparison. Baseline selection loads no native streams and performs
@@ -45,8 +55,10 @@ the existing two-column metric grid; source values are unchanged.
 .venv/bin/python -m unittest discover -s tests -p 'test_rideworks_recent_context.py'
 ```
 
-**185 full tests passed in 8.506 seconds**: 170 accepted tests plus 15 new P2-04
-tests. The focused run passed all **15 tests in 0.750 seconds**.
+**186 full tests passed in 8.710 seconds**: 170 accepted tests plus 16 P2-04
+tests. The focused run passed all **16 tests in 1.243 seconds**. Neutral above,
+below and equal labels, raw-versus-rounded subtraction, half-up rounding and
+sub-watt display boundaries are covered without mutating context.
 
 Coverage includes both open endpoints, an instant inside expiry, same-time/future
 exclusion, self exclusion, raw versus rounded ties, earliest-time/identity ties,
@@ -84,7 +96,9 @@ remain unavailable for trusted context. Their accepted P2-03 distribution remain
 24 non-cycling Activities. No current Activity supplies its own baseline.
 
 The representative retains **120 W** native best-20, **118 W** FIT source average
-and **3,621** native records. Its correctly selected prior best is **195 W**.
+and **3,621** native records. Its correctly selected prior best is **195 W**. The neutral difference is
+**74 W below**, from raw 120.11916666666667 versus 194.54333333333332 W
+(74.42416666666665 W apart), rather than subtracting rounded labels.
 These are factual calculated/source values with separate provenance, without
 training-state interpretation.
 
@@ -129,8 +143,8 @@ context for the representative, clear unavailable/no-prior/outdoor cases, stable
 prior/Performance links and no native/runtime/location data in comparison markup.
 All persisted Performance rows remain unchanged after startup/rendering/restart.
 
-Managed Chromium verifies real Performance-to-Activity navigation, the 120/195 W
-comparison, prior Activity and browser back, View Performance and back, closed
+Managed Chromium verifies real Performance-to-Activity navigation, the clear comparison heading, prominent 120/195 W
+values, raw-derived 74 W below and explicit Open prior ride action, prior Activity and browser back, View Performance and back, closed
 secondary provenance, no-baseline Unavailable without a fabricated link, and
 ineligible rich review that retains ordinary chart/best-20 while excluding trusted
 context. Source title, 118 W average and 3,621 native chart samples remain intact.
@@ -155,13 +169,14 @@ Local screenshots:
 
 - `output/playwright/p2-04-recent-desktop.png`
 - `output/playwright/p2-04-recent-phone.png`
+- `output/playwright/p2-04-no-prior-phone.png`
 
 Inputs, store copy, native files, private links and screenshots remain local and
 ignored. Published evidence contains only aggregate counts/values and reproducible
 commands, with no personal title/Activity/Source/extraction ID, original input path,
 coordinate or native stream.
 
-Under JIT §20, stop at **Gate 1 HARD — Owner** for whether Recent context helps
-answer the previous-six-week question without cluttering Activity Review.
+Under JIT §20, stop at **Gate 1 HARD — Owner** for whether Compared with previous 6 weeks is immediately noticeable and
+answers the previous-six-week question without cluttering Activity Review.
 After explicit Owner approval, record it and stop at Gate 2 HARD — Analyst for
 interval/trust/data-access/UI acceptance. **P2-05 remains pending.**

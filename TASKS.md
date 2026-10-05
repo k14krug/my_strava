@@ -279,7 +279,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** implemented/verified on PR #16; 185 full / 15 focused tests, all 1,022 eligible baseline selections independently verified (1,012 available / 10 unavailable), data-access guards and restart/Chromium acceptance passed. Stopped at Gate 1 HARD — Owner.
+**Execution state:** Owner usability correction implemented/verified on PR #16 under JIT `c3c9b7e`: prominent comparison, neutral raw watt difference and explicit prior action; 186 full / 16 focused tests, all 1,022 eligible baseline selections independently verified (1,012 available / 10 unavailable), data-access guards and restart/Chromium acceptance passed. Stopped at Gate 1 HARD — Owner.
 
 **Dependency:** P2-03 complete.
 

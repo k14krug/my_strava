@@ -1,6 +1,6 @@
 {
-  "implementation_head": "8ef30c93ce797f4a0e019c34b6663fb3f00c84be",
-  "controlling_main": "8d573e3",
+  "implementation_head": "443ab424aba4a468fd0f7cbb6b828174039b57cd",
+  "controlling_main": "c3c9b7e",
   "verification_date": "2026-10-05",
   "branch": "task/p2-04-recent-context",
   "pr": "https://github.com/k14krug/my_strava/pull/16",
@@ -10,11 +10,11 @@
   "interval": "(t - 42 days, t)",
   "automated_tests": {
     "command": ".venv/bin/python -m unittest discover -s tests",
-    "passed": 185
+    "passed": 186
   },
   "focused_tests": {
     "command": ".venv/bin/python -m unittest discover -s tests -p 'test_rideworks_recent_context.py'",
-    "passed": 15
+    "passed": 16
   },
   "independent": {
     "result": "passed",
@@ -78,6 +78,9 @@
     "browser": "Chromium",
     "representative_this_ride_watts": 120,
     "representative_prior_watts": 195,
+    "comparison_heading_clear": true,
+    "explicit_prior_action": true,
+    "neutral_difference": "74 W below",
     "representative_native_records": 3621,
     "fit_source_average_watts": 118,
     "prior_activity_and_back": true,
@@ -93,5 +96,6 @@
     ]
   },
   "owner_approval": "pending",
-  "analyst_acceptance": "pending"
+  "analyst_acceptance": "pending",
+  "owner_correction": "Prominent Compared with previous 6 weeks inset; neutral raw-derived difference; explicit Open prior ride; collapsed details"
 }
