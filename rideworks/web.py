@@ -1,6 +1,7 @@
 """Small loopback-only browser boundary; no retired application imports."""
 
 from datetime import datetime, timezone
+from decimal import Decimal, ROUND_HALF_UP
 from html import escape
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
@@ -168,8 +169,15 @@ def recent_context_panel(context):
         prior_value = sensor(prior['rounded_watts'], 'W') if prior else 'Unavailable'
         values = f'''<div class="recent-values"><div><span>This ride</span><strong id="recent-current-watts">{sensor(current['rounded_watts'], 'W')}</strong></div><div><span>Prior 42-day best</span><strong id="recent-prior-watts">{prior_value}</strong></div></div>'''
     contribution = ''
+    difference = ''
     if prior:
-        contribution = f'''<p class="recent-contribution">{browser_time(prior, compact=True)} · <a id="recent-prior-activity" href="/activities/{escape(prior['activity_id'], quote=True)}">{escape(prior['title'])}</a></p>'''
+        delta = Decimal(str(current['average_watts'])) - Decimal(str(prior['average_watts']))
+        watts = abs(delta).quantize(Decimal('1'), rounding=ROUND_HALF_UP)
+        direction = 'above' if delta > 0 else 'below'
+        comparison = f'{watts} W {direction}' if watts else (
+            'Same displayed watts' if current['rounded_watts'] == prior['rounded_watts'] else f'Less than 1 W {direction}')
+        difference = f'<p class="recent-difference" id="recent-difference">{comparison}</p>'
+        contribution = f'''<p class="recent-contribution">{browser_time(prior, compact=True)} · {escape(prior['title'])}</p><a id="recent-prior-activity" class="recent-open" href="/activities/{escape(prior['activity_id'], quote=True)}">Open prior ride</a>'''
     messages = {
         'performance_rebuild_required': 'Trusted recent context requires a Performance rebuild.',
         'outdoor_ride_excluded': 'Outdoor Ride power is excluded from trusted Performance history.',
@@ -188,7 +196,7 @@ def recent_context_panel(context):
         if point:
             rows += [(f'{name} Activity ID', point['activity_id']), (f'{name} Source ID', point['source_id']),
                      (f'{name} extraction ID', point['extraction_id']), (f'{name} raw average (W)', point['average_watts'])]
-    return f'''<section class="recent-context" aria-labelledby="recent-context-title" data-recent-status="{'available' if prior else 'unavailable'}"><div class="recent-heading"><h3 id="recent-context-title">Recent context</h3><a id="recent-performance" href="/performance">View Performance</a></div>{values}{contribution}<p class="recent-note">{escape(note)}</p><details id="recent-context-details"><summary>Recent context details</summary>{detail_rows(rows)}<p>The prior window is (Activity start − 42 days, Activity start), with both endpoints excluded. The current Activity is excluded from its own baseline. Only current trusted results with absolute Activity times participate. Highest raw watts win; exact ties use earliest Activity start, then Activity ID. No source summaries or older period bests substitute.</p></details></section>'''
+    return f'''<section class="recent-context" aria-labelledby="recent-context-title" data-recent-status="{'available' if prior else 'unavailable'}"><div class="recent-heading"><h3 id="recent-context-title">Compared with previous 6 weeks</h3><a id="recent-performance" href="/performance">View Performance</a></div>{values}{difference}{contribution}<p class="recent-note">{escape(note)}</p><details id="recent-context-details"><summary>Comparison details</summary>{detail_rows(rows)}<p>The prior window is (Activity start − 42 days, Activity start), with both endpoints excluded. The current Activity is excluded from its own baseline. Only current trusted results with absolute Activity times participate. Highest raw watts win; exact ties use earliest Activity start, then Activity ID. The watt difference uses raw averages, rounded to the nearest whole watt (halves up). No source summaries or older period bests substitute.</p></details></section>'''
 
 
 def review_page(analysis, metadata=None, recent=None):

@@ -496,10 +496,15 @@ older review servers are separate instances.
 
 ## Prior six-week context in Activity Review (P2-04)
 
-Rich Activity Review adds compact Recent context inside Best 20-minute power:
-This ride's current trusted Performance result, Prior 42-day best, a prior
-Activity/date link, and View Performance. Values stay neutral; no fitness or
-improvement interpretation is added. Details retain raw values, selected input
+Rich Activity Review adds a distinct **Compared with previous 6 weeks** inset
+inside Best 20-minute power: prominent This ride and Prior 42-day best values,
+a neutral watt difference, compact prior date/title, Open prior ride and View
+Performance. The difference subtracts raw averages, then rounds whole watts
+half up; it is not the subtraction of the two rounded labels. Differences
+rounding to zero show Same displayed watts when those labels agree, otherwise
+Less than 1 W above/below. No difference is fabricated without a baseline.
+Values stay neutral; no fitness interpretation is added. Collapsed Comparison
+details retain raw values, selected input
 identities, method/policy/duration, exact bounds and current-Activity exclusion.
 
 Selection reads current persisted P2-03 results and metadata. For absolute

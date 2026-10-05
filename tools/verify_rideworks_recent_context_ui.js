@@ -6,6 +6,9 @@ async (page) => {
   // Use a real summary/evidence Activity link already rendered by Performance.
   await page.locator('a[href="'+links.representative+'"]').first().click();await page.waitForSelector('#recent-context-title');
   const title=await page.locator('h1').textContent();
+  check(await page.locator('#recent-context-title').textContent()==='Compared with previous 6 weeks','Comparison purpose is unclear');
+  check(await page.locator('#recent-difference').textContent()==='74 W below','Neutral raw watt difference is incorrect');
+  check(await page.locator('#recent-prior-activity').textContent()==='Open prior ride','Explicit prior action missing');
   check(await page.locator('.best-value').textContent()==='120 W','Representative best-20 changed');
   check(await page.locator('#recent-current-watts').textContent()==='120 W','Trusted current result changed');
   check(await page.locator('#recent-prior-watts').textContent()===links.representative_prior_watts+' W','Prior watts differ from independent verification');
@@ -13,11 +16,11 @@ async (page) => {
   check(Number(await page.locator('#ride-chart').getAttribute('data-record-count'))===3621,'Native chart changed');
   check((await page.locator('.ride-summary').textContent()).includes('118 W'),'FIT source summary changed');
   check(await page.locator('#recent-context-details').getAttribute('open')===null,'Context details dominate default view');
-  await page.getByText('Recent context details',{exact:true}).click();
+  await page.getByText('Comparison details',{exact:true}).click();
   const details=await page.locator('#recent-context-details').textContent();
   check(details.includes('virtual-native-power-v1')&&details.includes('best-average-power-v1')&&details.includes('The current Activity is excluded')&&details.includes('exclusive'),'Comparison basis missing');
   check(!details.includes('stored_path')&&!details.includes('native_records'),'Comparison exposes native streams/runtime paths');
-  await page.getByText('Recent context details',{exact:true}).click();
+  await page.getByText('Comparison details',{exact:true}).click();
   await page.locator('#recent-prior-activity').click();await page.waitForURL(base+links.prior);
   await page.goBack();await page.waitForSelector('#recent-context-title');
   check(await page.locator('h1').textContent()===title,'Activity/back title changed');
@@ -25,6 +28,7 @@ async (page) => {
   await page.goBack();await page.waitForSelector('#recent-context-title');
   await page.setViewportSize({width:1448,height:1086});
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Desktop overflow');
+  await page.evaluate(()=>window.scrollTo(0,0));
   await page.screenshot({path:'output/playwright/p2-04-recent-desktop.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});
   check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Phone overflow');
@@ -33,6 +37,8 @@ async (page) => {
   check(await page.locator('#recent-prior-watts').textContent()==='Unavailable','No-baseline result fabricated');
   check((await page.locator('.recent-note').textContent()).includes('No qualifying prior result'),'No-baseline reason missing');
   check(await page.locator('#recent-prior-activity').count()===0,'No-baseline has invented Activity');
+  check(await page.locator('#recent-difference').count()===0,'No-baseline has fabricated difference');
+  await page.screenshot({path:'output/playwright/p2-04-no-prior-phone.png',fullPage:true});
   await page.goto(base+links.outdoor);await page.waitForSelector('#recent-context-title');
   check(await page.locator('.recent-context').getAttribute('data-recent-status')==='unavailable','Outdoor promoted to trusted context');
   check((await page.locator('.recent-note').textContent()).includes('Outdoor Ride power is excluded'),'Outdoor exclusion unclear');
@@ -50,6 +56,7 @@ async (page) => {
   }
   await page.setViewportSize({width:1448,height:1086});await page.goto(base+links.representative);await page.waitForSelector('#recent-context-title');
   return {result:'passed',browser:'Chromium',representative_this_ride_watts:120,representative_prior_watts:links.representative_prior_watts,
+    comparison_heading_clear:true,explicit_prior_action:true,neutral_difference:'74 W below',
     representative_native_records:3621,fit_source_average_watts:118,prior_activity_and_back:true,view_performance_and_back:true,
     no_baseline_unavailable:true,ineligible_rich_unavailable:true,secondary_provenance:true,accepted_chart_summary_title_preserved:true,
     desktop_phone_no_overflow:true,local_dates_zones:['America/Los_Angeles','Asia/Tokyo']};

@@ -118,6 +118,9 @@ class PersistedContextTests(unittest.TestCase):
             status,_,body=self.app.get('/activities/'+self.current['activity_id'])
         html=body.decode();self.assertEqual(status,200);self.assertEqual(calls,[self.current['activity_id']])
         self.assertIn('id="recent-current-watts">120 W',html);self.assertIn('id="recent-prior-watts">180 W',html)
+        self.assertIn('Compared with previous 6 weeks',html)
+        self.assertIn('id="recent-difference">60 W below',html)
+        self.assertIn('>Open prior ride</a>',html)
         self.assertIn('href="/activities/'+self.prior['activity_id']+'"',html)
         self.assertIn('id="recent-performance" href="/performance"',html)
         self.assertIn('The current Activity is excluded',html);self.assertIn('Prior window start (exclusive)',html)
@@ -128,6 +131,7 @@ class PersistedContextTests(unittest.TestCase):
         self.assertIn('id="recent-prior-watts">Unavailable',html)
         self.assertIn('No qualifying prior result',html)
         self.assertNotIn('id="recent-prior-activity"',html)
+        self.assertNotIn('id="recent-difference"',html)
 
     def test_stale_current_and_prior_are_suppressed_without_automatic_rebuild(self):
         self.store.connection.execute('UPDATE sessions SET avg_power=119 WHERE extraction_id=?',(self.prior['extraction_id'],))
@@ -157,3 +161,15 @@ class PersistedContextTests(unittest.TestCase):
         self.assertIn('Synthetic &lt;prior&gt; &amp; ride',html)
         for term in ('fitness improved','fitness declined','trend-up','trend-down','var(--green)','%'):
             self.assertNotIn(term,html)
+
+    def test_difference_uses_raw_averages_with_neutral_above_below_and_equal_labels(self):
+        from rideworks.web import recent_context_panel
+        for current, prior, label in [(125,120,'5 W above'), (120,215,'95 W below'),
+                                      (120,120,'Same displayed watts'),
+                                      (120.4,119.6,'1 W above'), (120,120.5,'1 W below'),
+                                      (120.51,120.49,'Less than 1 W above')]:
+            with self.subTest(current=current,prior=prior):
+                context=select_recent_context(history([point('prior',-1,prior),point('current',0,current)]),'current')
+                before=copy.deepcopy(context)
+                self.assertIn('id="recent-difference">'+label,recent_context_panel(context))
+                self.assertEqual(context,before)
