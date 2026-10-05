@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from math import ceil
 from urllib.parse import parse_qs, urlencode
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 PAGE_SIZE = 30
 SORTS = {'newest': 'Newest first', 'oldest': 'Oldest first',
@@ -100,6 +101,7 @@ class BrowserQuery:
     after: str = ''
     before: str = ''
     sort: str = 'newest'
+    timezone_name: str = ''
     message: str = ''
 
     @classmethod
@@ -143,17 +145,29 @@ class BrowserQuery:
         if len(search) > 200:
             search = search[:200]
             messages.append('Search limited to 200 characters.')
-        return cls(page, search, kind, after, before, sort, ' '.join(messages))
+        timezone_name = value('tz')
+        if timezone_name:
+            try:
+                if len(timezone_name) > 128:
+                    raise ValueError
+                ZoneInfo(timezone_name)
+            except (ValueError, ZoneInfoNotFoundError):
+                timezone_name = ''
+                messages.append('Browser timezone unavailable; enable JavaScript to set local dates.')
+        if (after or before) and not timezone_name:
+            messages.append('Local date filtering for absolute timestamps needs your browser timezone; enable JavaScript.')
+        return cls(page, search, kind, after, before, sort, timezone_name, ' '.join(messages))
 
     def url(self, page):
         return '/?' + urlencode({'q': self.q, 'type': self.activity_type, 'from': self.after,
-                                 'to': self.before, 'sort': self.sort, 'page': page})
+                                 'to': self.before, 'sort': self.sort, 'page': page, 'tz': self.timezone_name})
 
 
 def browse(store, query_string=''):
     rows = [presentation(snapshot) for snapshot in store.activity_history()]
     choices = sorted({value for row in rows for value in (row['activity_type'], row['subtype']) if value})
     query = BrowserQuery.parse(query_string, choices)
+    browser_zone = ZoneInfo(query.timezone_name) if query.timezone_name else None
     filtered = []
     for row in rows:
         if query.activity_type == 'cycling' and row['activity_type'].casefold() not in ('ride', 'virtual ride', 'cycling', 'biking'):
@@ -162,6 +176,11 @@ def browse(store, query_string=''):
             continue
         if query.q and not any(query.q.casefold() in title for title in row['search_titles']):
             continue
+        if row['absolute_time']:
+            # Presentation/filter day only. Never alter the persisted instant or
+            # apply this browser timezone to offset-unknown source evidence.
+            row['date_day'] = (_date(row['start_time']).astimezone(browser_zone).date().isoformat()
+                               if browser_zone is not None else None)
         if (query.after or query.before) and row['date_day'] is None:
             continue
         if query.after and row['date_day'] < query.after:

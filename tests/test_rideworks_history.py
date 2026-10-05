@@ -115,10 +115,10 @@ class HistoryTests(unittest.TestCase):
 
     def test_pagination_preserves_all_get_state(self):
         self.many()
-        html = self.html('/?q=SYNTHETIC&type=all&from=2024-01-01&to=2024-12-31&sort=oldest')
+        html = self.html('/?q=SYNTHETIC&type=all&from=2024-01-01&to=2024-12-31&sort=oldest&tz=America%2FLos_Angeles')
         link = unescape(re.search(r'rel="next" href="([^"]+)"', html).group(1))
         self.assertEqual(parse_qs(urlsplit(link).query), dict(q=['SYNTHETIC'], type=['all'],
-            **{'from':['2024-01-01'], 'to':['2024-12-31']}, sort=['oldest'], page=['2']))
+            **{'from':['2024-01-01'], 'to':['2024-12-31']}, sort=['oldest'], page=['2'], tz=['America/Los_Angeles']))
         self.assertIn('value="SYNTHETIC"', self.html(link))
         self.assertIn('rel="prev"', self.html(link))
 
@@ -203,14 +203,59 @@ class HistoryTests(unittest.TestCase):
         for route in ('/activities/not-an-id', '/activities/' + str(UUID(int=0)), '/activities/../../'):
             self.assertEqual(self.app.get(route)[0], 404)
 
-    def test_absolute_file_date_uses_utc_and_csv_unparsed_text_is_preserved(self):
+    def test_absolute_file_date_uses_browser_day_and_csv_unparsed_text_is_preserved(self):
         self.export([row('1', 'activities/a.tcx', date='2024-01-03T00:00:00'),
                      row('2', date='original date text')], {'activities/a.tcx': TCX})
-        result = browse(self.store, 'from=2024-01-02&to=2024-01-02')
+        result = browse(self.store, 'from=2024-01-01&to=2024-01-01&tz=America%2FLos_Angeles')
         self.assertEqual(result['count'], 1)
         self.assertTrue(result['rows'][0]['absolute_time'])
-        self.assertIn('data-local-time', self.html('/?from=2024-01-02&to=2024-01-02'))
+        self.assertEqual(result['rows'][0]['date_day'], '2024-01-01')
+        self.assertIn('data-local-time', self.html('/?from=2024-01-01&to=2024-01-01&tz=America%2FLos_Angeles'))
+        self.assertEqual(browse(self.store, 'from=2024-01-02&to=2024-01-02&tz=America%2FLos_Angeles')['count'], 0)
+        self.assertEqual(browse(self.store, 'from=2024-01-02&to=2024-01-02&tz=UTC')['count'], 1)
         self.assertIn('original date text · source date text', self.html())
+
+    def test_local_date_filter_uses_historical_dst_and_both_sides_of_midnight(self):
+        stamps = ['2024-03-10T07:59:59+00:00', '2024-03-10T08:00:00+00:00',
+                  '2024-07-01T06:59:59+00:00', '2024-07-01T07:00:00+00:00',
+                  '2024-11-03T06:59:59+00:00', '2024-11-03T07:00:00+00:00']
+        self.export([row(str(i), title=f'Synthetic boundary {i}', date=s) for i,s in enumerate(stamps,1)])
+        for day, titles in [('2024-03-09', ['Synthetic boundary 1']), ('2024-03-10', ['Synthetic boundary 2']),
+                            ('2024-06-30', ['Synthetic boundary 3']), ('2024-07-01', ['Synthetic boundary 4']),
+                            ('2024-11-02', ['Synthetic boundary 5']), ('2024-11-03', ['Synthetic boundary 6'])]:
+            result=browse(self.store, f'from={day}&to={day}&tz=America%2FLos_Angeles')
+            self.assertEqual([r['title'] for r in result['rows']], titles)
+        self.assertEqual(browse(self.store, 'from=2024-07-01&to=2024-07-01&tz=Asia%2FTokyo')['count'],2)
+
+    def test_unknown_source_day_does_not_shift_with_browser_timezone(self):
+        self.export([row(date='2024-07-01T00:01:00')])
+        before=copy.deepcopy(self.store.activity_history())
+        for zone in ('America/Los_Angeles', 'Asia/Tokyo', 'UTC'):
+            result=browse(self.store, 'from=2024-07-01&to=2024-07-01&tz='+quote(zone))
+            self.assertEqual(result['count'],1)
+            self.assertFalse(result['rows'][0]['absolute_time'])
+            self.assertEqual(result['rows'][0]['date_day'],'2024-07-01')
+        self.assertEqual(self.store.activity_history(),before)
+
+    def test_invalid_or_missing_timezone_never_guesses_absolute_filter_day(self):
+        self.export([row('1',date='2024-01-02T03:00:00+00:00'), row('2',date='2024-01-02T03:00:00')])
+        for zone in ('', '../UTC', '/etc/passwd', 'NoSuch/Timezone', '<script>'):
+            query='from=2024-01-02&to=2024-01-02&tz='+quote(zone)
+            self.assertEqual(browse(self.store,query)['count'],1)
+            self.assertIn('browser timezone',self.html('/?'+query))
+        self.assertEqual(browse(self.store,'from=2024-01-02&to=2024-01-02&tz=UTC')['count'],2)
+
+    def test_date_is_dedicated_sibling_region_with_local_time_hook(self):
+        self.export([row('1', 'activities/a.tcx')], {'activities/a.tcx':TCX})
+        html=self.html('/?tz=America%2FLos_Angeles')
+        identity=re.search(r'<div class="row-identity">(.*?)</div>',html,re.S).group(1)
+        date_region=re.search(r'<div class="row-date">(.*?)</div>',html,re.S).group(1)
+        self.assertNotIn('<time',identity)
+        self.assertIn('Synthetic ride',identity)
+        self.assertIn('data-local-time data-compact-time',date_region)
+        self.assertIn('<span>Date</span>',html)
+        self.assertIn('name="tz" value="America/Los_Angeles"',html)
+        self.assertNotIn('absolute start times use UTC',html)
 
     def test_multiple_fit_sources_remain_inspectable_without_guessing_selection(self):
         paths = [self.root / 'a.fit', self.root / 'b.fit']

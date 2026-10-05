@@ -11,6 +11,8 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from rideworks.history import presentation
@@ -26,15 +28,24 @@ def verify(data_dir, representative, port, session):
         for fmt in ('TCX', 'GPX'):
             samples[fmt] = next(r for r in rows if any(e['source']['content_format'] == fmt for e in r['sources']))
         samples['CSV-only'] = next(r for r in rows if all(e['source']['kind'] == 'strava_export' for e in r['sources']))
-        samples = {fmt: {'id': row['activity_id'], 'title': row['title'], 'date': row['date_day']}
+        samples = {fmt: {'id': row['activity_id'], 'title': row['title'], 'date': row['date_day'],
+                         'start': row['start_time'], 'absolute': row['absolute_time']}
                    for fmt, row in samples.items()}
+        boundary = next(row for row in rows if row['absolute_time'] and
+                        datetime.fromisoformat(row['start_time']).astimezone(ZoneInfo('America/Los_Angeles')).date().isoformat()
+                        != row['date_day'])
+        boundary = dict(id=boundary['activity_id'], title=boundary['title'], start=boundary['start_time'])
     code = Path(__file__).with_suffix('.js').read_text()
     code = code.replace('SAMPLE_INPUT', json.dumps(samples)).replace('BASE_URL', json.dumps(f'http://127.0.0.1:{port}'))
+    code = code.replace('BOUNDARY_INPUT', json.dumps(boundary))
     result = subprocess.run(['npx', '--offline', '--yes', '--package', '@playwright/cli', 'playwright-cli',
                              '-s=' + session, 'run-code', code], capture_output=True, text=True)
     if result.returncode or '### Error' in result.stdout:
         # Never echo the CLI's private generated code, source title or route.
-        raise RuntimeError('Chromium verification failed; inspect the local CLI session')
+        local_log = Path('output/playwright/p2-02-verification-error.log')
+        local_log.parent.mkdir(parents=True, exist_ok=True)
+        local_log.write_text(result.stdout + result.stderr)
+        raise RuntimeError('Chromium verification failed; inspect ignored output/playwright/p2-02-verification-error.log')
     output = result.stdout.split('### Result\n', 1)[1].split('### Ran Playwright code', 1)[0]
     return json.loads(output)
 

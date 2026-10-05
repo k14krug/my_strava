@@ -94,7 +94,7 @@ def verify(data_dir, representative, port):
             seed_url = '/activities/' + seed['activity_id']
             require(seed_url in links(searched) and escape(seed['title']) in searched, 'Source-title search failed')
             day = seed['date_day']
-            _, dated = get(port, '/?type=all&from=' + day + '&to=' + day)
+            _, dated = get(port, '/?type=all&from=' + day + '&to=' + day + '&tz=UTC')
             require(links(dated) and all(metadata[url]['date_day']==day for url in links(dated)), 'Date range incorrect')
             for sort, key in [('duration','duration'), ('distance','distance'), ('oldest','date_key')]:
                 route = '/?type=all&sort=' + sort

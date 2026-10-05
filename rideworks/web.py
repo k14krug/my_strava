@@ -72,11 +72,12 @@ def icon(name):
     return f'<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">{paths[name]}</svg>'
 
 
-def local_time(timestamp):
+def local_time(timestamp, *, compact=False):
     if timestamp is None:
         return 'Date unavailable'
     # A labeled UTC fallback stays understandable without JavaScript.
-    return (f'<time datetime="{escape(timestamp, quote=True)}" data-local-time>'
+    compact_attr = ' data-compact-time' if compact else ''
+    return (f'<time datetime="{escape(timestamp, quote=True)}" data-local-time{compact_attr}>'
             f'{escape(timestamp)} (UTC source time)</time>')
 
 
@@ -90,12 +91,12 @@ def shell(title, content):
 <main>{content}</main></body></html>'''
 
 
-def browser_time(row):
+def browser_time(row, *, compact=False):
     if row['absolute_time']:
-        return local_time(row['start_time'])
+        return local_time(row['start_time'], compact=compact)
     if row['start_time']:
         return f"{escape(row['start_time'].replace('T', ' '))} · timezone unknown"
-    return escape(row['date_text']) + ' · source date text' if row['date_text'] else 'Date unavailable'
+    return escape(row['date_text']) + ' · source date text · timezone unknown' if row['date_text'] else 'Date unavailable'
 
 
 def activities_page(store, query_string=''):
@@ -105,13 +106,14 @@ def activities_page(store, query_string=''):
         return ''.join(f'<option value="{escape(value, quote=True)}"{" selected" if value == current else ""}>{escape(text)}</option>'
                        for value, text in choices)
     controls = f'''<form class="history-filters panel" action="/" method="get" aria-label="Filter activities">
+<input type="hidden" name="tz" value="{escape(query.timezone_name, quote=True)}">
 <label class="search-filter">Title search<input type="search" name="q" value="{escape(query.q, quote=True)}" placeholder="Search activity names" maxlength="200"></label>
 <label>Activity type<select name="type">{options([('cycling', 'Cycling'), ('all', 'All activities')] + [(t, t) for t in result['type_choices']], query.activity_type)}</select></label>
 <label>From<input type="date" name="from" value="{query.after}"></label>
 <label>To<input type="date" name="to" value="{query.before}"></label>
 <label>Sort<select name="sort">{options(list(SORTS.items()), query.sort)}</select></label>
 <div class="filter-actions"><button type="submit">Apply</button><a href="/">Reset</a></div>
-</form><p class="date-filter-note">Date filters use the source calendar day; absolute start times use UTC.</p>'''
+</form><p class="date-filter-note">Dates and filters use your local timezone. Timezone-unknown source dates stay as supplied.</p><noscript>Enable JavaScript to use your browser's local dates for absolute timestamps.</noscript>'''
     if query.message:
         controls += f'<p class="query-message" role="status">{escape(query.message)}</p>'
     if not result['total']:
@@ -126,8 +128,9 @@ def activities_page(store, query_string=''):
             types = row['activity_type'] + (f" · {row['subtype']}" if row['subtype'] and row['subtype'] != row['activity_type'] else '')
             duration_context = row['duration_source']['context'] if row['duration_source'] else 'Duration unavailable'
             distance_context = row['distance_source']['context'] if row['distance_source'] else 'Distance unavailable'
-            items.append(f'''<li><a class="activity-row" href="/activities/{escape(row['activity_id'])}"><div class="row-identity"><h2>{escape(row['title'])}</h2>{origin}<p>{browser_time(row)}</p></div><span class="row-type">{escape(types)}</span><div class="list-metrics"><span title="{escape(distance_context, quote=True)}">{distance(row['distance'])}</span><span title="{escape(duration_context, quote=True)}">{duration(row['duration'])}</span><span class="open-ride" aria-hidden="true">→</span></div></a></li>''')
-        body = '<ul class="activity-list panel">' + ''.join(items) + '</ul>'
+            items.append(f'''<li><a class="activity-row" href="/activities/{escape(row['activity_id'])}"><div class="row-identity"><h2>{escape(row['title'])}</h2>{origin}</div><div class="row-date">{browser_time(row, compact=True)}</div><span class="row-type">{escape(types)}</span><div class="list-metrics"><span title="{escape(distance_context, quote=True)}">{distance(row['distance'])}</span><span title="{escape(duration_context, quote=True)}">{duration(row['duration'])}</span><span class="open-ride" aria-hidden="true">→</span></div></a></li>''')
+        columns = '<div class="activity-columns" aria-hidden="true"><span>Title</span><span>Date</span><span>Type</span><div class="list-metrics"><span>Distance</span><span>Duration</span><span></span></div></div>'
+        body = columns + '<ul class="activity-list panel">' + ''.join(items) + '</ul>'
     count = result['count']
     first = result['start'] + 1 if count else 0
     last = result['start'] + len(rows)
