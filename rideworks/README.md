@@ -545,14 +545,29 @@ Private Activity URLs are in `output/playwright/p2-04-review-links.json`;
 
 ## Manual Strava synchronization (P2-05)
 
-Configure `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` in exported environment
-variables or the ignored repository `.env`. Never paste the secret or tokens into
-a PR, report or chat. For a local Strava application, use a loopback callback
-domain (`127.0.0.1` or `localhost`); RideWorks receives authorization at
-`http://127.0.0.1:8772/strava/callback`. The callback port can be changed with
-`strava-connect --callback-port <port>`. No public callback/tunnel is created.
+From the repository root, create your local configuration from the safe example:
 
-Against a disposable copy of accepted history:
+```bash
+cp -n .env.example .env
+```
+
+Open the ignored `.env` and fill in `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET`
+using your application's Client ID and Client Secret from
+[Strava API settings](https://www.strava.com/settings/api). If `.env` already
+exists, the command preserves it; add/update the two entries there while keeping
+your other settings. Exported environment variables still override `.env`.
+Keep credential values and tokens local.
+
+In Strava's **Authorization Callback Domain** field, enter exactly **`127.0.0.1`**
+(host only, without a scheme, port or path). RideWorks supplies the full redirect
+URI **`http://127.0.0.1:8772/strava/callback`** during authorization. Strava's
+[authentication documentation](https://developers.strava.com/docs/authentication/)
+allows this loopback redirect; its
+[setup guide](https://developers.strava.com/docs/getting-started/) describes the
+callback-domain field. Changing `strava-connect --callback-port <port>` changes
+the redirect URI's port; the domain setting remains `127.0.0.1`.
+
+Then connect and sync against the disposable copy of accepted history:
 
 ```bash
 .venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-connect

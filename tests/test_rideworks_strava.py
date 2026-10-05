@@ -285,7 +285,12 @@ class StravaTests(unittest.TestCase):
         self.assertFalse(self.tokens.path.exists())
 
     def test_config_credential_precedence_and_safe_cli_error_and_disconnect_without_credentials(self):
-        (self.root/'.env').write_text('STRAVA_CLIENT_ID=456\nSTRAVA_CLIENT_SECRET="file-secret"\n')
+        template=(Path(__file__).resolve().parents[1]/'.env.example').read_text()
+        (self.root/'.env').write_text(template)
+        with self.assertRaises(ConfigurationError):strava_credentials(repo_root=self.root,environ={})
+        configured=template.replace('STRAVA_CLIENT_ID=\n','STRAVA_CLIENT_ID=456\n').replace('STRAVA_CLIENT_SECRET=\n','STRAVA_CLIENT_SECRET="file-secret"\n')
+        (self.root/'.env').write_text(configured)
+        self.assertEqual(strava_credentials(repo_root=self.root,environ={}),('456','file-secret'))
         self.assertEqual(strava_credentials(repo_root=self.root,environ={'STRAVA_CLIENT_ID':'789','STRAVA_CLIENT_SECRET':'environment-secret'}),('789','environment-secret'))
         with patch.dict(os.environ,{},clear=True),patch('rideworks.config.repository_root',return_value=self.root/'missing'),redirect_stdout(io.StringIO()) as output:
             self.assertEqual(main(['--data-dir',str(self.store.data_dir),'sync-strava']),1)
