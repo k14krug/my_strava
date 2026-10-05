@@ -1,5 +1,5 @@
 {
-  "implementation_head": "fa0d877dc301dd605f612670e6595aafe4e7fc14",
+  "implementation_head": "1c099aa607365fc35815fe69151b34174a53ad7c",
   "schema_version": 4,
   "method": "best-average-power-v1",
   "policy": "virtual-native-power-v1",
@@ -142,6 +142,8 @@
     "summaries_and_freshness": true,
     "monthly_yearly_bests_independently_verified": true,
     "synthetic_calendar_raw_tie_range_tests": true,
+    "monthly_yearly_lines_with_markers": true,
+    "missing_month_year_breaks_verified": true,
     "supporting_rides_in_all_views": true,
     "future_candidates_secondary": true,
     "complete_paged_evidence": true,
@@ -159,10 +161,20 @@
   },
   "owner_approval": "pending",
   "analyst_acceptance": "pending",
-  "controlling_jit_main": "3ae14b9",
+  "controlling_jit_main": "c540165",
   "verification_date": "2026-10-05",
   "focused_tests": {
     "command": ".venv/bin/python -m unittest discover -s tests -p 'test_rideworks_performance*.py'",
     "passed": 28
+  },
+  "retained_analytical_evidence": {
+    "implementation_head": "fa0d877dc301dd605f612670e6595aafe4e7fc14",
+    "verification_date": "2026-10-05",
+    "applies_to": [
+      "rebuild",
+      "independent",
+      "http_restart"
+    ],
+    "basis": "Native calculation, classification, summary selection and persistence modules are unchanged by the line-rendering correction."
   }
 }

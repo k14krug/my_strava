@@ -2,8 +2,8 @@
 
 **Date:** 2026-10-05.
 **Branch / PR:** `task/p2-03-performance-history` / [#15](https://github.com/k14krug/my_strava/pull/15).
-**Implementation head:** `fa0d877dc301dd605f612670e6595aafe4e7fc14`; final publication adds documentation/evidence only.
-**Controlling correction:** Owner comments on PR #15 and Analyst JIT refreshed from `main` at `3ae14b9`.
+**Implementation head:** `1c099aa607365fc35815fe69151b34174a53ad7c`; final publication adds documentation/evidence only.
+**Controlling correction:** Owner comments on PR #15 and Analyst JIT refreshed from `main` at `c540165`.
 **State:** Owner-directed correction implemented and required local verification complete. Stopped at **Gate 1 HARD — Owner**. P2-03 stays `in_progress`; Owner approval and Analyst acceptance are pending.
 
 ## Behavior and analytical context
@@ -60,8 +60,9 @@ estimated daily performance.
 Monthly/yearly views select one strongest eligible raw result per displayed
 calendar month/year, using only rides inside the active range and the same
 raw-max/earliest-tie rule. Period-best marks sit at their contributing ride dates
-with subdued stems from zero; they do not connect successive ride observations.
-Empty periods have no mark. Optional ride dots are small and subdued in all
+as line charts with point markers. Lines connect only consecutive calendar
+periods; missing months/years have no mark and break the line. There are no
+stems/lollipops/bars. Supporting ride observations are never joined to one another. Optional ride dots are small and subdued in all
 three views and retain inspection/Activity links. The default selected result is
 the most recent meaningful best in the active Range/View, including when ride
 evidence is enabled. Every eligible result remains accessible in 30-row
@@ -90,7 +91,7 @@ P2-04 comparisons and all other excluded analytical features are not included.
 .venv/bin/python -m unittest discover -s tests
 ```
 
-**170 tests passed in 9.234 seconds**: all 142 accepted tests plus 20 P2-03 foundation tests and 8 presentation-window tests.
+**170 tests passed in 16.684 seconds**: all 142 accepted tests plus 20 P2-03 foundation tests and 8 presentation-window tests.
 Existing migration assertions now expect additive schema 4, retaining their
 original identity/byte/evidence/rollback checks. Existing navigation checks now
 require the real Performance link while continuing to reject fake future pages.
@@ -100,7 +101,7 @@ No calculation tests were removed or weakened. Focused verification also passed:
 .venv/bin/python -m unittest discover -s tests -p 'test_rideworks_performance*.py'
 ```
 
-**28 focused tests passed in 2.568 seconds**. Page assertions now require the
+**28 focused tests passed in 2.605 seconds**. Page assertions now require the
 three View options, candidates label and removal of obsolete tabs; safe payload,
 metadata-only rendering and native calculation checks remain intact.
 
@@ -128,8 +129,12 @@ The disposable local-only copy, `local_data/p2-03-review`, was made from the acc
 `local_data/p2-02-review` directory before schema migration/rebuild. The accepted
 store, original export and original input files were not changed. Both stores,
 all personal originals and screenshots remain ignored and local. The copy was
-reused for this presentation correction; full rebuild and independent acceptance
-were rerun, without reimporting or modifying the accepted P2-02 store.
+reused for these presentation corrections. Full rebuild, native independent and
+HTTP/restart evidence below was established at `fa0d877dc301dd605f612670e6595aafe4e7fc14`.
+This line-rendering correction uses that unchanged persisted population; native
+calculation, classification, summary selection and persistence modules are
+unchanged. Focused/full tests and full-history Chromium were rerun on the current
+line-chart head.
 
 Production rebuild command:
 
@@ -192,8 +197,9 @@ check is empty.
 The verifier rebuilds again and compares every status/result/input signature,
 then closes/reopens the Store and compares every persisted result and UI point.
 **Idempotent rebuild and restart passed**. Only execution timestamps change.
-This full independent check was repeated on the final Owner correction.
-The persisted calculation and eligibility results are unchanged.
+The full independent check was run on the Range/View correction at `fa0d877dc301dd605f612670e6595aafe4e7fc14`.
+Its native calculation/persistence evidence is carried forward to this bounded
+line-rendering correction; the relevant production modules are unchanged.
 
 An additional direct scan independently checks the presentation winner at every
 ride entry/expiry and at as-of time: **2,019 checkpoints passed**, covering
@@ -210,7 +216,9 @@ as its oracle; the synthetic tests also exercise exact expiry, zero and gaps.
   --data-dir '<local-review-store>' --port 8768 --session rideworks-p2-03
 ```
 
-HTTP acceptance starts/stops dedicated verification processes on port 8769.
+The retained HTTP acceptance from the same prior analytical-verification head
+starts/stops dedicated verification processes on port 8769. The Owner review
+server was restarted for the current method explanation and Chromium pass.
 The accepted full-history Activities search/type/date/sort/pagination, title
 provenance and real FIT/TCX/GPX/CSV-only routes passed in two successive processes.
 Two further Performance processes each returned exactly the **1,022** persisted
@@ -226,6 +234,8 @@ CLI used for subsequent commands. Actual browser acceptance passed on final code
 - all **15 Range/View combinations**;
 - dominant rolling line and optional **1,022** All-range ride dots;
 - monthly/yearly winners independently checked against raw-result maxima at every range;
+- monthly/yearly SVG paths follow those winners with point markers, without stems/bars;
+- line segments connect only consecutive calendar periods and break across missing periods;
 - monthly/yearly Activity navigation, keyboard inspection and preserved state on back;
 - supporting rides enabled in every view without replacing its primary bests;
 - all **1,022** results traversed through bounded supporting evidence pages;
@@ -243,12 +253,17 @@ set of rendered period winners. Synthetic browser cases in both timezones add
 month/year-boundary shifts, leap-day evidence, raw values with equal displayed
 watts, earliest exact ties, a valid zero period best, unknown-zone source calendar
 dates, future-result exclusion, partial ranges and empty ranges. Empty ranges
-have no invented Activity link or fabricated zero result. Synthetic data is
+have no invented Activity link or fabricated zero result. Additional sparse
+fixtures in both timezones establish missing-month/year breaks and consecutive
+December/January continuity; path vertices agree with the contributing markers.
+Synthetic data is
 injected only into an isolated verification page, never persisted.
 
-Desktop/phone Rolling screenshots and desktop Monthly/Yearly screenshots were
+Desktop/phone Rolling, Monthly and Yearly screenshots were
 visually inspected for hierarchy, compact cards and coherent controls, primary
-marks versus ride dots, readable chart/readout and RideWorks shell continuity.
+lines/markers versus ride dots, visible gaps, readable chart/readout and
+RideWorks shell continuity. Supplementary phone captures use Monthly + 1 year
+and Yearly + All at 390×844 in the same managed Chromium session.
 Owner visual/usability approval remains pending; local verification does not
 assert Owner acceptance.
 
@@ -271,6 +286,8 @@ Local-only screenshots:
 - `output/playwright/p2-03-performance-phone.png`
 - `output/playwright/p2-03-monthly-desktop.png`
 - `output/playwright/p2-03-yearly-desktop.png`
+- `output/playwright/p2-03-monthly-phone.png`
+- `output/playwright/p2-03-yearly-phone.png`
 
 No personal title, Activity ID, Source ID, private input path, native record stream,
 coordinate or screenshot is committed/published in the verification artifacts.

@@ -254,7 +254,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** single-surface Range/View correction implemented and verified on PR #15 under JIT `3ae14b9`; 28 focused / 170 full tests, 1,434 evaluated / 1,022 eligible, independent native/rolling verification, restart/idempotent rerun and Chromium for all 15 Range/View combinations and calendar/raw/tie/zero cases passed. Stopped again at Gate 1 HARD — Owner.
+**Execution state:** Monthly/Yearly line-with-markers correction implemented on PR #15 under JIT `c540165`; 28 focused / 170 full tests and full-history Chromium rerun passed, including missing-month/year breaks. Prior 1,434 evaluated / 1,022 eligible native/restart proof remains applicable to unchanged analytical code. Stopped again at Gate 1 HARD — Owner.
 
 **Dependency:** P2-02 complete.
 
