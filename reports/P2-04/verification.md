@@ -1,10 +1,10 @@
-# P2-04 verification — Gate 1 Owner review
+# P2-04 verification — accepted
 
 **Date:** 2026-10-05.
 **Branch / PR:** `task/p2-04-recent-context` / [#16](https://github.com/k14krug/my_strava/pull/16).
 **Implementation head:** `cc12f1f9464c9e98d1b05374e881c83337f1aa6b`; final publication adds status/evidence only.
 **Controlling JIT:** Analyst-authored `docs/tasks/P2-04.md` on refreshed `main` at `7831e6e`.
-**State:** Owner Gate 1 approved; stopped at **Gate 2 HARD — Analyst**. P2-04 remains `in_progress`; final Analyst acceptance is pending. P2-05 has not begun.
+**State:** accepted / complete. Owner Gate 1 and Analyst Gate 2 are complete. PR #16 was merged to `main` as `16ef375434700ab7d2b5fb3a5c2cae000e049c12`.
 
 ## Behavior and evidence basis
 
@@ -205,3 +205,23 @@ displayed-arithmetic corrections.
 
 P2-04 remains `in_progress`. Final acceptance belongs to the Analyst at Gate 2.
 P2-05 has not begun.
+
+
+## Analyst acceptance
+
+On **2026-10-05**, the Analyst reviewed the final Owner-approved P2-04
+implementation at implementation head `cc12f1f9464c9e98d1b05374e881c83337f1aa6b`
+and final handoff head `1bae68a8e2731f0d0cbeff784ebdbf6b760cc67f`
+against the final P2-04 JIT and Phase 2 historical-context contract and
+**accepted P2-04**.
+
+The review confirmed exact open 42-day window semantics, current-Activity
+exclusion, trusted P2-03 eligibility, raw winner/tie selection, independent
+agreement for all 1,022 eligible Activities, honest unavailable cases, no
+archive/source reprocessing, unchanged persisted Performance history, accepted
+Activity Review regressions, Owner-approved comparison presentation, and 186
+passing tests plus Chromium acceptance.
+
+PR #16 was merged to `main` as
+`16ef375434700ab7d2b5fb3a5c2cae000e049c12`. P2-05 implementation did not
+begin as part of this acceptance.
