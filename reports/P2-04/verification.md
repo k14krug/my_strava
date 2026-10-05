@@ -4,7 +4,7 @@
 **Branch / PR:** `task/p2-04-recent-context` / [#16](https://github.com/k14krug/my_strava/pull/16).
 **Implementation head:** `cc12f1f9464c9e98d1b05374e881c83337f1aa6b`; final publication adds status/evidence only.
 **Controlling JIT:** Analyst-authored `docs/tasks/P2-04.md` on refreshed `main` at `7831e6e`.
-**State:** implementation and required verification complete; stopped at **Gate 1 HARD — Owner**. P2-04 remains `in_progress`; Owner usability and Analyst acceptance are pending. P2-05 has not begun.
+**State:** Owner Gate 1 approved; stopped at **Gate 2 HARD — Analyst**. P2-04 remains `in_progress`; final Analyst acceptance is pending. P2-05 has not begun.
 
 ## Behavior and evidence basis
 
@@ -195,3 +195,13 @@ Under JIT §20, stop at **Gate 1 HARD — Owner** for whether Compared with prev
 answers the previous-six-week question without cluttering Activity Review.
 After explicit Owner approval, record it and stop at Gate 2 HARD — Analyst for
 interval/trust/data-access/UI acceptance. **P2-05 remains pending.**
+
+
+## Owner approval and Gate 2 handoff
+
+On **2026-10-05**, the Owner explicitly approved the final P2-04
+Activity Review comparison after the prominent six-week context and
+displayed-arithmetic corrections.
+
+P2-04 remains `in_progress`. Final acceptance belongs to the Analyst at Gate 2.
+P2-05 has not begun.
