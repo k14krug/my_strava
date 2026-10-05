@@ -98,7 +98,7 @@
       "Asia/Tokyo"
     ]
   },
-  "owner_approval": "pending",
+  "owner_approval": "approved",
   "analyst_acceptance": "pending",
   "owner_correction": "Rider-facing difference subtracts displayed whole watts; raw baseline selection/details unchanged; explicit comparison and prior action retained",
   "verification_basis": {
