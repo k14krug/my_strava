@@ -492,3 +492,51 @@ The prepared P2-03 Owner review copy is `local_data/p2-03-review`:
 Open **http://127.0.0.1:8768/performance** for P2-03 review. This copy contains
 1,434 Activities and 1,022 current eligible points. The accepted P2-02 store and
 older review servers are separate instances.
+
+
+## Prior six-week context in Activity Review (P2-04)
+
+Rich Activity Review adds compact Recent context inside Best 20-minute power:
+This ride's current trusted Performance result, Prior 42-day best, a prior
+Activity/date link, and View Performance. Values stay neutral; no fitness or
+improvement interpretation is added. Details retain raw values, selected input
+identities, method/policy/duration, exact bounds and current-Activity exclusion.
+
+Selection reads current persisted P2-03 results and metadata. For absolute
+Activity start `t`, the interval is exactly `(t - 42 days, t)`; both endpoints
+are excluded. Highest raw watts win, with earliest Activity start then stable
+Activity ID resolving exact ties. Unknown-zone prior dates do not enter the
+exact timed window. Missing/stale/untrusted current results show an explicit
+unavailable reason; an empty prior window stays unavailable. No summary watts,
+older period bests or zeros substitute. Ordinary FIT analysis remains separate.
+Thin reviews retain their evidence-appropriate behavior.
+
+There is no comparison table, automatic Performance rebuild, archive import or
+source re-extraction. Baseline selection scans no native records; the existing
+current-ride chart/calculation still reads that ride's native evidence normally.
+
+Verification uses a disposable copy of accepted P2-03 history, preserving the
+accepted store and originals. Run the independent checker first; it writes
+ignored local review links used by the HTTP/browser checkers:
+
+```bash
+.venv/bin/python tools/verify_rideworks_recent_context.py \
+  --data-dir '<accepted-store-copy>' --representative '<representative.fit.gz>'
+.venv/bin/python tools/verify_rideworks_recent_context_http.py \
+  --data-dir '<accepted-store-copy>' --representative '<representative.fit.gz>'
+.venv/bin/python tools/verify_rideworks_recent_context_ui.py \
+  --port 8769 --session rideworks-p2-04
+```
+
+The final command requires a running review server and managed Playwright CLI
+Chromium session. Review copy startup:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-04-review serve --port 8769
+```
+
+Private Activity URLs are in `output/playwright/p2-04-review-links.json`;
+`representative`, `no_prior` and `outdoor` select useful Owner review cases.
+Screenshots and this file stay local/ignored. The verifier emits aggregate JSON
+and independently checks every eligible prior baseline without a production
+selector oracle or native stream reads, then verifies persisted history/restart.

@@ -12,6 +12,7 @@ from uuid import UUID
 from .analysis import analyze_activity
 from .errors import RideWorksError
 from .history import SORTS, browse, presentation
+from .recent_context import recent_context
 from .store import Store, resolve_data_dir
 
 STATIC = Path(__file__).with_name('static')
@@ -144,7 +145,8 @@ def activities_page(store, query_string=''):
 
 
 def metric(name, value, symbol):
-    return f'<div class="metric"><div>{icon(symbol)}<span>{escape(name)}</span></div><strong>{escape(value)}</strong></div>'
+    missing = ' class="metric-unavailable"' if value == 'Unavailable' else ''
+    return f'<div class="metric"><div>{icon(symbol)}<span>{escape(name)}</span></div><strong{missing}>{escape(value)}</strong></div>'
 
 
 def detail_rows(rows):
@@ -157,7 +159,39 @@ def chart_payload(analysis):
             for record in analysis['native_records']]
 
 
-def review_page(analysis, metadata=None):
+def recent_context_panel(context):
+    if context is None:
+        return ''
+    current, prior = context['current'], context['prior']
+    values = ''
+    if current:
+        prior_value = sensor(prior['rounded_watts'], 'W') if prior else 'Unavailable'
+        values = f'''<div class="recent-values"><div><span>This ride</span><strong id="recent-current-watts">{sensor(current['rounded_watts'], 'W')}</strong></div><div><span>Prior 42-day best</span><strong id="recent-prior-watts">{prior_value}</strong></div></div>'''
+    contribution = ''
+    if prior:
+        contribution = f'''<p class="recent-contribution">{browser_time(prior, compact=True)} · <a id="recent-prior-activity" href="/activities/{escape(prior['activity_id'], quote=True)}">{escape(prior['title'])}</a></p>'''
+    messages = {
+        'performance_rebuild_required': 'Trusted recent context requires a Performance rebuild.',
+        'outdoor_ride_excluded': 'Outdoor Ride power is excluded from trusted Performance history.',
+        'non_virtual_activity': 'Only Virtual Ride native power contributes to trusted recent context.',
+        'activity_date_unavailable': 'Activity start is unavailable; the exact prior window cannot be established.',
+        'activity_timezone_unknown': 'Activity timezone is unknown; the exact prior window cannot be established.',
+        'no_qualifying_prior_result': 'No qualifying prior result in the preceding six weeks.',
+    }
+    note = 'Trusted Performance results · Virtual Ride native power' if prior else messages.get(context['reason'], 'This ride has no eligible current trusted Performance result.')
+    rows = [('Policy', context['policy']), ('Method', context['method']),
+            ('Duration (seconds)', context['duration_seconds']), ('Current Activity ID', context['activity_id']),
+            ('Prior window start (exclusive)', context['window_start']),
+            ('Prior window end (exclusive)', context['window_end']),
+            ('Unavailable reason', context['reason']), ('Pending Performance Activities', context['pending_history'])]
+    for name, point in [('Current', current), ('Prior', prior)]:
+        if point:
+            rows += [(f'{name} Activity ID', point['activity_id']), (f'{name} Source ID', point['source_id']),
+                     (f'{name} extraction ID', point['extraction_id']), (f'{name} raw average (W)', point['average_watts'])]
+    return f'''<section class="recent-context" aria-labelledby="recent-context-title" data-recent-status="{'available' if prior else 'unavailable'}"><div class="recent-heading"><h3 id="recent-context-title">Recent context</h3><a id="recent-performance" href="/performance">View Performance</a></div>{values}{contribution}<p class="recent-note">{escape(note)}</p><details id="recent-context-details"><summary>Recent context details</summary>{detail_rows(rows)}<p>The prior window is (Activity start − 42 days, Activity start), with both endpoints excluded. The current Activity is excluded from its own baseline. Only current trusted results with absolute Activity times participate. Highest raw watts win; exact ties use earliest Activity start, then Activity ID. No source summaries or older period bests substitute.</p></details></section>'''
+
+
+def review_page(analysis, metadata=None, recent=None):
     summary = analysis['source_summary']['values']
     source, extraction = analysis['source'], analysis['extraction']
     best = analysis['best_20_minute_power']
@@ -237,7 +271,7 @@ def review_page(analysis, metadata=None):
 <div class="chart-footer"><span>{len(records):,} recorded samples · elapsed time</span><span id="chart-help">Focus chart + arrow keys to inspect</span></div>
 <noscript>Enable JavaScript to review the native chart and display dates in your local timezone.</noscript></section>
 <section class="panel best-panel"><div><h2>{icon('power')}Best 20-minute power</h2><p>RideWorks-calculated</p></div><strong class="best-value">{sensor(best['rounded_watts'], 'W')}</strong><p class="window-context">{escape(window_text)}</p>
-<details><summary>Calculation details</summary>{detail_rows(best_rows)}<p>Complete 1,200-sample windows with one-second timestamps and no missing power. Earliest window wins a tie; whole watts round half up. No repaired or estimated samples.</p></details></section>
+<details><summary>Calculation details</summary>{detail_rows(best_rows)}<p>Complete 1,200-sample windows with one-second timestamps and no missing power. Earliest window wins a tie; whole watts round half up. No repaired or estimated samples.</p></details>{recent_context_panel(recent)}</section>
 <details class="panel provenance"><summary>Source &amp; provenance</summary><p>Ride summary values are FIT session source evidence. Sensor origins remain unknown; presence does not establish measurement origin.</p>{detail_rows(source_rows)}</details></div>
 <aside class="panel ride-summary"><h2>{icon('summary')}Ride summary</h2><p class="source-caption">FIT session source evidence</p>{detail_rows(summary_rows)}</aside></div>
 <script id="native-records" type="application/json">{payload}</script>''')
@@ -370,18 +404,21 @@ class Application:
                         raise ValueError
                 except ValueError:
                     return self.not_found()
-                snapshots = store.activity_history(activity_id)
-                if not snapshots:
-                    return self.not_found()
-                metadata = presentation(snapshots[0])
-                fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
-                if len(fit_sources) != 1:
-                    return 200, 'text/html', thin_review_page(metadata).encode()
-                try:
-                    html = review_page(analyze_activity(store, activity_id), metadata)
-                except RideWorksError:
-                    html = thin_review_page(metadata)
-                return 200, 'text/html', html.encode()
+                with store._transaction():
+                    snapshots = store.activity_history(activity_id)
+                    if not snapshots:
+                        return self.not_found()
+                    metadata = presentation(snapshots[0])
+                    fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
+                    if len(fit_sources) != 1:
+                        return 200, 'text/html', thin_review_page(metadata).encode()
+                    try:
+                        analysis = analyze_activity(store, activity_id)
+                    except RideWorksError:
+                        html = thin_review_page(metadata)
+                    else:
+                        html = review_page(analysis, metadata, recent_context(store, activity_id))
+                    return 200, 'text/html', html.encode()
         return self.not_found()
 
     @staticmethod
