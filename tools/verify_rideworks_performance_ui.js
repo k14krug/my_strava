@@ -52,6 +52,22 @@ async (page) => {
     const oracle=await periodOracle(probe,fixturePoints,aggregation,cutoff,asOf);
     const actual=await probe.locator('.performance-period-best').evaluateAll(nodes=>nodes.map(n=>({period:n.dataset.period,index:Number(n.dataset.pointIndex)})));
     check(JSON.stringify(actual)===JSON.stringify(oracle),'Period winners differ from independent raw maxima');
+    check(await probe.locator('.performance-period-stem, #performance-chart rect').count()===0,'Period series uses stems or bars');
+    const segments=await probe.locator('.performance-period-line').evaluateAll(nodes=>nodes.flatMap(node=>
+      [...node.getAttribute('d').matchAll(/([ML])([^ML]+)/g)].map(match=>({command:match[1],coords:match[2].trim().split(',').map(Number)}))));
+    const marks=await probe.locator('.performance-period-best').evaluateAll(nodes=>nodes.map(node=>[Number(node.getAttribute('cx')),Number(node.getAttribute('cy'))]));
+    check(segments.length===oracle.length,'Period line omits markers or connects extra observations');
+    oracle.forEach((item,i)=>{
+      let adjacent=false;
+      if(i){
+        const previous=oracle[i-1].period;
+        const next=new Date(previous+(aggregation==='monthly'?'-01T00:00:00Z':'-01-01T00:00:00Z'));
+        if(aggregation==='monthly')next.setUTCMonth(next.getUTCMonth()+1);else next.setUTCFullYear(next.getUTCFullYear()+1);
+        adjacent=next.toISOString().slice(0,aggregation==='monthly'?7:4)===item.period;
+      }
+      check(segments[i].command===(adjacent?'L':'M'),'Line bridges a missing calendar period or breaks consecutive evidence');
+      check(segments[i].coords.every((coordinate,j)=>Math.abs(coordinate-marks[i][j])<.000001),'Line does not follow contributing ride markers');
+    });
     const selected=Number(await probe.locator('#performance-readout').getAttribute('data-point-index'));
     if(oracle.length)check(selected===oracle.at(-1).index,'Period view does not default to recent meaningful best');
     else {
@@ -138,7 +154,7 @@ async (page) => {
         await probe.locator('.performance-views [data-view="'+aggregation+'"]').click();
         await inspectPeriodView(probe,points,aggregation,-Infinity,Date.parse(view.as_of));
       }
-      const fixtureHtml=html.replace(/(<script id="performance-points" type="application\/json">)[\s\S]*?(<\/script>)/,
+      let fixtureHtml=html.replace(/(<script id="performance-points" type="application\/json">)[\s\S]*?(<\/script>)/,
         (_,start,end)=>start+JSON.stringify(fixturePoints)+end).replace(/(<script id="performance-view" type="application\/json">)[\s\S]*?(<\/script>)/,
         (_,start,end)=>start+JSON.stringify(fixtureView)+end);
       await probe.route('**/performance',route=>route.fulfill({status:200,contentType:'text/html',body:fixtureHtml}));
@@ -149,6 +165,23 @@ async (page) => {
           await probe.locator('.performance-views [data-view="'+aggregation+'"]').click();
           await inspectPeriodView(probe,fixturePoints,aggregation,range==='all'?-Infinity:Date.parse(fixtureView.range_starts[range]),Date.parse(fixtureView.as_of));
         }
+      }
+      // Sparse periods prove real breaks: missing months, missing years, and
+      // a December/January connection, using only disposable browser fixtures.
+      const gapPoints=[fixturePoints[0],fixturePoints[2],fixturePoints[7]].map(p=>({...p}));
+      Object.assign(gapPoints[0],{start_time:'2023-12-15T12:00:00+00:00',date_key:'2023-12-15T12:00:00',date_day:'2023-12-15'});
+      for(const year of [2019,2021])gapPoints.unshift({...fixturePoints[0],activity_id:'gap-'+year,
+        start_time:year+'-09-15T12:00:00+00:00',date_key:year+'-09-15T12:00:00',date_day:year+'-09-15'});
+      fixtureHtml=html.replace(/(<script id="performance-points" type="application\/json">)[\s\S]*?(<\/script>)/,
+        (_,start,end)=>start+JSON.stringify(gapPoints)+end).replace(/(<script id="performance-view" type="application\/json">)[\s\S]*?(<\/script>)/,
+        (_,start,end)=>start+JSON.stringify(fixtureView)+end);
+      await probe.goto(base+'/performance');await probe.waitForSelector('#performance-chart[data-view="rolling"]');
+      await probe.locator('[data-range="all"]').click();
+      for(const aggregation of ['monthly','yearly']){
+        await probe.locator('.performance-views [data-view="'+aggregation+'"]').click();
+        await inspectPeriodView(probe,gapPoints,aggregation,-Infinity,Date.parse(fixtureView.as_of));
+        const commands=await probe.locator('.performance-period-line').getAttribute('d');
+        check((commands.match(/M/g)||[]).length>1&&commands.includes('L'),'Sparse fixture did not exercise both breaks and continuity');
       }
     } finally {await context.close();}
   }
@@ -174,6 +207,7 @@ async (page) => {
   return {result:'passed',browser:'Chromium',payload_eligible_results:points.length,all_range_ride_points:points.length,
     default_rolling_one_year:true,rolling_line_dominant:true,single_performance_surface:true,all_range_view_combinations:true,
     summaries_and_freshness:true,monthly_yearly_bests_independently_verified:true,synthetic_calendar_raw_tie_range_tests:true,
+    monthly_yearly_lines_with_markers:true,missing_month_year_breaks_verified:true,
     supporting_rides_in_all_views:true,future_candidates_secondary:true,complete_paged_evidence:true,
     first_middle_last_pointer:true,keyboard_inspection:true,point_activity_and_back:true,
     source_title_date_watts:true,eligibility_provenance:true,local_date_zones:['America/Los_Angeles','Asia/Tokyo'],

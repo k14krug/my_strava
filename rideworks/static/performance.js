@@ -141,11 +141,19 @@
     }
     if (rides) visible.forEach(i => make('circle', {cx:geometry.x(dates[i]), cy:geometry.y(points[i].average_watts), r:2, class:'performance-point', 'data-point-index':i}));
     if (aggregation !== 'rolling') {
+      let path = '', previousPeriod = null;
       peaks.forEach(p => {
-        const x = geometry.x(p.time), y = geometry.y(points[p.index].average_watts);
-        make('line', {x1:x, x2:x, y1:y, y2:bottom, class:'performance-period-stem'});
-        make('circle', {cx:x, cy:y, r:4, class:'performance-period-best', 'data-point-index':p.index, 'data-period':p.label});
+        const ordinal = aggregation === 'monthly'
+          ? Number(p.label.slice(0, 4)) * 12 + Number(p.label.slice(5, 7)) - 1
+          : Number(p.label);
+        // Connect adjacent calendar periods only, at their contributing ride dates.
+        const command = previousPeriod !== null && ordinal === previousPeriod + 1 ? 'L' : 'M';
+        path += ` ${command}${geometry.x(p.time)},${geometry.y(points[p.index].average_watts)}`;
+        previousPeriod = ordinal;
       });
+      if (path) make('path', {d:path, class:'performance-period-line'});
+      peaks.forEach(p => make('circle', {cx:geometry.x(p.time), cy:geometry.y(points[p.index].average_watts), r:4,
+        class:'performance-period-best', 'data-point-index':p.index, 'data-period':p.label}));
     } else {
       let path = '', active = false;
       series.forEach(s => {

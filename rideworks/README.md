@@ -448,8 +448,9 @@ periods without qualifying evidence have gaps. It does not estimate daily fitnes
 Ranges and summaries end at the page's as-of UTC instant, with calendar-month
 cutoffs clamped at month ends. Monthly/yearly bests group the displayed local
 calendar month/year and use only rides inside the selected range. One best is
-shown per non-empty period, at its contributing ride date; empty periods have no
-mark. The same raw-max/earliest-tie rule applies, without averaging or smoothing.
+shown per non-empty period, at its contributing ride date. Monthly/yearly views
+use lines with point markers; lines connect only consecutive calendar periods.
+Missing months/years have no mark and break the line. The same raw-max/earliest-tie rule applies, without averaging or smoothing.
 Unknown-zone source dates remain explicitly source-dated in period views and
 lifetime evidence, without membership in absolute timed windows.
 
