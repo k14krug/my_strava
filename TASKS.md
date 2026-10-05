@@ -176,7 +176,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** in_progress — P2-03 accepted; P2-04 planning ready.
+**Status:** in_progress — P2-01 through P2-04 accepted; P2-05 JIT ready.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
@@ -279,7 +279,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** Owner usability correction implemented/verified on PR #16 under JIT `7831e6e`: prominent comparison, neutral displayed-watt difference and explicit prior action; 186 full / 16 focused tests, all 1,022 eligible baseline selections independently verified (1,012 available / 10 unavailable), prior data-access/restart evidence retained; Chromium rerun including equal/sub-watt cases passed. Stopped at Gate 1 HARD — Owner.
+**Acceptance result:** Owner and Analyst accepted PR #16; merged to `main` as `16ef375434700ab7d2b5fb3a5c2cae000e049c12`. 186 tests passed; all 1,022 eligible comparisons independently verified (1,012 with prior baseline / 10 unavailable), with no archive/source reprocessing.
 
 **Dependency:** P2-03 complete.
 
@@ -301,7 +301,9 @@ Only one implementation/research task should normally be `in_progress`.
 * keep credentials/tokens local and out of Git
 * obey current rate-limit/terms/webhook obligations without enterprise sync infrastructure
 
-**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md`; detailed JIT to be authored after P2-04 acceptance.
+**Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-05.md`.
+
+**Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
 **Dependency:** P2-04 complete.
 
