@@ -179,6 +179,34 @@ PRAGMA user_version = 4;
 COMMIT;
 """
 
+MIGRATION_5 = """
+BEGIN IMMEDIATE;
+CREATE TABLE strava_api_sources (
+    source_id TEXT PRIMARY KEY,
+    activity_id TEXT NOT NULL REFERENCES activities(activity_id),
+    external_id TEXT NOT NULL,
+    observation_sha256 TEXT NOT NULL,
+    association_basis TEXT NOT NULL,
+    imported_at TEXT NOT NULL,
+    mapping_version TEXT NOT NULL,
+    evidence_json TEXT NOT NULL,
+    UNIQUE(external_id, observation_sha256)
+);
+CREATE INDEX api_sources_activity ON strava_api_sources(activity_id);
+CREATE TABLE strava_api_activities (
+    external_id TEXT PRIMARY KEY,
+    activity_id TEXT NOT NULL REFERENCES activities(activity_id),
+    current_source_id TEXT NOT NULL UNIQUE REFERENCES strava_api_sources(source_id)
+);
+CREATE TABLE strava_sync_state (
+    singleton INTEGER PRIMARY KEY CHECK(singleton = 1),
+    athlete_id TEXT NOT NULL,
+    successful_at INTEGER NOT NULL
+);
+PRAGMA user_version = 5;
+COMMIT;
+"""
+
 
 def resolve_data_dir(data_dir=None) -> Path:
     """Resolve once; default does not depend on the working directory."""
@@ -220,7 +248,7 @@ class Store:
         self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.execute("PRAGMA synchronous = FULL")
         version = self.connection.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1, 2, 3, 4):
+        if version not in (0, 1, 2, 3, 4, 5):
             self.close()
             raise RideWorksError(f"Unsupported RideWorks schema version: {version}")
         try:
@@ -235,6 +263,9 @@ class Store:
                 version = self.connection.execute("PRAGMA user_version").fetchone()[0]
             if version == 3:
                 self.connection.executescript(MIGRATION_4)
+                version = self.connection.execute('PRAGMA user_version').fetchone()[0]
+            if version == 4:
+                self.connection.executescript(MIGRATION_5)
             _sync_directory(self.data_dir)
         except BaseException:
             self.connection.rollback()
@@ -474,7 +505,7 @@ class Store:
                 (activity_id,),
             ).fetchall()
             return dict(activity=dict(activity), sources=[self._source_evidence(s) for s in sources]
-                        + [self._csv_evidence(s) for s in csv_sources])
+                        + [self._csv_evidence(s) for s in csv_sources] + self._api_sources(activity_id))
 
     def list_activities(self) -> list[dict]:
         """List only activities with one current Phase 1 FIT Source/session.
@@ -504,8 +535,33 @@ class Store:
                 return self._source_evidence(source)
             source = self.connection.execute("SELECT * FROM strava_export_sources WHERE source_id = ?", (source_id,)).fetchone()
             if source is None:
+                source = self.connection.execute('SELECT s.*, a.current_source_id=s.source_id AS is_current FROM strava_api_sources s JOIN strava_api_activities a ON a.external_id=s.external_id WHERE s.source_id=?', (source_id,)).fetchone()
+                if source is not None:
+                    return self._api_evidence(source)
                 raise RideWorksError("Source not found")
             return self._csv_evidence(source)
+
+    def _api_evidence(self, row):
+        from .strava_api import activity_type
+        values = json.loads(row['evidence_json'])
+        source = {key: row[key] for key in ('source_id', 'activity_id', 'external_id',
+                  'observation_sha256', 'association_basis', 'imported_at', 'is_current')}
+        source.update(kind='strava_api', content_format='API JSON', packaging='observation')
+        return dict(source=source, extraction=dict(mapping_version=row['mapping_version']),
+                    summary=dict(title=values.get('name'), activity_type=activity_type(values),
+                                 sport_type=values.get('sport_type'), date_parsed=values['start_date'],
+                                 total_elapsed_time=values.get('elapsed_time'), total_distance=values.get('distance'),
+                                 values=values),
+                    availability={signal: dict(status='unavailable', origin='Strava API summary',
+                                      reason='API summaries are not native streams') for signal in ('power','heart_rate')},
+                    records=None, laps=[], events=[], native_power_stream_exists=False)
+
+    def _api_sources(self, activity_id=None):
+        where = ' WHERE s.activity_id=?' if activity_id is not None else ''
+        return [self._api_evidence(row) for row in self.connection.execute('''
+            SELECT s.*, a.current_source_id=s.source_id AS is_current
+            FROM strava_api_sources s JOIN strava_api_activities a ON a.external_id=s.external_id
+        '''+where+' ORDER BY s.imported_at, s.source_id', (activity_id,) if activity_id else ())]
 
     def inspect(self, activity_id) -> dict:
         snapshot = self.get_activity(activity_id)
@@ -646,6 +702,8 @@ class Store:
                 evidence = self._csv_evidence(row)
                 activities[row['activity_id']]['sources'].append({k: evidence[k] for k in
                     ('source', 'extraction', 'summary', 'availability')} | {'native_power_stream_exists': False})
+            for evidence in self._api_sources(activity_id):
+                activities[evidence['source']['activity_id']]['sources'].append(evidence)
             file_where = ' WHERE f.activity_id = ?' if activity_id is not None else ''
             for row in self.connection.execute('''
                 SELECT f.*, e.extraction_id, e.parser_name, e.parser_version, e.mapping_version,

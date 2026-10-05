@@ -21,13 +21,15 @@ def classification(snapshot):
     evidence = sorted(snapshot['sources'], key=lambda e: (e['source']['imported_at'], e['source']['source_id']))
     csv = [e for e in evidence if e['source']['kind'] == 'strava_export'
            and (e['summary'].get('activity_type') or '').strip()]
-    if csv:
-        latest = csv[-1]
+    api = [e for e in evidence if e['source']['kind']=='strava_api' and e['source']['is_current']
+           and (e['summary'].get('activity_type') or '').strip()]
+    if api or csv:
+        latest = (api or csv)[-1]
         return dict(activity_type=latest['summary']['activity_type'].strip(),
                     source_ids=[latest['source']['source_id']], basis='latest_strava_type')
     types = []
     for e in evidence:
-        if e['source']['kind'] == 'strava_export':
+        if e['source']['kind'] in ('strava_export','strava_api'):
             continue
         summary = e['summary']
         kind = ('Virtual Ride' if summary.get('sub_sport') == 'virtual_activity' else
@@ -49,7 +51,8 @@ def input_signature(snapshot):
     """
     inputs = sorted((dict(source_id=e['source']['source_id'],
                           imported_at=e['source']['imported_at'],
-                          extraction=e['extraction'], summary=e['summary'])
+                          extraction=e['extraction'], summary=e['summary'],
+                          **({'is_current':e['source']['is_current']} if e['source']['kind']=='strava_api' else {}))
                      for e in snapshot['sources']), key=lambda e: e['source_id'])
     return sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
 
@@ -67,7 +70,7 @@ def evaluate(store, snapshot):
                             'ambiguous_classification' if cohort['basis'] == 'conflicting_native_classification'
                             else 'non_virtual_activity' if kind else 'classification_unavailable')
         return result
-    files = [e for e in snapshot['sources'] if e['source']['kind'] != 'strava_export']
+    files = [e for e in snapshot['sources'] if e['source']['kind'] not in ('strava_export','strava_api')]
     eligible = []
     for metadata in files:
         source, extraction = metadata['source'], metadata['extraction']

@@ -234,12 +234,23 @@ def review_page(analysis, metadata=None, recent=None):
                    ('Source start time (UTC)', summary.get('start_time'))]
     if metadata and metadata['title_source']:
         title_source = metadata['title_source']['source']
-        source_rows[2:4] = [('Title origin', 'Source-supplied Strava-export evidence'),
+        api_title = title_source['kind']=='strava_api'
+        source_rows[2:4] = [('Title origin', 'Source-supplied Strava API evidence' if api_title else 'Source-supplied Strava-export evidence'),
                             ('Title Source ID', title_source['source_id']),
-                            ('Title display policy', 'Latest non-empty imported Strava-export title; observations retained')]
-    if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] == 'strava_export':
-        source_rows += [('Displayed type origin', 'Strava-export source evidence'),
+                            ('Title display policy', 'Current non-empty API title preferred over export title; observations retained' if api_title else 'Latest non-empty imported Strava-export title; observations retained')]
+    if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] in ('strava_export','strava_api'):
+        source_rows += [('Displayed type origin', 'Strava API source evidence' if metadata['type_source']['source']['kind']=='strava_api' else 'Strava-export source evidence'),
                         ('Type Source ID', metadata['type_source']['source']['source_id'])]
+    if metadata:
+        for e in metadata['sources']:
+            if e['source']['kind'] in ('strava_export','strava_api'):
+                origin = 'Strava API' if e['source']['kind']=='strava_api' else 'Strava export'
+                source_rows += [(origin+' title observation', e['summary'].get('title')),
+                                (origin+' observation Source ID', e['source']['source_id'])]
+                if e['source']['kind']=='strava_api':
+                    source_rows += [('API retrieved at (UTC)',e['source']['imported_at']),
+                                    ('Current API observation',bool(e['source']['is_current'])),
+                                    ('API mapping',e['extraction']['mapping_version'])]
     for signal, name in [('power', 'Power'), ('heart_rate', 'Heart rate')]:
         a = analysis['availability'][signal]
         source_rows.extend([(f'{name} availability', a['status']),
@@ -264,7 +275,7 @@ def review_page(analysis, metadata=None, recent=None):
     # Avoid closing the JSON script element with any source text. Never embed
     # private file/store paths, coordinates, or a raw application snapshot.
     payload = json.dumps(records, ensure_ascii=True, allow_nan=False).replace('<', '\\u003c').replace('&', '\\u0026')
-    type_text = metadata['activity_type'] if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] == 'strava_export' else (summary.get('sport') or 'Unavailable').replace('_', ' ').title()
+    type_text = metadata['activity_type'] if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] in ('strava_export','strava_api') else (summary.get('sport') or 'Unavailable').replace('_', ' ').title()
     if metadata and metadata['subtype']:
         subtype = metadata['subtype']
     return shell(title, f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(title)}</h1><span class="title-origin">{escape(title_origin)}</span></div><p class="ride-meta">{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>Type: {escape(type_text)}<span class="meta-separator">·</span>Subtype: {escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
@@ -287,9 +298,19 @@ def thin_review_page(row):
     for evidence in row['sources']:
         source, summary = evidence['source'], evidence['summary']
         csv = source['kind'] == 'strava_export'
-        name = 'Strava-export metadata' if csv else f"{source['content_format']} source evidence"
+        api = source['kind']=='strava_api'
+        name = 'Strava API metadata' if api else 'Strava-export metadata' if csv else f"{source['content_format']} source evidence"
         values = [('Source ID', source['source_id'])]
-        if csv:
+        if api:
+            values += [('Retrieved at (UTC)',source['imported_at']),('Current observation',bool(source['is_current'])),
+                       ('Mapping',evidence['extraction']['mapping_version']),('Association basis',source['association_basis'])]
+            units={'distance':'m','elapsed_time':'s','moving_time':'s','total_elevation_gain':'m',
+                   'average_watts':'W','weighted_average_watts':'W','max_watts':'W','kilojoules':'kJ',
+                   'average_heartrate':'bpm','max_heartrate':'bpm','average_cadence':'rpm','utc_offset':'s'}
+            values += [(key.replace('_',' ').capitalize()+(f' ({units[key]})' if key in units else ''),value)
+                       for key,value in summary['values'].items()]
+            note = 'Strava API summaries are source evidence. Native streams and trusted best-20 results are unavailable from this source.'
+        elif csv:
             values += [('Title', summary.get('title')), ('Activity type', summary.get('activity_type')),
                        ('Sport type', summary.get('sport_type')), ('Source date text', summary.get('date_text'))]
             values += [(f"{f['column']} (column {f['column_index'] + 1}; {f['unit'].replace('source_unspecified', 'units unspecified')})", f['raw_value'] or None)

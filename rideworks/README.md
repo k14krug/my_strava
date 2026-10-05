@@ -542,6 +542,87 @@ Chromium session. Review copy startup:
 
 Private Activity URLs are in `output/playwright/p2-04-review-links.json`;
 `representative`, `no_prior` and `outdoor` select useful Owner review cases.
+
+## Manual Strava synchronization (P2-05)
+
+Configure `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET` in exported environment
+variables or the ignored repository `.env`. Never paste the secret or tokens into
+a PR, report or chat. For a local Strava application, use a loopback callback
+domain (`127.0.0.1` or `localhost`); RideWorks receives authorization at
+`http://127.0.0.1:8772/strava/callback`. The callback port can be changed with
+`strava-connect --callback-port <port>`. No public callback/tunnel is created.
+
+Against a disposable copy of accepted history:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-connect
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review sync-strava
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review serve --port 8771
+```
+
+Connect opens the authorization page and waits up to three minutes. Authorize
+the Owner's Strava account and grant `activity:read_all`. State/scope/athlete
+identity are checked. The token file is private (0600) under the selected data
+directory, excluded from Store inspection and browser output. A store lock
+serializes connect/sync/disconnect. Refresh within an hour of expiry atomically
+retains the newest refresh token before further requests, including when a later
+sync page fails. Invalid/revoked authorization removes unusable local tokens.
+
+Sync is explicit and sequential. The initial `after` is midnight UTC on the
+latest stored export calendar day, minus **three days**. This is a conservative
+calendar overlap for offset-unknown export dates. Later `after` values use the
+last successful request cutoff minus three days. `before` is the current sync's
+start time; that cutoff becomes the checkpoint only after observations commit.
+Missing/invalid boundaries stop without a historical fallback. The only activity
+endpoint is `GET /api/v3/athlete/activities`, with 100 items per page and a
+20-page safety bound. Empty/short pages finish; size/shape/rate/auth/network
+failures leave observations and checkpoint unchanged. Tokens may legitimately
+rotate before a failed sync. Reports contain aggregate counts and rate headers.
+
+API observations retain only the documented allowlist, retrieval timestamp,
+mapping version and source association. Identical observations reuse the Source;
+changed observations retain previous evidence with an explicit current pointer.
+Established Strava IDs enrich the same Activity. Otherwise, a unique local
+candidate must agree on absolute start exactly, compatible classification,
+elapsed duration within one second and distance within one metre when both
+provide it. Title alone never associates. Ambiguous/conflicting local matches
+create a new API-backed Activity; conflicting established identities stop.
+
+Current API title/type evidence is visible and attributable; export titles remain
+inspectable. API-only review stays thin. FIT summaries/native streams remain
+unchanged. API summary watts never become native Performance evidence. Changed
+source context may suppress stale Performance results until an explicit rebuild;
+sync never runs `rebuild-performance` or reparses original files.
+
+Restart the server and rerun `sync-strava` to verify overlap idempotence. Manual
+overlap cannot promise detection of arbitrary old edits, deletes or back-dated
+uploads. Absence from a list never implies deletion. Webhooks must be revisited
+before unattended/public integration; this implementation has no polling loop.
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-disconnect
+```
+
+Disconnect attempts `POST /oauth/revoke` with client Basic authentication and
+then removes local tokens even if remote revocation/credentials are unavailable.
+It retains durable activity history. Current Strava retention/deletion policy
+conflicts with the Owner's accepted durable-history decision; see the documented
+policy boundary and acceptance limits in `reports/P2-05/verification.md`.
+
+Reproducible synthetic acceptance (fake HTTP only; use a fresh synthetic directory):
+
+```bash
+.venv/bin/python -m unittest discover -s tests -p 'test_rideworks_strava.py'
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python tools/prepare_rideworks_strava_review.py \
+  --data-dir '<accepted-history-copy>' --synthetic-dir '<new-synthetic-directory>'
+.venv/bin/python -m rideworks --data-dir '<synthetic-directory>' serve --port 8773
+.venv/bin/python tools/verify_rideworks_strava_ui.py --port 8773 --session rideworks-p2-05
+```
+
+Open the managed Chromium session before the last command. Private synthetic
+routes and screenshots remain under ignored `output/playwright/`. Synthetic
+success is separate from real authorization/sync acceptance.
 Screenshots and this file stay local/ignored. The verifier emits aggregate JSON
 and independently checks every eligible prior baseline without a production
 selector oracle or native stream reads, then verifies persisted history/restart.
