@@ -75,12 +75,13 @@
     ]
   },
   "owner_approval": "approved",
-  "analyst_acceptance": "pending",
+  "analyst_acceptance": "accepted",
   "owner_corrections": {
     "jit_main_commit": "56e1f1c",
     "dedicated_date_column": "implemented",
     "browser_local_day_filtering": "implemented",
     "review_instance_port": 8766,
     "single_line_date_without_timezone_suffix": "implemented"
-  }
+  },
+  "merge_commit": "683c9880bb0b6ed1cd9569a58be61093ec2cce0e"
 }
