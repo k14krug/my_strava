@@ -353,8 +353,8 @@ From/To dates and newest/oldest/longest-duration/longest-distance sorts use GET
 query state. Applying filters returns to page 1; previous/next retain them.
 Missing sort values come last and remain unavailable, including distances or
 durations whose CSV units have not been established. Date has its own column,
-separate from Title. Known absolute instants display in your browser's local
-timezone, and From/To matches that same displayed local calendar day, including
+separate from Title. Known absolute instants display on one line in your browser's
+local timezone, without a timezone suffix. From/To matches that same displayed local calendar day, including
 historical daylight-saving rules. Dates without an offset retain their supplied
 calendar day and explicit unknown timezone.
 

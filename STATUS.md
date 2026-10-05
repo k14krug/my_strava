@@ -20,9 +20,9 @@
 
 **Branch / PR:** `task/p2-02-activities-browser` / [#14](https://github.com/k14krug/my_strava/pull/14) (draft).
 
-**Implementation head:** `594856d2fe3f50b996397bd68ae4859969ccc321`; final handoff publication is documentation/evidence only.
+**Implementation head:** `a1a42eb767ab7434ef0a9f2890cd912054183441`; final handoff publication is documentation/evidence only.
 
-**Implemented:** dedicated Date column beside Title; absolute times and From/To use the same browser-local calendar day; unknown-zone dates retain their supplied day. 30-row cycling-first browser; GET title/type/subtype/date/timezone/sort/page state; preferred source titles with provenance; stable rich FIT and thin TCX/GPX/CSV-only/ambiguous-FIT reviews. Metadata browsing does not load native streams or rewrite source evidence.
+**Implemented:** dedicated Date column beside Title, with known dates on one line and no timezone suffix; absolute times and From/To use the same browser-local calendar day; unknown-zone dates retain their supplied day. 30-row cycling-first browser; GET title/type/subtype/date/timezone/sort/page state; preferred source titles with provenance; stable rich FIT and thin TCX/GPX/CSV-only/ambiguous-FIT reviews. Metadata browsing does not load native streams or rewrite source evidence.
 
 **Verification:** 142 tests passed. Clean local review store contains all 1,434 Activities / 1,421 file Sources / 13 CSV-only Activities, zero failures/unresolved associations. Full-history HTTP/restart and actual Chromium acceptance passed. 1,410 cycling Activities, 47 cycling / 48 all pages. Representative FIT retains 118 W average / 120 W best-20. Local-day display/filtering verified in Los Angeles, Tokyo and UTC, including UTC-midnight crossing; DST boundary tests pass. No horizontal overflow at desktop/tablet/phone widths.
 

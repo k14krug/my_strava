@@ -227,7 +227,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-02.md`.
 
-**Execution state:** Owner Date-column/local-calendar corrections implemented on PR #14 under clarified JIT at `56e1f1c`. 142 tests and full-history HTTP/restart/Chromium checks pass, including multiple timezones. Stopped again at Gate 1 HARD — Owner for visual/usability approval.
+**Execution state:** Owner Date-column/local-calendar corrections implemented on PR #14 under clarified JIT at `56e1f1c`. 142 tests and full-history HTTP/restart/Chromium checks pass, including multiple timezones and single-line date/time without timezone suffixes. Stopped again at Gate 1 HARD — Owner for visual/usability approval.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 

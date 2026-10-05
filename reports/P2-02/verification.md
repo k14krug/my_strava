@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-04.  
 **Branch / PR:** `task/p2-02-activities-browser` / [#14](https://github.com/k14krug/my_strava/pull/14).  
-**Implementation head:** `594856d2fe3f50b996397bd68ae4859969ccc321`; final handoff publication is documentation/evidence only.
+**Implementation head:** `a1a42eb767ab7434ef0a9f2890cd912054183441`; final handoff publication is documentation/evidence only.
 **State:** implementation and local verification complete; stopped at **Gate 1 HARD — Owner**. P2-02 remains `in_progress`. Owner approval and final Analyst acceptance are pending.
 
 ## Result and implementation
@@ -39,6 +39,9 @@ file session start, then supported CSV date evidence. Absolute instants render i
 the browser's local timezone; From/To uses the **same displayed local calendar
 day**, including historical daylight-saving rules. Offset-unknown dates retain
 their source calendar day and explicit unknown timezone.
+The Owner's subsequent formatting correction keeps known local date/time on one
+line, with no timezone abbreviation or GMT offset suffix in the Activities list.
+The accepted detailed Activity Review timestamp display is unchanged.
 Unparsed date text is retained for display without entering date filters.
 
 The Owner corrections in PR #14 and Analyst-authored JIT clarifications on `main`
@@ -70,7 +73,7 @@ Nonexistent/malformed IDs remain safe 404s. No synthetic chart or best-20 is add
 ```
 
 **142 tests passed** (all 123 accepted P1/P2-01 tests plus 19 focused P2-02 tests).
-The final suite completed in 5.004 seconds, with loopback access for existing HTTP
+The final suite completed in 4.711 seconds, with loopback access for existing HTTP
 server tests. No test was removed or weakened.
 
 New generated-fixture coverage checks bounds/pages/counts; cycling/all/types/subtypes;
@@ -162,7 +165,10 @@ or **390×844**. Desktop screenshots were visually inspected for shell continuit
 filter density, readable rows, source-title enrichment and honest thin review.
 Owner visual/usability approval remains pending. A four-pixel phone-summary overflow
 detected by the strengthened browser run was corrected and the complete run repeated
-successfully. Updated screenshots show the final Date-column presentation.
+successfully. Updated screenshots show the final Date-column presentation. The complete Chromium
+run was repeated after the one-line formatting correction: native `Intl` text
+without a timezone suffix matches in all three zones, and every known date in
+the displayed list occupies one line at all three viewport widths.
 
 ## Owner review startup and local screenshots
 
