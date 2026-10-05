@@ -1,9 +1,9 @@
 # P2-03 verification — Gate 1 Owner review
 
-**Date:** 2026-10-04.
+**Date:** 2026-10-05.
 **Branch / PR:** `task/p2-03-performance-history` / [#15](https://github.com/k14krug/my_strava/pull/15).
-**Implementation head:** `64d33bc691c1e9e8fc5745ebb2ff36d2f876db4f`; final publication adds documentation/evidence only.
-**Controlling correction:** Owner comments on PR #15 and Analyst JIT refreshed from `main` at `98828a8`.
+**Implementation head:** `fa0d877dc301dd605f612670e6595aafe4e7fc14`; final publication adds documentation/evidence only.
+**Controlling correction:** Owner comments on PR #15 and Analyst JIT refreshed from `main` at `3ae14b9`.
 **State:** Owner-directed correction implemented and required local verification complete. Stopped at **Gate 1 HARD — Owner**. P2-03 stays `in_progress`; Owner approval and Analyst acceptance are pending.
 
 ## Behavior and analytical context
@@ -44,35 +44,45 @@ window context and raw/display results remain identical. No background rebuild,
 generic dependency framework or universal source ranking is introduced.
 
 The `/performance` read boundary loads persisted results and current metadata,
-without querying native records. The Owner correction replaces the primary
-all-ride scatter with **Current / Trend / History** modes and defaults to
-**Trend / 1 year / Trend only**. Four compact cards show Current 42-day best,
-Latest eligible ride, Best in last 12 months and Lifetime best, each with its
-contributing Activity date/link and evidence age.
+without querying native records. The latest Owner correction presents **one
+Performance surface**, with no Current / Trend / History tabs. The default is
+**1 year / Rolling 42-day / Trend only**. Four compact cards show Current 42-day
+best, Latest eligible ride, Best in last 12 months and Lifetime best, each with
+its contributing Activity date/link and evidence age.
 
-Trend's dominant step line is the raw maximum in `(t − 42 days, t]`, tied by
-earliest Activity then stable identity. A result expires exactly 42 days after
-its Activity start; empty windows remain gaps. It represents demonstrated
-qualifying evidence, not estimated daily performance. Optional ride dots are
-small and subdued; they are never connected to one another. Controls offer
-3 mo / 6 mo / 1 yr / 3 yr / All and Trend only / Trend + rides.
+Range controls offer **3 mo / 6 mo / 1 yr / 3 yr / All**. View controls offer
+**Rolling 42-day / Monthly best / Yearly best**. The dominant rolling step line
+is the raw maximum in `(t − 42 days, t]`, tied by earliest Activity then stable
+identity. A result expires exactly 42 days after its Activity start; empty
+windows remain gaps. It represents demonstrated qualifying evidence rather than
+estimated daily performance.
 
-Current emphasizes recent evidence and freshness without a large chart.
-History shows annual peaks within the selected range; annual grouping uses the
-browser's displayed calendar years. All eligible results remain accessible in
-30-row supporting evidence pages. Selected results default to recent meaningful
-evidence. Pointer and keyboard inspection retain source date/title/watts,
-Activity navigation and selected Source/extraction/raw/window provenance.
+Monthly/yearly views select one strongest eligible raw result per displayed
+calendar month/year, using only rides inside the active range and the same
+raw-max/earliest-tie rule. Period-best marks sit at their contributing ride dates
+with subdued stems from zero; they do not connect successive ride observations.
+Empty periods have no mark. Optional ride dots are small and subdued in all
+three views and retain inspection/Activity links. The default selected result is
+the most recent meaningful best in the active Range/View, including when ride
+evidence is enabled. Every eligible result remains accessible in 30-row
+supporting evidence pages.
 
 Timed windows and calendar-month range cutoffs end at the page's as-of UTC
 instant; month ends clamp to the available calendar day. Unknown-zone Activity
-source dates remain labeled and available in History/lifetime evidence, without
+source dates remain labeled and available in period/lifetime evidence, without
 inventing membership in absolute clock windows. The full archive has zero such
 eligible Activity dates. Known dates are compact browser-local dates with no
 GMT suffix. Missing dates are reported rather than assigned invented positions.
-The compact Eligibility & method explanation stays secondary. Empty/unbuilt and
-changed-input states render safely; active navigation remains accurate.
-P2-04 comparisons are not included.
+Pointer/keyboard inspection retains source date/title/watts, stable Activity
+navigation and selected Source/extraction/raw/window provenance. Range/View/
+evidence state survives Activity navigation and browser back.
+
+Eligibility & method remains compact and secondary. **Future Performance
+candidates** is a collapsed, subordinate product-direction reminder; it labels
+possible later durations, athlete context and comparison/signals as candidates,
+without controls, calculations, fake data or delivery commitments. Empty/unbuilt
+and changed-input states render safely; active navigation remains accurate.
+P2-04 comparisons and all other excluded analytical features are not included.
 
 ## Automated verification
 
@@ -80,11 +90,19 @@ P2-04 comparisons are not included.
 .venv/bin/python -m unittest discover -s tests
 ```
 
-**170 tests passed in 8.454 seconds**: all 142 accepted tests plus 20 P2-03 foundation tests and 8 presentation-window tests.
+**170 tests passed in 9.234 seconds**: all 142 accepted tests plus 20 P2-03 foundation tests and 8 presentation-window tests.
 Existing migration assertions now expect additive schema 4, retaining their
 original identity/byte/evidence/rollback checks. Existing navigation checks now
 require the real Performance link while continuing to reject fake future pages.
-No calculation tests were removed or weakened.
+No calculation tests were removed or weakened. Focused verification also passed:
+
+```bash
+.venv/bin/python -m unittest discover -s tests -p 'test_rideworks_performance*.py'
+```
+
+**28 focused tests passed in 2.568 seconds**. Page assertions now require the
+three View options, candidates label and removal of obsolete tabs; safe payload,
+metadata-only rendering and native calculation checks remain intact.
 
 New synthetic coverage includes selected-input/window/classification context,
 Virtual Ride versus outdoor/non-cycling exclusion without stream reads,
@@ -106,10 +124,12 @@ retain complete-window, zero/missing/timing/tie/half-up regression coverage.
 
 ## Disposable full-history acceptance
 
-A new local-only copy, `local_data/p2-03-review`, was made from the accepted
+The disposable local-only copy, `local_data/p2-03-review`, was made from the accepted
 `local_data/p2-02-review` directory before schema migration/rebuild. The accepted
 store, original export and original input files were not changed. Both stores,
-all personal originals and screenshots remain ignored and local.
+all personal originals and screenshots remain ignored and local. The copy was
+reused for this presentation correction; full rebuild and independent acceptance
+were rerun, without reimporting or modifying the accepted P2-02 store.
 
 Production rebuild command:
 
@@ -201,22 +221,34 @@ verification port was checked; no existing review server was mistaken for it.
 Managed Chromium was opened through the Playwright skill wrapper, with the cached
 CLI used for subsequent commands. Actual browser acceptance passed on final code:
 
-- Trend / 1-year / Trend-only defaults and recent selected result;
+- one Performance surface, no obsolete tabs, 1-year / Rolling 42-day / Trend-only defaults;
 - all four summary contexts and freshness;
-- all three modes and all five range controls;
-- dominant rolling line, optional **1,022** All-range ride dots;
-- annual peaks independently checked against raw-result maxima;
+- all **15 Range/View combinations**;
+- dominant rolling line and optional **1,022** All-range ride dots;
+- monthly/yearly winners independently checked against raw-result maxima at every range;
+- monthly/yearly Activity navigation, keyboard inspection and preserved state on back;
+- supporting rides enabled in every view without replacing its primary bests;
 - all **1,022** results traversed through bounded supporting evidence pages;
 - first/middle/last pointer inspection, Home/End/arrow-key inspection;
 - pointer click and Enter to the contributing Activity, browser back;
 - source title/date/watt readouts, selected provenance and method explanation;
-- native local dates in **America/Los_Angeles** and **Asia/Tokyo**;
-- every mode at **1448×1086**, **1024×900** and **390×844**, without horizontal overflow;
+- collapsed future candidates explicitly labeled as unimplemented direction;
+- native local dates and full-history period winners in **America/Los_Angeles** and **Asia/Tokyo**;
+- every view at **1448×1086**, **1024×900** and **390×844**, without horizontal overflow;
 - chart height remains at least 300 px and payload contains no native streams.
 
-Desktop and phone Trend screenshots, plus desktop Current and History screenshots,
-were visually inspected for hierarchy, compact cards and controls, line/dot
-contrast, readable chart/readout and continuity with the accepted RideWorks shell.
+The independent browser oracle groups displayed calendar periods with Intl date
+parts, sorts eligible raw results by watts/date/identity and compares the complete
+set of rendered period winners. Synthetic browser cases in both timezones add
+month/year-boundary shifts, leap-day evidence, raw values with equal displayed
+watts, earliest exact ties, a valid zero period best, unknown-zone source calendar
+dates, future-result exclusion, partial ranges and empty ranges. Empty ranges
+have no invented Activity link or fabricated zero result. Synthetic data is
+injected only into an isolated verification page, never persisted.
+
+Desktop/phone Rolling screenshots and desktop Monthly/Yearly screenshots were
+visually inspected for hierarchy, compact cards and coherent controls, primary
+marks versus ride dots, readable chart/readout and RideWorks shell continuity.
 Owner visual/usability approval remains pending; local verification does not
 assert Owner acceptance.
 
@@ -237,15 +269,16 @@ Local-only screenshots:
 
 - `output/playwright/p2-03-performance-desktop.png`
 - `output/playwright/p2-03-performance-phone.png`
-- `output/playwright/p2-03-current-desktop.png`
-- `output/playwright/p2-03-history-desktop.png`
+- `output/playwright/p2-03-monthly-desktop.png`
+- `output/playwright/p2-03-yearly-desktop.png`
 
 No personal title, Activity ID, Source ID, private input path, native record stream,
 coordinate or screenshot is committed/published in the verification artifacts.
 `acceptance.json` retains aggregate rebuild/independent/HTTP/Chromium results only.
 
-Under JIT §20, stop at **Gate 1 HARD — Owner** for review of whether the history
-modes answer useful questions, the rolling trend and cohort explanation are
-understandable, and the page meets the requested visual quality bar. After explicit
+Under JIT §20, stop at **Gate 1 HARD — Owner** for review of whether the single
+Performance surface is useful, Range/View/evidence controls are intuitive, the
+three views and summaries make the data practical, and the page meets the visual
+quality bar. After explicit
 Owner approval, record it and stop at Gate 2 HARD — Analyst for evidence,
 calculation/persistence and UI acceptance. **P2-04 has not begun.**

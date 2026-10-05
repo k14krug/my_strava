@@ -1,5 +1,5 @@
 {
-  "implementation_head": "64d33bc691c1e9e8fc5745ebb2ff36d2f876db4f",
+  "implementation_head": "fa0d877dc301dd605f612670e6595aafe4e7fc14",
   "schema_version": 4,
   "method": "best-average-power-v1",
   "policy": "virtual-native-power-v1",
@@ -135,12 +135,15 @@
     "browser": "Chromium",
     "payload_eligible_results": 1022,
     "all_range_ride_points": 1022,
-    "default_trend_one_year": true,
+    "default_rolling_one_year": true,
     "rolling_line_dominant": true,
-    "current_trend_history": true,
-    "all_range_controls": true,
+    "single_performance_surface": true,
+    "all_range_view_combinations": true,
     "summaries_and_freshness": true,
-    "annual_peaks_verified": true,
+    "monthly_yearly_bests_independently_verified": true,
+    "synthetic_calendar_raw_tie_range_tests": true,
+    "supporting_rides_in_all_views": true,
+    "future_candidates_secondary": true,
     "complete_paged_evidence": true,
     "first_middle_last_pointer": true,
     "keyboard_inspection": true,
@@ -156,5 +159,10 @@
   },
   "owner_approval": "pending",
   "analyst_acceptance": "pending",
-  "controlling_jit_main": "98828a8"
+  "controlling_jit_main": "3ae14b9",
+  "verification_date": "2026-10-05",
+  "focused_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests -p 'test_rideworks_performance*.py'",
+    "passed": 28
+  }
 }
