@@ -1,35 +1,25 @@
 # STATUS.md
 
-**Product:** RideWorks
+**Product:** RideWorks. **Phase 1:** accepted / complete. **Phase 2:** in progress.
 
-**Phase 1:** accepted / complete.
+**Accepted:** P2-01/P2-02/P2-03 done; PR #15 merged as `4f1a58d39177887e965ddd1a74db95c62c17e0b0`.
 
-**Phase 2 — Historical context and performance history:** in progress.
+**Current task:** P2-04 — in_progress.
 
-**P2-01 — Historical Strava-export import and enrichment:** done.
+**Implementation state:** ready_for_review — Gate 2 HARD — Analyst; Owner approved the final six-week comparison usability result.
 
-**P2-02 — Scalable Activities browser:** done.
+**Branch / PR:** `task/p2-04-recent-context` / [#16](https://github.com/k14krug/my_strava/pull/16) (draft).
 
-**P2-03 — Trusted 20-minute Performance history:** done — Owner and Analyst accepted PR #15 on 2026-10-05.
+**Implementation head:** `cc12f1f9464c9e98d1b05374e881c83337f1aa6b`; final publication adds status/evidence only.
 
-**PR #15:** merged to `main` as `4f1a58d39177887e965ddd1a74db95c62c17e0b0`.
+**Implemented:** prominent Compared with previous 6 weeks inset inside Best 20-minute power, larger current/prior values, neutral difference of displayed whole watts, compact prior date/title, explicit Open prior ride and View Performance, collapsed Comparison details. Exact `(t − 42 days, t)`; self/endpoints excluded; raw max then earliest start/Activity ID. Stale/missing/ineligible/unknown-time current and empty prior windows stay unavailable. No new table, archive import/reparse or automatic Performance rebuild; comparison reads current persisted metadata/results. Thin and ordinary current FIT behavior retained; long Unavailable source metrics fit the phone grid.
 
-**P2-03 verification:** 170 full / 28 focused tests passed. Full-history accounting: 1,434 Activities / 1,264 Virtual Ride candidates / 1,022 eligible trusted best-20 results; all eligible results independently verified exactly. Outdoor/non-cycling power excluded; rebuild/restart/idempotence and Chromium acceptance passed. Final Performance UI uses one Range/View surface with Rolling 42-day / Monthly best / Yearly best and Owner-approved line-chart presentation.
+**Verification:** 186 full / 16 focused tests and Chromium rerun passed, including four synthetic equal/sub-watt display cases with raw details retained. Prior full-history/data-access/restart evidence retained unchanged. Copied accepted P2-03 store: 1,434 statuses / 1,022 eligible; 1,012 with prior / 10 without; all independently verified; 412 ineligible remain excluded. Native-read/mutation/import/reparse/rebuild guards pass. Persisted history/originals unchanged; Store/HTTP restart and SQLite checks pass. Accepted Activities/rich/thin regressions and Chromium available/no-prior/outdoor, navigation/back/provenance, Los Angeles/Tokyo dates and desktop/phone no overflow pass. Representative: 120 W current / 195 W prior / 75 W below from displayed values, 118 W FIT average, 3,621 native records.
 
-**P2-03 evidence:** `reports/P2-03/verification.md`, `reports/P2-03/acceptance.json`.
+**Evidence:** `reports/P2-04/verification.md`, `reports/P2-04/acceptance.json`.
 
-**Current task:** P2-04 — pending implementation.
+**Owner review:** http://127.0.0.1:8769/. Startup: `.venv/bin/python -m rideworks --data-dir local_data/p2-04-review serve --port 8769`. Private exact routes: `output/playwright/p2-04-review-links.json` (`representative`, `no_prior`, `outdoor`). Screenshots: `output/playwright/p2-04-recent-desktop.png`, `output/playwright/p2-04-recent-phone.png`. Inputs/copy/links/images remain ignored/local.
 
-**P2-04 JIT:** authored — `docs/tasks/P2-04.md`.
+**Blockers:** none; final Analyst acceptance pending.
 
-**P2-04 purpose:** add neutral prior-six-week context to eligible Activity Review: current trusted best-20 versus the highest eligible raw best-20 in the exact prior `(t - 42 days, t)` interval, excluding the current Activity.
-
-**Data rule:** P2-04 consumes the accepted persisted RideWorks/P2-03 history. It must not reopen/re-import the historical Strava archive, rebuild the durable source store, or automatically rebuild Performance merely to render Activity Review.
-
-**Review gates:** implementation stops first at HARD — Owner for Activity Review usability, then at HARD — Analyst for final interval/eligibility/data-access acceptance.
-
-**Allowed invocation:** `/TASK` or `/AUTOTASK`.
-
-**Blockers:** none.
-
-**Next action:** Ken may invoke `/TASK` or `/AUTOTASK` for P2-04. Do not begin P2-05 automatically.
+**Next action:** Analyst reviews PR #16 against the final P2-04 JIT and verification evidence, then accepts or leaves actionable feedback. Keep P2-04 `in_progress`; do not begin P2-05 automatically.

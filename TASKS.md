@@ -262,7 +262,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-04 — Six-week historical context in Activity Review
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Put an eligible ride's best-20 result into recent historical context.
 
@@ -278,6 +278,8 @@ Only one implementation/research task should normally be `in_progress`.
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-04.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Execution state:** Owner usability correction implemented/verified on PR #16 under JIT `7831e6e`: prominent comparison, neutral displayed-watt difference and explicit prior action; 186 full / 16 focused tests, all 1,022 eligible baseline selections independently verified (1,012 available / 10 unavailable), prior data-access/restart evidence retained; Chromium rerun including equal/sub-watt cases passed. Stopped at Gate 1 HARD — Owner.
 
 **Dependency:** P2-03 complete.
 
