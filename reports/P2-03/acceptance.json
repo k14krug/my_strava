@@ -160,7 +160,7 @@
     "no_native_stream_payload": true
   },
   "owner_approval": "approved",
-  "analyst_acceptance": "pending",
+  "analyst_acceptance": "accepted",
   "controlling_jit_main": "c540165",
   "verification_date": "2026-10-05",
   "focused_tests": {
@@ -176,5 +176,6 @@
       "http_restart"
     ],
     "basis": "Native calculation, classification, summary selection and persistence modules are unchanged by the line-rendering correction."
-  }
+  },
+  "merge_commit": "4f1a58d39177887e965ddd1a74db95c62c17e0b0"
 }
