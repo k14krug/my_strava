@@ -1,0 +1,259 @@
+"""Settings integration with real loopback HTTP and fake Strava responses only."""
+from contextlib import redirect_stdout
+from http.client import HTTPConnection
+import io
+import json
+import threading
+import unittest
+from unittest.mock import patch
+from urllib.error import HTTPError
+from urllib.parse import parse_qs, urlencode, urlsplit
+
+import test_rideworks_strava as fixture
+from test_rideworks_strava import CREDS, Response, FakeHTTP
+from rideworks.config import ConfigurationError
+from rideworks.settings import Settings
+from rideworks.strava import ApiClient, TokenFile, sync, disconnect
+from rideworks.web import Application, create_server
+
+
+class SettingsTests(unittest.TestCase):
+    observation = fixture.StravaTests.observation
+    count = fixture.StravaTests.count
+
+    def setUp(self):
+        fixture.StravaTests.setUp(self)
+        self.http = FakeHTTP()
+        self.credentials = CREDS
+        self.settings = Settings(self.store.data_dir, credentials=self.configured,
+                                 client_factory=lambda credentials: ApiClient(credentials, opener=self.http))
+        self.settings.port = 8765
+        self.app = Application(self.store.data_dir, settings_factory=lambda root: self.settings)
+        self.clock = patch('rideworks.strava.time.time', return_value=self.now)
+        self.clock.start(); self.addCleanup(self.clock.stop)
+
+    def configured(self):
+        if self.credentials is None:
+            raise ConfigurationError('private-secret-that-must-not-appear')
+        return self.credentials
+
+    def html(self):
+        return self.app.get('/settings')[2].decode()
+
+    def post(self, action, *, nonce=None, origin='http://127.0.0.1:8765'):
+        return self.settings.post('/settings/strava/' + action,
+                                  urlencode({'nonce': self.settings.nonce if nonce is None else nonce}).encode(), origin)
+
+    def connect(self):
+        self.tokens.clear()
+        response = self.post('connect')
+        self.assertEqual(response[0], 303)
+        values = parse_qs(urlsplit(response[1]['Location']).query)
+        self.assertEqual(values['scope'], ['activity:read_all'])
+        self.assertEqual(values['redirect_uri'], ['http://127.0.0.1:8765/strava/callback'])
+        return values['state'][0]
+
+    def token_response(self):
+        return Response(dict(access_token='new-fake-access', refresh_token='new-fake-refresh',
+                             expires_at=self.now+7200, athlete={'id': 321}, scope='activity:read_all'))
+
+    def assert_private(self, value):
+        for secret in (CREDS[0], CREDS[1], 'synthetic-access', 'synthetic-refresh',
+                       'new-fake-access', 'new-fake-refresh', 'private-code', 'private-secret-that-must-not-appear'):
+            self.assertNotIn(secret, value)
+
+    def test_navigation_missing_configured_connected_and_attention(self):
+        self.tokens.clear(); self.credentials = None
+        html = self.html()
+        self.assertIn('Missing', html); self.assertIn('Not connected', html)
+        self.assertNotIn('Connect Strava</button>', html); self.assertIn('.env', html)
+        self.assert_private(html)
+        self.credentials = CREDS
+        self.assertIn('Connect Strava</button>', self.html())
+        self.tokens.path.write_text('invalid-private-secret-that-must-not-appear')
+        html = self.html(); self.assertIn('Authorization needs attention', html)
+        self.assertIn('Reconnect Strava', html); self.assert_private(html)
+        self.http.responses.append(self.token_response())
+        state = self.connect()
+        self.settings.callback(urlencode(dict(state=state, code='private-code', scope='activity:read_all')))
+        html = self.html(); self.assertIn('Connected', html); self.assertIn('Sync now', html)
+        self.assertIn('Disconnect', html); self.assert_private(html)
+
+    def test_oauth_shared_exchange_clean_redirect_private_storage_and_one_use(self):
+        state = self.connect(); self.http.responses.append(self.token_response())
+        with patch('rideworks.settings.complete_connect', wraps=__import__('rideworks.strava', fromlist=['complete_connect']).complete_connect) as exchange:
+            result = self.settings.callback(urlencode(dict(state=state, code='private-code', scope='read,activity:read_all')))
+        self.assertEqual(exchange.call_count, 1)
+        self.assertEqual(result, (303, {'Location': '/settings'}, b''))
+        self.assertEqual(self.tokens.read()['refresh_token'], 'new-fake-refresh')
+        self.assertEqual(self.tokens.path.stat().st_mode & 0o777, 0o600)
+        self.assert_private(self.html())
+        requests = len(self.http.requests)
+        self.settings.callback(urlencode(dict(state=state, code='private-code', scope='activity:read_all')))
+        self.assertEqual(len(self.http.requests), requests)
+
+    def test_declined_expired_nonascii_bad_state_missing_scope_and_wrong_athlete(self):
+        for changes in ({'state': 'é'}, {'state': 'wrong'}, {'scope': 'read'}, {'error': 'denied'}):
+            state = self.connect()
+            result = self.settings.callback(urlencode(dict(state=state, code='private-code', scope='activity:read_all') | changes))
+            self.assertEqual(result[1], {'Location': '/settings'})
+            self.assertFalse(self.tokens.path.exists()); self.assertEqual(self.http.requests, [])
+            self.assertIn('Authorization needs attention', self.html()); self.assert_private(self.html())
+        self.connect(); self.settings.pending = (self.settings.pending[0], 0)
+        self.assertIn('Authorization timed out', self.html())
+        self.assertIn('127.0.0.1', self.html())
+        self.settings.callback('code=private-code')
+        self.assertEqual(self.http.requests, [])
+        state = self.connect()
+        self.http.responses.append(Response(dict(access_token='new-fake-access', refresh_token='new-fake-refresh', expires_at=self.now+7200, athlete={'id': 999})))
+        self.store.connection.execute('INSERT INTO strava_sync_state VALUES(1,?,?)', ('321', self.now-1))
+        self.settings.callback(urlencode(dict(state=state, code='private-code', scope='activity:read_all')))
+        self.assertFalse(self.tokens.path.exists()); self.assert_private(self.html())
+
+    def test_nonce_origin_method_actions_and_duplicate_submission(self):
+        for nonce, origin in (('', 'http://127.0.0.1:8765'), ('wrong', 'http://127.0.0.1:8765'),
+                              (None, None), (None, 'https://untrusted.example')):
+            self.assertEqual(self.post('disconnect', nonce=nonce, origin=origin)[0], 403)
+        for body in (b'', b'nonce=%FF', b'nonce=x&nonce=x', b'nonce=x&extra=1&extra2=2'):
+            self.assertEqual(self.settings.post('/settings/strava/sync', body, 'http://127.0.0.1:8765')[0], 403)
+        self.assertTrue(self.tokens.path.exists()); self.assertEqual(self.http.requests, [])
+        # GET never dispatches a state-changing action.
+        self.assertEqual(self.app.get('/settings/strava/disconnect')[0], 404)
+        self.http.responses.append(Response({}))
+        nonce = self.settings.nonce
+        self.assertEqual(self.post('disconnect', nonce=nonce)[0], 303)
+        self.assertEqual(self.post('disconnect', nonce=nonce)[0], 403)
+        self.assertFalse(self.tokens.path.exists()); self.assertEqual(self.count('activities'), 1)
+
+    def test_sync_calls_shared_logic_retains_compact_outcome_restart_idempotence_refresh(self):
+        self.http.responses.append(Response([self.observation(), self.observation(identity=2, seconds=1)]))
+        with patch('rideworks.settings.sync', wraps=sync) as shared:
+            self.assertEqual(self.post('sync')[0], 303)
+        self.assertEqual(shared.call_count, 1)
+        html = self.html(); self.assertIn('1 new · 1 enriched · 0 unchanged', html)
+        self.assertIn('explicit Performance rebuild', html); self.assert_private(html)
+        checkpoint = tuple(self.store.connection.execute('SELECT * FROM strava_sync_state').fetchone())
+        old_count = self.count('strava_api_sources')
+        state = self.tokens.read(); state['expires_at'] = self.now; self.tokens.save(state)
+        restarted = Settings(self.store.data_dir, credentials=self.configured,
+                             client_factory=lambda credentials: ApiClient(credentials, opener=self.http))
+        restarted_app = Application(self.store.data_dir, settings_factory=lambda root: restarted)
+        self.assertIn('1 new · 1 enriched · 0 unchanged', restarted_app.get('/settings')[2].decode())
+        self.http.responses.extend([self.token_response(), Response([self.observation(), self.observation(identity=2, seconds=1)])])
+        result = restarted.post('/settings/strava/sync', urlencode(dict(nonce=restarted.nonce)).encode(), 'http://127.0.0.1:8765')
+        self.assertEqual(result[0], 303)
+        self.assertIn('0 new · 0 enriched · 2 unchanged', restarted_app.get('/settings')[2].decode())
+        self.assertEqual(self.count('strava_api_sources'), old_count)
+        self.assertEqual(self.tokens.read()['refresh_token'], 'new-fake-refresh')
+        self.assertEqual(tuple(self.store.connection.execute('SELECT * FROM strava_sync_state').fetchone()), checkpoint)
+        self.assertEqual(restarted.display.path.stat().st_mode & 0o777, 0o600)
+
+    def test_failure_revocation_reconnect_preserves_history_checkpoint_and_secret_safety(self):
+        self.http.responses.append(Response([self.observation()]))
+        self.post('sync'); checkpoint = tuple(self.store.connection.execute('SELECT * FROM strava_sync_state').fetchone())
+        self.http.responses.append(HTTPError('https://www.strava.com/', 401, 'private-secret-that-must-not-appear', {}, None))
+        self.post('sync'); html = self.html()
+        self.assertFalse(self.tokens.path.exists()); self.assertIn('Reconnect Strava', html)
+        self.assert_private(html); self.assertEqual(self.count('activities'), 1)
+        self.assertEqual(tuple(self.store.connection.execute('SELECT * FROM strava_sync_state').fetchone()), checkpoint)
+        restart = Settings(self.store.data_dir, credentials=self.configured)
+        self.assertTrue(restart.state()['attention'])
+        state = self.connect(); self.http.responses.append(self.token_response())
+        self.settings.callback(urlencode(dict(state=state, code='private-code', scope='activity:read_all')))
+        self.assertIn('Sync now', self.html())
+
+    def test_sync_rate_error_and_display_failure_do_not_hide_success(self):
+        self.http.responses.append(HTTPError('https://www.strava.com/', 429, 'private-code', {}, None))
+        self.post('sync'); self.assertIn('rate limit reached', self.html()); self.assertEqual(self.count('strava_sync_state'), 0)
+        self.http.responses.append(Response([]))
+        with patch.object(self.settings.display, 'save', side_effect=OSError('private-code')):
+            self.post('sync')
+        self.assertIn('Display details could not be saved', self.html())
+        self.assertEqual(self.count('strava_sync_state'), 1); self.assert_private(self.html())
+
+    def test_disconnect_shared_logic_with_missing_credentials_and_failed_remote_revoke(self):
+        self.http.responses.append(HTTPError('https://www.strava.com/', 503, 'private-code', {}, None))
+        with patch('rideworks.settings.disconnect', wraps=disconnect) as shared:
+            self.post('disconnect')
+        self.assertEqual(shared.call_count, 1); self.assertFalse(self.tokens.path.exists())
+        self.assertIn('remote revocation was not confirmed', self.html()); self.assert_private(self.html())
+        self.http.responses.append(self.token_response()); state = self.connect()
+        self.settings.callback(urlencode(dict(state=state, code='private-code', scope='activity:read_all')))
+        self.credentials = None; self.post('disconnect')
+        self.assertFalse(self.tokens.path.exists()); self.assertEqual(self.count('activities'), 1)
+
+    def test_inflight_and_cross_cli_lock_reject_concurrent_operations(self):
+        with self.settings.operation:
+            self.assertEqual(self.post('sync')[0], 409)
+        with TokenFile(self.store.data_dir).lock():
+            self.post('sync')
+        self.assertIn('Another Strava operation', self.html()); self.assertEqual(self.http.requests, [])
+
+    def test_http_second_operation_rejected_while_first_sync_waits(self):
+        entered, release = threading.Event(), threading.Event()
+        parent_http = self.http
+        class BlockingHTTP:
+            def open(inner, request, timeout):
+                entered.set()
+                if not release.wait(5):
+                    raise AssertionError('Synthetic test release timed out')
+                return parent_http.open(request, timeout)
+        self.http.responses.append(Response([]))
+        self.settings.client_factory = lambda credentials: ApiClient(credentials, opener=BlockingHTTP())
+        with create_server(self.store.data_dir, port=0, settings_factory=lambda root: self.settings) as server:
+            thread = threading.Thread(target=server.serve_forever); thread.start()
+            result = []
+            def submit(nonce):
+                connection = HTTPConnection('127.0.0.1', server.server_port, timeout=5)
+                try:
+                    connection.request('POST', '/settings/strava/sync', urlencode(dict(nonce=nonce)),
+                                       {'Origin': f'http://127.0.0.1:{server.server_port}', 'Content-Type': 'application/x-www-form-urlencoded'})
+                    response = connection.getresponse(); response.read(); return response.status
+                finally:
+                    connection.close()
+            first = threading.Thread(target=lambda: result.append(submit(self.settings.nonce)))
+            try:
+                first.start(); self.assertTrue(entered.wait(5))
+                self.assertEqual(submit(self.settings.nonce), 409)
+                self.assertEqual(self.count('strava_sync_state'), 0)
+            finally:
+                release.set(); first.join(); server.shutdown(); thread.join()
+            self.assertEqual(result, [303]); self.assertEqual(len(self.http.requests), 1)
+            self.assertEqual(self.count('strava_sync_state'), 1)
+
+    def test_http_origin_host_bounds_callback_clean_url_and_safe_diagnostics(self):
+        output = io.StringIO()
+        with redirect_stdout(output), create_server(self.store.data_dir, port=0, debug=True,
+                                                  settings_factory=lambda root: self.settings) as server:
+            thread = threading.Thread(target=server.serve_forever); thread.start()
+            self.addCleanup(thread.join)
+            def request(method, path, body=None, headers=None):
+                connection = HTTPConnection('127.0.0.1', server.server_port, timeout=5)
+                try:
+                    connection.request(method, path, body, headers or {})
+                    response = connection.getresponse()
+                    return response.status, dict(response.getheaders()), response.read()
+                finally:
+                    connection.close()
+            try:
+                self.assertEqual(request('GET', '/settings')[0], 200)
+                self.assertEqual(request('GET', '/settings', headers={'Host': 'untrusted.example'})[0], 403)
+                self.assertEqual(request('POST', '/settings/strava/sync', b'x'*1025)[0], 413)
+                self.assertEqual(request('POST', '/settings/strava/sync', b'nonce=x')[0], 415)
+                self.assertEqual(request('POST', '/settings/strava/disconnect', b'nonce=x', {'Content-Type': 'application/x-www-form-urlencoded'})[0], 403)
+                self.tokens.clear()
+                headers = {'Content-Type': 'application/x-www-form-urlencoded', 'Origin': f'http://127.0.0.1:{server.server_port}'}
+                result = request('POST', '/settings/strava/connect', urlencode(dict(nonce=self.settings.nonce)), headers)
+                self.assertEqual(result[0], 303)
+                query = parse_qs(urlsplit(result[1]['Location']).query)
+                self.assertEqual(query['redirect_uri'], [f'http://127.0.0.1:{server.server_port}/strava/callback'])
+                self.http.responses.append(self.token_response())
+                callback = '/strava/callback?' + urlencode(dict(state=query['state'][0], code='private-code', scope='activity:read_all'))
+                result = request('GET', callback)
+                self.assertEqual(result[0], 303); self.assertEqual(result[1]['Location'], '/settings')
+                self.assertEqual(result[1]['Referrer-Policy'], 'no-referrer')
+                result = request('GET', '/settings'); self.assertIn(b'Sync now', result[2])
+                self.assert_private(result[2].decode())
+            finally:
+                server.shutdown(); thread.join()
+        self.assert_private(output.getvalue()); self.assertNotIn('/strava/callback?', output.getvalue())

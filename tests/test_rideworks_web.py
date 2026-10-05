@@ -46,7 +46,8 @@ class WebTests(unittest.TestCase):
         self.assertIn('RideWorks', html)
         self.assertIn('href="/"', html)
         self.assertIn('href="/performance"', html)
-        for fake in ('Dashboard', 'Training Plan', 'Settings', 'Sync', 'AI insights', 'Profile'):
+        self.assertIn('href="/settings"', html)
+        for fake in ('Dashboard', 'Training Plan', 'Sync', 'AI insights', 'Profile'):
             self.assertNotIn(fake, html)
 
     def test_list_stable_route_and_missing_route(self):
@@ -159,7 +160,7 @@ class WebTests(unittest.TestCase):
         self.assertIn('href="/performance"', html)
         for fake in ('Dashboard', 'Training Plan', 'AI Summary',
                      'Compare', 'Normalized power', 'Training load', 'Zone breakdown',
-                     'Laps / Intervals', 'Next workout', 'Settings', 'Sync', 'Profile'):
+                     'Laps / Intervals', 'Next workout', 'Sync', 'Profile'):
             self.assertNotIn(fake, html)
 
     def test_title_fallback_is_deterministic_and_does_not_mutate_evidence(self):

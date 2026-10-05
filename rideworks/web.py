@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from html import escape
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 from time import perf_counter
@@ -14,9 +14,10 @@ from .errors import RideWorksError
 from .history import SORTS, browse, presentation
 from .recent_context import recent_context
 from .store import Store, resolve_data_dir
+from .settings import Settings
 
 STATIC = Path(__file__).with_name('static')
-ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml'}
+ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml', 'settings.js': 'text/javascript'}
 
 
 def duration(seconds):
@@ -90,7 +91,7 @@ def shell(title, content, *, active='activities'):
 <title>{escape(title)} · RideWorks</title><link rel="icon" href="/static/mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script></head>
 <body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Activities"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
-<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a></nav></aside>
+<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a><a href="/settings"{nav_state('settings')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M2 8h6m1 8h6m1-7h6"/></svg>Settings</a></nav></aside>
 <main>{content}</main></body></html>'''
 
 
@@ -404,15 +405,18 @@ def performance_page(store):
 
 
 class Application:
-    """Read-only routes; each request gets its own short-lived Store snapshot."""
-    def __init__(self, data_dir=None):
+    """Local routes; each evidence request gets a short-lived Store snapshot."""
+    def __init__(self, data_dir=None, *, settings_factory=Settings):
         self.data_dir = resolve_data_dir(data_dir)
+        self.settings = settings_factory(self.data_dir)
         with Store(self.data_dir):
             pass
 
     def get(self, target):
         url = urlsplit(target)
         path = url.path
+        if path == '/settings':
+            return 200, 'text/html', shell('Settings', self.settings.content(local_time), active='settings').encode()
         if path.startswith('/static/'):
             name = path.removeprefix('/static/')
             if name in ASSETS:
@@ -452,34 +456,66 @@ class Application:
         return 404, 'text/html', shell('Activity not found', '<header><h1>Activity not found</h1><p>Return to <a href="/">Activities</a> to open an imported ride.</p></header>').encode()
 
 
-def create_server(data_dir=None, port=8765, *, debug=False):
-    app = Application(data_dir)
+def create_server(data_dir=None, port=8765, *, debug=False, settings_factory=Settings):
+    app = Application(data_dir, settings_factory=settings_factory)
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
+            self.respond('GET')
+
+        def do_POST(self):
+            self.respond('POST')
+
+        def respond(self, method):
             started = perf_counter()
+            headers = {}
             try:
-                status, content_type, body = app.get(self.path)
+                allowed_hosts = {f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
+                if self.headers.get('Host') not in allowed_hosts:
+                    status, content_type, body = 403, 'text/plain', b'Invalid local host.'
+                elif method == 'POST':
+                    size = self.headers.get('Content-Length', '')
+                    if not size.isascii() or not size.isdecimal() or not 0 < int(size) <= 1024:
+                        status, content_type, body = 413, 'text/plain', b'Invalid Settings action size.'
+                    elif self.headers.get_content_type() != 'application/x-www-form-urlencoded':
+                        status, content_type, body = 415, 'text/plain', b'Use the Settings form.'
+                    else:
+                        status, headers, body = app.settings.post(urlsplit(self.path).path, self.rfile.read(int(size)), self.headers.get('Origin'))
+                        content_type = 'text/plain'
+                elif urlsplit(self.path).path == '/strava/callback':
+                    status, headers, body = app.settings.callback(urlsplit(self.path).query)
+                    content_type = 'text/plain'
+                else:
+                    status, content_type, body = app.get(self.path)
             except Exception as exc:
-                # HTTP errors must not leak private paths, SQL or tracebacks.
-                # Let KeyboardInterrupt/SystemExit propagate (not Exception).
+                # Never log URLs, bodies, private paths, SQL or exception text.
                 print(f'RideWorks request failed ({type(exc).__name__})', flush=True)
-                status, content_type, body = 500, 'text/html', shell('Unable to load activity', '<h1>Unable to load activity</h1><p>RideWorks could not read the current evidence.</p>').encode()
+                if urlsplit(self.path).path == '/strava/callback':
+                    app.settings.notice = 'Authorization could not complete. Reconnect from Settings.'
+                    status, headers, body = app.settings.redirect()
+                    content_type = 'text/plain'
+                else:
+                    status, content_type, body = 500, 'text/html', shell('Unable to complete request', '<h1>Unable to complete request</h1><p>Reload RideWorks and try again.</p>').encode()
             self.send_response(status)
             self.send_header('Content-Type', content_type + ('; charset=utf-8' if content_type.startswith('text/') else ''))
             self.send_header('Content-Length', str(len(body)))
             self.send_header('Cache-Control', 'no-store')
             self.send_header('X-Content-Type-Options', 'nosniff')
-            self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'")
+            self.send_header('Referrer-Policy', 'no-referrer' if urlsplit(self.path).path == '/strava/callback' else 'same-origin')
+            self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self' https://www.strava.com; frame-ancestors 'none'")
+            for name, value in headers.items():
+                self.send_header(name, value)
             self.end_headers()
             self.wfile.write(body)
             if debug:
-                print(f'RideWorks request: GET {status} ({(perf_counter() - started) * 1000:.1f} ms)', flush=True)
+                print(f'RideWorks request: {method} {status} ({(perf_counter() - started) * 1000:.1f} ms)', flush=True)
 
         def log_message(self, *_):
             pass
 
-    return HTTPServer(('127.0.0.1', port), Handler)
+    server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    app.settings.port = server.server_port
+    return server
 
 
 def serve(data_dir=None, port=8765, *, debug=False):

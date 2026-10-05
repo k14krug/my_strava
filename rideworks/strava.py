@@ -26,6 +26,10 @@ class AuthenticationError(SyncError):
     pass
 
 
+class OperationBusyError(SyncError):
+    pass
+
+
 class ApiError(SyncError):
     def __init__(self,message,status=None,rate=None):
         super().__init__(message)
@@ -131,14 +135,14 @@ class TokenFile:
         descriptor=os.open(self.root/'.strava.lock',os.O_CREAT|os.O_RDWR,0o600)
         try:
             try:fcntl.flock(descriptor,fcntl.LOCK_EX|fcntl.LOCK_NB)
-            except BlockingIOError:raise SyncError('Another Strava command is running for this store') from None
+            except BlockingIOError:raise OperationBusyError('Another Strava command is running for this store') from None
             yield
         finally:
             os.close(descriptor)
 
     def read(self):
         if not self.path.exists():
-            raise AuthenticationError('Strava is disconnected; run strava-connect first')
+            raise AuthenticationError('Strava is disconnected; connect Strava first')
         try:
             value=json.loads(self.path.read_text())
             if not isinstance(value,dict) or value.get('scope')!=SCOPE or type(value.get('athlete_id')) is not int:
@@ -179,7 +183,7 @@ def callback_values(query,state):
         if any(len(v)!=1 for v in values.values()):raise ValueError
     except ValueError:
         raise AuthenticationError('Invalid Strava authorization callback') from None
-    if not secrets.compare_digest(values.get('state',[''])[0],state):
+    if not secrets.compare_digest(values.get('state',[''])[0].encode(),state.encode()):
         raise AuthenticationError('Strava authorization state mismatch')
     if values.get('error') or not values.get('code'):
         raise AuthenticationError('Strava authorization was declined or incomplete')
@@ -187,6 +191,30 @@ def callback_values(query,state):
     if SCOPE not in scopes:
         raise AuthenticationError('Strava activity:read_all permission is required; reconnect and grant it')
     return values['code'][0],sorted(scopes)
+
+
+def complete_connect(store,client,code,scopes):
+    """Shared code exchange/identity validation; caller holds the store token lock."""
+    tokens=TokenFile(store.data_dir)
+    response=client.token(grant_type='authorization_code',code=code)
+    _validate_tokens(response)
+    athlete=response.get('athlete')
+    athlete=athlete.get('id') if isinstance(athlete,dict) else None
+    if type(athlete) is not int or athlete<1:
+        raise AuthenticationError('Strava authorization did not identify the authenticated athlete')
+    if 'scope' in response and (not isinstance(response['scope'],str) or SCOPE not in set(response['scope'].replace(',',' ').split())):
+        raise AuthenticationError('Strava token did not grant activity:read_all')
+    checkpoint=store.connection.execute('SELECT athlete_id FROM strava_sync_state WHERE singleton=1').fetchone()
+    if checkpoint and checkpoint[0]!=str(athlete):
+        raise AuthenticationError('Connected athlete differs from the store; authorize the original account')
+    tokens.save({k:response[k] for k in ('access_token','refresh_token','expires_at')} | dict(athlete_id=athlete,scope=SCOPE,granted_scopes=scopes))
+    return dict(status='connected',scope=SCOPE)
+
+
+def authorization_url(client_id,callback,state):
+    return 'https://www.strava.com/oauth/authorize?'+urlencode(dict(
+        client_id=client_id,redirect_uri=callback,response_type='code',
+        approval_prompt='force',scope=SCOPE,state=state))
 
 
 def connect(store,client,*,port=8772,timeout=180,open_browser=webbrowser.open):
@@ -214,9 +242,7 @@ def connect(store,client,*,port=8772,timeout=180,open_browser=webbrowser.open):
         try:
             server.timeout=1
             callback=f'http://127.0.0.1:{server.server_port}/strava/callback'
-            query=urlencode(dict(client_id=client.client_id,redirect_uri=callback,response_type='code',
-                                 approval_prompt='force',scope=SCOPE,state=state))
-            url='https://www.strava.com/oauth/authorize?'+query
+            url=authorization_url(client.client_id,callback,state)
             print('Authorize RideWorks in your browser. Loopback callback: '+callback, file=sys.stderr)
             print(url,file=sys.stderr)
             open_browser(url)
@@ -224,18 +250,7 @@ def connect(store,client,*,port=8772,timeout=180,open_browser=webbrowser.open):
             while not captured and time.monotonic()<deadline:server.handle_request()
             if not captured:raise AuthenticationError('Strava authorization timed out; check app callback configuration and try strava-connect again')
             if 'error' in captured:raise captured['error']
-            response=client.token(grant_type='authorization_code',code=captured['code'])
-            _validate_tokens(response)
-            athlete=response.get('athlete')
-            athlete=athlete.get('id') if isinstance(athlete,dict) else None
-            if type(athlete) is not int or athlete<1:
-                raise AuthenticationError('Strava authorization did not identify the authenticated athlete')
-            if 'scope' in response and (not isinstance(response['scope'],str) or SCOPE not in set(response['scope'].replace(',',' ').split())):
-                raise AuthenticationError('Strava token did not grant activity:read_all')
-            checkpoint=store.connection.execute('SELECT athlete_id FROM strava_sync_state WHERE singleton=1').fetchone()
-            if checkpoint and checkpoint[0]!=str(athlete):
-                raise AuthenticationError('Connected athlete differs from the store; authorize the original account')
-            tokens.save({k:response[k] for k in ('access_token','refresh_token','expires_at')} | dict(athlete_id=athlete,scope=SCOPE,granted_scopes=captured['scopes']))
+            complete_connect(store,client,captured['code'],captured['scopes'])
         finally:server.server_close()
     return dict(status='connected',scope=SCOPE)
 

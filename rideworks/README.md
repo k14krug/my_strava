@@ -560,28 +560,51 @@ Keep credential values and tokens local.
 
 In Strava's **Authorization Callback Domain** field, enter exactly **`127.0.0.1`**
 (host only, without a scheme, port or path). RideWorks supplies the full redirect
-URI **`http://127.0.0.1:8772/strava/callback`** during authorization. Strava's
-[authentication documentation](https://developers.strava.com/docs/authentication/)
-allows this loopback redirect; its
-[setup guide](https://developers.strava.com/docs/getting-started/) describes the
-callback-domain field. Changing `strava-connect --callback-port <port>` changes
-the redirect URI's port; the domain setting remains `127.0.0.1`.
+URI **`http://127.0.0.1:8771/strava/callback`** for the review app below. The web
+callback always uses the running app's port; no second callback server is needed.
+Strava's [authentication documentation](https://developers.strava.com/docs/authentication/)
+allows this loopback redirect; its [setup guide](https://developers.strava.com/docs/getting-started/)
+describes the host-only callback-domain field.
 
-Then connect and sync against the disposable copy of accepted history:
+Start the disposable accepted-history review copy:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review serve --port 8771
+```
+
+Open **http://127.0.0.1:8771/settings**. Settings shows only Configured / Missing
+for credentials. Choose **Connect Strava**, authorize the Owner's account and
+grant `activity:read_all`, then choose **Sync now**. The callback returns to a clean
+Settings URL. New/enriched/unchanged counts, material exceptions, rebuild needs
+and last successful sync time are shown compactly. Open Activities to see updates
+immediately. Sync is manual; it does not run continuously. **Disconnect** removes
+local authorization while retaining activity history and attempts remote revocation.
+
+Settings actions use POST, a random one-use action nonce and same-origin checks;
+controls disable during submission and the store lock rejects overlapping operations.
+OAuth state expires after three minutes and is one-use. After restart, token/checkpoint
+state and the aggregate display result persist; an interrupted authorization requires
+Connect again. The private 0600 `.strava-settings.json` contains derived display counts
+and an attention flag only. The checkpoint is authoritative; stale display counts are
+omitted if a CLI sync advances it.
+
+The web and CLI use the same code exchange, scope/athlete checks, token files and
+sync/disconnect functions. Tokens are private (0600), excluded from Store inspection
+and browser output. Refresh within an hour of expiry atomically retains the newest
+refresh token before further requests, including when a later sync page fails.
+Invalid/revoked authorization clears unusable local tokens and Settings offers Reconnect.
+
+Secondary CLI maintenance/recovery commands remain supported:
 
 ```bash
 .venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-connect
 .venv/bin/python -m rideworks --data-dir local_data/p2-05-review sync-strava
-.venv/bin/python -m rideworks --data-dir local_data/p2-05-review serve --port 8771
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-disconnect
 ```
 
-Connect opens the authorization page and waits up to three minutes. Authorize
-the Owner's Strava account and grant `activity:read_all`. State/scope/athlete
-identity are checked. The token file is private (0600) under the selected data
-directory, excluded from Store inspection and browser output. A store lock
-serializes connect/sync/disconnect. Refresh within an hour of expiry atomically
-retains the newest refresh token before further requests, including when a later
-sync page fails. Invalid/revoked authorization removes unusable local tokens.
+The CLI connect command opens a temporary loopback callback on port 8772 by default
+(`--callback-port` changes it), waits up to three minutes, and emits aggregate JSON.
+The Strava callback-domain setting remains `127.0.0.1` for both workflows.
 
 Sync is explicit and sequential. The initial `after` is midnight UTC on the
 latest stored export calendar day, minus **three days**. This is a conservative
@@ -609,7 +632,8 @@ unchanged. API summary watts never become native Performance evidence. Changed
 source context may suppress stale Performance results until an explicit rebuild;
 sync never runs `rebuild-performance` or reparses original files.
 
-Restart the server and rerun `sync-strava` to verify overlap idempotence. Manual
+Restart the server, confirm Settings still shows Connected, and choose Sync now again
+to verify overlap idempotence. Manual
 overlap cannot promise detection of arbitrary old edits, deletes or back-dated
 uploads. Absence from a list never implies deletion. Webhooks must be revisited
 before unattended/public integration; this implementation has no polling loop.
