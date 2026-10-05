@@ -99,7 +99,7 @@
     ]
   },
   "owner_approval": "approved",
-  "analyst_acceptance": "pending",
+  "analyst_acceptance": "accepted",
   "owner_correction": "Rider-facing difference subtracts displayed whole watts; raw baseline selection/details unchanged; explicit comparison and prior action retained",
   "verification_basis": {
     "rerun": [
@@ -108,5 +108,6 @@
       "chromium"
     ],
     "retained_unchanged_selection_data_access_evidence_head": "443ab424aba4a468fd0f7cbb6b828174039b57cd"
-  }
+  },
+  "merge_commit": "16ef375434700ab7d2b5fb3a5c2cae000e049c12"
 }
