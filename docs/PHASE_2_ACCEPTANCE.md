@@ -396,7 +396,7 @@ Detailed JIT briefs are authored one task at a time.
 
 The Phase 2 task sequence does not itself authorize implementation.
 
-P2-01, P2-02 and P2-03 are accepted and complete. P2-04 is the next implementation boundary. Later JITs must use evidence learned from prior tasks rather than prematurely locking schemas or algorithms.
+P2-01 through P2-04 are accepted and complete. P2-05 is the next implementation boundary. Later JITs must use evidence learned from prior tasks rather than prematurely locking schemas or algorithms.
 
 Each task will state:
 
