@@ -1,11 +1,11 @@
 {
-  "implementation_head": "6a8d41277be839a6b316a8066940d36a857ea4e8",
+  "implementation_head": "64d33bc691c1e9e8fc5745ebb2ff36d2f876db4f",
   "schema_version": 4,
   "method": "best-average-power-v1",
   "policy": "virtual-native-power-v1",
   "automated_tests": {
     "command": ".venv/bin/python -m unittest discover -s tests",
-    "passed": 162
+    "passed": 170
   },
   "rebuild": {
     "status": "completed",
@@ -65,6 +65,15 @@
     "restart_preserved": true,
     "sqlite_integrity": true,
     "foreign_keys": true,
+    "presentation": {
+      "result": "passed",
+      "independently_checked_event_times": 2019,
+      "rolling_changes": 208,
+      "all_four_summaries_verified": true,
+      "exact_42_day_expiry": true,
+      "raw_comparison": true,
+      "unknown_activity_timezones": 0
+    },
     "rerun_report": {
       "status": "completed",
       "evaluated": 1434,
@@ -124,8 +133,15 @@
   "chromium": {
     "result": "passed",
     "browser": "Chromium",
-    "chart_points": 1022,
-    "navigation": true,
+    "payload_eligible_results": 1022,
+    "all_range_ride_points": 1022,
+    "default_trend_one_year": true,
+    "rolling_line_dominant": true,
+    "current_trend_history": true,
+    "all_range_controls": true,
+    "summaries_and_freshness": true,
+    "annual_peaks_verified": true,
+    "complete_paged_evidence": true,
     "first_middle_last_pointer": true,
     "keyboard_inspection": true,
     "point_activity_and_back": true,
@@ -135,9 +151,10 @@
       "America/Los_Angeles",
       "Asia/Tokyo"
     ],
-    "desktop_phone_no_overflow": true,
+    "desktop_tablet_phone_no_overflow": true,
     "no_native_stream_payload": true
   },
   "owner_approval": "pending",
-  "analyst_acceptance": "pending"
+  "analyst_acceptance": "pending",
+  "controlling_jit_main": "98828a8"
 }

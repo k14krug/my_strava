@@ -2,8 +2,9 @@
 
 **Date:** 2026-10-04.
 **Branch / PR:** `task/p2-03-performance-history` / [#15](https://github.com/k14krug/my_strava/pull/15).
-**Implementation head:** `6a8d41277be839a6b316a8066940d36a857ea4e8`; final publication adds documentation/evidence only.
-**State:** implementation and required local verification complete. Stopped at **Gate 1 HARD — Owner**. P2-03 stays `in_progress`; Owner approval and Analyst acceptance are pending.
+**Implementation head:** `64d33bc691c1e9e8fc5745ebb2ff36d2f876db4f`; final publication adds documentation/evidence only.
+**Controlling correction:** Owner comments on PR #15 and Analyst JIT refreshed from `main` at `98828a8`.
+**State:** Owner-directed correction implemented and required local verification complete. Stopped at **Gate 1 HARD — Owner**. P2-03 stays `in_progress`; Owner approval and Analyst acceptance are pending.
 
 ## Behavior and analytical context
 
@@ -43,15 +44,35 @@ window context and raw/display results remain identical. No background rebuild,
 generic dependency framework or universal source ranking is introduced.
 
 The `/performance` read boundary loads persisted results and current metadata,
-without querying native records. All dated current eligible results appear
-chronologically as individual observed points on a clearly labeled zero-based
-watt axis. There is no smoothing or fabricated daily series. Pointer and keyboard
-inspection show date, preferred source title, whole watts and an Activity link;
-selected Source/extraction/raw/window provenance is inspectable. Known dates are
-browser-local; unknown-zone dates retain their supplied calendar day and label.
-Unsupported Activity dates are reported and not assigned invented positions.
-Activities and Performance have accurate active navigation. Empty/unbuilt and
-changed-input states render safely. P2-04 comparisons are not included.
+without querying native records. The Owner correction replaces the primary
+all-ride scatter with **Current / Trend / History** modes and defaults to
+**Trend / 1 year / Trend only**. Four compact cards show Current 42-day best,
+Latest eligible ride, Best in last 12 months and Lifetime best, each with its
+contributing Activity date/link and evidence age.
+
+Trend's dominant step line is the raw maximum in `(t − 42 days, t]`, tied by
+earliest Activity then stable identity. A result expires exactly 42 days after
+its Activity start; empty windows remain gaps. It represents demonstrated
+qualifying evidence, not estimated daily performance. Optional ride dots are
+small and subdued; they are never connected to one another. Controls offer
+3 mo / 6 mo / 1 yr / 3 yr / All and Trend only / Trend + rides.
+
+Current emphasizes recent evidence and freshness without a large chart.
+History shows annual peaks within the selected range; annual grouping uses the
+browser's displayed calendar years. All eligible results remain accessible in
+30-row supporting evidence pages. Selected results default to recent meaningful
+evidence. Pointer and keyboard inspection retain source date/title/watts,
+Activity navigation and selected Source/extraction/raw/window provenance.
+
+Timed windows and calendar-month range cutoffs end at the page's as-of UTC
+instant; month ends clamp to the available calendar day. Unknown-zone Activity
+source dates remain labeled and available in History/lifetime evidence, without
+inventing membership in absolute clock windows. The full archive has zero such
+eligible Activity dates. Known dates are compact browser-local dates with no
+GMT suffix. Missing dates are reported rather than assigned invented positions.
+The compact Eligibility & method explanation stays secondary. Empty/unbuilt and
+changed-input states render safely; active navigation remains accurate.
+P2-04 comparisons are not included.
 
 ## Automated verification
 
@@ -59,7 +80,7 @@ changed-input states render safely. P2-04 comparisons are not included.
 .venv/bin/python -m unittest discover -s tests
 ```
 
-**162 tests passed in 7.307 seconds**: all 142 accepted tests plus 20 P2-03 tests.
+**170 tests passed in 8.454 seconds**: all 142 accepted tests plus 20 P2-03 foundation tests and 8 presentation-window tests.
 Existing migration assertions now expect additive schema 4, retaining their
 original identity/byte/evidence/rollback checks. Existing navigation checks now
 require the real Performance link while continuing to reject fake future pages.
@@ -74,7 +95,12 @@ and restart, re-extraction/new-source/classification invalidation, fatal failure
 retention, corruption detection, missing longitudinal dates, metadata-only reads,
 payload escaping, active navigation and safe empty states. Generated TCX and GPX
 complete native streams each produce 120 W with the same earliest exact-tie rules.
-Independent segmentation is compared with the accepted direct-window oracle on
+New presentation tests cover exact 42-day expiry, inclusive arrivals/exclusive
+expiry, explicit gaps, valid zero results, raw rather than rounded comparisons,
+earliest exact ties, calendar-month/leap-day cutoffs, summary contexts and
+evidence age, unknown-zone preservation, empty histories and an independent
+direct scan at every change time. Independent native segmentation is compared
+with the accepted direct-window oracle on
 zero, missing, gap, duplicate/backward and tie cases. Existing P1 calculation tests
 retain complete-window, zero/missing/timing/tie/half-up regression coverage.
 
@@ -112,7 +138,8 @@ Every eligible result uses one identified native FIT file Source/current
 extraction; eligible format counts are **FIT: 1,022**. TCX/GPX eligibility is
 verified with synthetic complete native streams; this archive contains no
 qualifying Virtual Ride XML result. No CSV/session/lap summary supplied a result.
-All 1,022 eligible results have supported longitudinal dates and are plotted.
+All 1,022 eligible results have supported longitudinal dates and remain
+inspectable through All-range ride evidence and supporting history pages.
 Date span: **2018-05-13 through 2026-09-29**. Raw average range:
 **61.75083333333333–218.39666666666668 W**. These are observed calculated results,
 not claims of measured provenance or estimates for unobserved days.
@@ -145,8 +172,14 @@ check is empty.
 The verifier rebuilds again and compares every status/result/input signature,
 then closes/reopens the Store and compares every persisted result and UI point.
 **Idempotent rebuild and restart passed**. Only execution timestamps change.
-The final strengthened input-signature version was rebuilt and this full
-independent check repeated successfully.
+This full independent check was repeated on the final Owner correction.
+The persisted calculation and eligibility results are unchanged.
+
+An additional direct scan independently checks the presentation winner at every
+ride entry/expiry and at as-of time: **2,019 checkpoints passed**, covering
+**208 rolling winner changes**. All four summary contexts agree with independent
+raw-value selection. This check does not use the production heap/window selection
+as its oracle; the synthetic tests also exercise exact expiry, zero and gaps.
 
 ## HTTP and actual browser verification
 
@@ -167,15 +200,25 @@ verification port was checked; no existing review server was mistaken for it.
 
 Managed Chromium was opened through the Playwright skill wrapper, with the cached
 CLI used for subsequent commands. Actual browser acceptance passed on final code:
-Activities/Performance navigation, all 1,022 payload and SVG points, first/middle/last
-pointer inspection, Home/End/arrow-key inspection, pointer click and Enter to the
-contributing Activity, browser back, source title/date/watt readouts, selected
-provenance and the eligibility explanation. Separate contexts verified native
-local date formatting in **America/Los_Angeles** and **Asia/Tokyo**. No horizontal
-overflow at **1448×1086** or **390×844**; all points remain available at both widths.
-Performance payload contains results/metadata only, with no raw native streams.
-Desktop and phone screenshots were visually inspected for chart scale, density,
-readable readout/navigation and continuity with the accepted RideWorks shell.
+
+- Trend / 1-year / Trend-only defaults and recent selected result;
+- all four summary contexts and freshness;
+- all three modes and all five range controls;
+- dominant rolling line, optional **1,022** All-range ride dots;
+- annual peaks independently checked against raw-result maxima;
+- all **1,022** results traversed through bounded supporting evidence pages;
+- first/middle/last pointer inspection, Home/End/arrow-key inspection;
+- pointer click and Enter to the contributing Activity, browser back;
+- source title/date/watt readouts, selected provenance and method explanation;
+- native local dates in **America/Los_Angeles** and **Asia/Tokyo**;
+- every mode at **1448×1086**, **1024×900** and **390×844**, without horizontal overflow;
+- chart height remains at least 300 px and payload contains no native streams.
+
+Desktop and phone Trend screenshots, plus desktop Current and History screenshots,
+were visually inspected for hierarchy, compact cards and controls, line/dot
+contrast, readable chart/readout and continuity with the accepted RideWorks shell.
+Owner visual/usability approval remains pending; local verification does not
+assert Owner acceptance.
 
 ## Owner review handoff
 
@@ -194,12 +237,15 @@ Local-only screenshots:
 
 - `output/playwright/p2-03-performance-desktop.png`
 - `output/playwright/p2-03-performance-phone.png`
+- `output/playwright/p2-03-current-desktop.png`
+- `output/playwright/p2-03-history-desktop.png`
 
 No personal title, Activity ID, Source ID, private input path, native record stream,
 coordinate or screenshot is committed/published in the verification artifacts.
 `acceptance.json` retains aggregate rebuild/independent/HTTP/Chromium results only.
 
 Under JIT §20, stop at **Gate 1 HARD — Owner** for review of whether the history
-is useful/understandable and the cohort explanation is clear. After explicit
+modes answer useful questions, the rolling trend and cohort explanation are
+understandable, and the page meets the requested visual quality bar. After explicit
 Owner approval, record it and stop at Gate 2 HARD — Analyst for evidence,
 calculation/persistence and UI acceptance. **P2-04 has not begun.**

@@ -254,7 +254,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** implemented and verified on PR #15; 162 tests, 1,434 evaluated / 1,022 eligible, full independent verification, restart/idempotent rerun and Chromium passed. Stopped at Gate 1 HARD — Owner.
+**Execution state:** Owner-directed Current / Trend / History correction implemented and verified on PR #15; 170 tests, 1,434 evaluated / 1,022 eligible, independent native and rolling-window verification, restart/idempotent rerun and full-history Chromium passed. Stopped again at Gate 1 HARD — Owner.
 
 **Dependency:** P2-02 complete.
 
