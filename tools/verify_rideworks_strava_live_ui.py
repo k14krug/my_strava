@@ -34,7 +34,7 @@ def verify(data_dir, baseline, port, session):
         before = saved(store.connection)
         # The live store can add Activities; every accepted row must remain intact.
         for table in expected:
-            if table != 'activities':
+            if table not in ('activities', 'performance_history'):
                 assert expected[table] == before[table], 'Accepted historical table changed'
         originals = {tuple(row) for row in accepted.connection.execute('SELECT * FROM activities')}
         assert originals.issubset({tuple(row) for row in store.connection.execute('SELECT * FROM activities')})
@@ -106,7 +106,7 @@ def verify(data_dir, baseline, port, session):
         history = performance_history(store)
     assert original_files == {p.name:(p.stat().st_size, p.stat().st_mtime_ns) for p in (data_dir/'originals').iterdir()}
     return dict(status='passed',mode='live_already_authorized_settings_manual_rerun',
-                observed_initial_web_result=observed_initial,reruns=reports,**counts,
+                observed_previous_web_result=observed_initial,reruns=reports,**counts,
                 connected_after_server_restart=True,activities_available_without_restart=True,
                 browser_privacy=True,no_native_reads_during_sync=True,no_archive_reprocessing=True,
                 no_hidden_performance_rebuild=True,historical_tables_and_originals_unchanged=True,

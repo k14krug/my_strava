@@ -2,26 +2,26 @@
 
 **Product:** RideWorks. Phase 1 accepted; Phase 2 in progress.
 
-**Accepted:** P2-01/P2-02/P2-03/P2-04 done; PR #16 merged as `16ef375434700ab7d2b5fb3a5c2cae000e049c12`.
+**Accepted:** P2-01/P2-02/P2-03/P2-04 done; PR #16 merged.
 
 **Current task:** P2-05 — in_progress.
 
 **Branch / PR:** `task/p2-05-strava-sync` / [#17](https://github.com/k14krug/my_strava/pull/17) (draft).
 
-**Implementation head:** `dea29b97622fcdd21a392e071932fbc8b9b83a9c`; subsequent publication adds evidence/status only.
+**Implementation head:** `e4e77ffd5fa3e092038cecbba38f6d00446da084`; subsequent publication updates verification tooling/evidence/status.
 
-**Implementation state:** awaiting_owner_setup_review — PR #17 credential setup correction complete under Analyst JIT `159b236`, invoked with /TASK. Stopped again at Gate 1 HARD — Owner under its missing-credentials provision.
+**Implementation state:** awaiting_owner_review — /TASK corrections under Analyst JIT on main `e14c8c0` complete. Stopped at Gate 1 HARD — Owner. No Owner approval or Analyst acceptance claimed.
 
-**Implemented:** explicit connect/manual sync/disconnect; activity:read_all only; private atomic token rotation; sequential list endpoint with three-day export/checkpoint overlap and safe rate/error handling. Schema 5 API Source observations/current identity/checkpoint retain provenance and conservative association. API-only review thin; enriched FIT retains native summary/chart; stale Performance is explicit with no hidden rebuild. No historical API/archive crawl or source reprocessing.
+**Implemented:** normal in-app Settings Connect / Sync now / status / Disconnect; CLI secondary, shared OAuth/token/sync functions. API UTC `Z` dates now parse on Python 3.10 and participate in local display/sorting; View Activities links to the normal browser. Persistent app-wide Performance freshness reminder and explicit POST/nonce-protected Rebuild Performance use accepted atomic logic. Sync never rebuilds automatically.
 
-**Verification:** 206 full / 20 focused tests rerun passed with fake HTTP only; actual example-copy configuration path, safe blanks and exported overrides verified. Prior runtime/copied-history/Chromium evidence retained unchanged. Actual loopback OAuth test. Full-history copy: all 13 historical tables, originals, 1,434 Activities and 1,022 current eligible results preserved; SQLite checks and accepted HTTP/restart regression pass. Isolated synthetic sync: 1 new + 1 enrichment; restart rerun 0 new Activities/observations and 2 unchanged; native-read/reparse/rebuild guards pass. Chromium synthetic thin/rich/provenance/native/stale-context/local-date/filter/desktop/phone checks pass.
+**Verification:** 219 full / 33 focused tests pass. Actual Chromium synthetic OAuth, private state, refresh, restart, nonce/concurrency, LA/Tokyo dates/order, thin/rich provenance, phone/desktop, reminder persistence, failed rebuild rollback and successful explicit rebuild pass. Untouched accepted-copy HTTP/restart regression preserves 1,434 Activities / 1,022 eligible results. Live review: all 7 new API-only Activities have absolute chronological dates, are the newest seven and individually reachable; 4 overlaps enrich established identities without duplication. Guarded live restart reruns: 0 new Activities/observations, 3 unchanged per rerun; no native reads, archive reprocessing or hidden rebuild. Original sources/native evidence retained; integrity/foreign keys pass.
 
-**Live acceptance:** pending — client credentials not configured; no live connection/sync or live idempotence claimed. Real-history review copy still has 1,434 Activities. Keep tokens/credentials local.
+**Live review state:** 1,441 total / 1,417 cycling / 11 API observations. Initial web result: 7 new / 4 enriched / 0 unchanged. Explicit in-app rebuild evaluated 1,441 Activities, restored 1,022 eligible results and cleared 11 pending to zero. Reminder disappears across pages/restart; unchanged sync does not stale rebuilt history. Credentials/tokens remain private and locally configured.
+
+**Review:** http://127.0.0.1:8771/settings and http://127.0.0.1:8771/ (Newest first). Server running; restart command: `.venv/bin/python -m rideworks --data-dir local_data/p2-05-review serve --port 8771`. Web callback uses this running port; Strava Callback Domain is host-only `127.0.0.1`. CLI connect/sync/disconnect/rebuild remain maintenance/recovery options in README.
 
 **Evidence:** `reports/P2-05/verification.md`, `reports/P2-05/acceptance.json`, `rideworks/README.md`.
 
-**Owner setup:** run `cp -n .env.example .env`, then fill STRAVA_CLIENT_ID / STRAVA_CLIENT_SECRET in ignored .env (preserve existing settings; exported values override). In Strava API settings, Authorization Callback Domain = `127.0.0.1` (host only); RideWorks redirect = `http://127.0.0.1:8772/strava/callback`. Connect: `.venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-connect`. Sync: same prefix + `sync-strava`. Review: http://127.0.0.1:8771/; startup same prefix + `serve --port 8771`. Restart/rerun sync for live idempotence. Port 8773 / local_data/p2-05-synthetic-review is isolated fake evidence only.
+**Policy boundary:** the documented Strava durable-history/caching/deletion tension remains under JIT §4.6's Owner decision. Manual overlap does not guarantee old-edit/delete detection; public/unattended integration requires revisiting webhooks.
 
-**Policy boundary:** current Strava caching/deletion restrictions conflict with the Owner's documented durable API-history decision; retained honestly under JIT §4.6. Manual overlap is not real-time or old-edit/delete detection. Webhooks deferred until public/unattended integration.
-
-**Next action:** Owner configures/authorizes local Strava, completes real connect/sync/restart/rerun and reviews workflow/Activities. After explicit Owner approval, stop at HARD — Analyst / Phase 2 acceptance. Do not begin Phase 3 automatically.
+**Next action:** Owner reviews Settings, corrected newest-first Activities and explicit rebuild/reminder behavior. After explicit Owner approval, set ready_for_review and stop at HARD — Analyst / Phase 2 acceptance. Do not begin Phase 3.

@@ -1,18 +1,18 @@
 {
-  "implementation_head": "dea29b97622fcdd21a392e071932fbc8b9b83a9c",
-  "controlling_main": "159b236",
+  "implementation_head": "e4e77ffd5fa3e092038cecbba38f6d00446da084",
+  "controlling_main": "e14c8c0",
   "branch": "task/p2-05-strava-sync",
   "pr": "https://github.com/k14krug/my_strava/pull/17",
   "verification_date": "2026-10-05",
   "task_status": "in_progress",
   "gate": "HARD \u2014 Owner",
-  "full_tests": 206,
-  "focused_tests": 20,
+  "full_tests": 219,
+  "focused_tests": 33,
   "scope": "activity:read_all",
   "overlap_days": 3,
   "copied_history_and_synthetic": {
     "status": "passed",
-    "live_sync": "not_run_credentials_missing",
+    "live_sync": "not_run_by_this_synthetic_verifier",
     "schema_version": 5,
     "historical_activities": 1434,
     "eligible_history": 1022,
@@ -25,7 +25,7 @@
         "status": "completed",
         "scope": "activity:read_all",
         "after": 1790812800,
-        "before": 1791232926,
+        "before": 1791238920,
         "window_basis": "latest_export_calendar_day_utc_minus_3_days",
         "overlap_days": 3,
         "pages_requested": 1,
@@ -43,8 +43,8 @@
       "restart_rerun": {
         "status": "completed",
         "scope": "activity:read_all",
-        "after": 1790973726,
-        "before": 1791232927,
+        "after": 1790979720,
+        "before": 1791238921,
         "window_basis": "last_successful_sync_minus_3_days",
         "overlap_days": 3,
         "pages_requested": 1,
@@ -102,40 +102,203 @@
   },
   "chromium": {
     "status": "passed",
-    "mode": "isolated_synthetic",
-    "api_only_thin": true,
-    "enriched_fit_rich": true,
-    "native_chart_best20_unchanged": true,
-    "old_export_and_new_api_titles_inspectable": true,
-    "browser_local_api_date": true,
-    "stale_performance_honest_no_rebuild": true,
-    "api_summary_watts_excluded": true,
-    "activities_search_sort_type": true,
-    "desktop_phone_no_overflow": true
+    "mode": "synthetic_fake_http_actual_chromium",
+    "settings_navigation": true,
+    "missing_configured_connected_attention": true,
+    "oauth_decline_reconnect_clean_url": true,
+    "same_running_server_callback": true,
+    "buttons_disabled_during_sync": true,
+    "compact_outcome_and_local_time": true,
+    "activities_update_without_restart": true,
+    "no_browser_secrets": true,
+    "desktop_phone_no_overflow": true,
+    "server_restart_connected_and_outcome_persist": true,
+    "near_expiry_refresh": true,
+    "rerun_new_activities": 0,
+    "rerun_new_observations": 0,
+    "rerun_unchanged": 2,
+    "disconnect_retains_history": true,
+    "native_evidence_unchanged": true,
+    "no_automatic_rebuild": true,
+    "persistent_reminder_after_restart": true,
+    "failed_rebuild_preserves_history": true,
+    "explicit_rebuild_clears_reminder": true,
+    "new_api_first_in_newest": true,
+    "los_angeles_tokyo_api_date_and_newest_oldest": true,
+    "app_wide_reminder": true,
+    "activity_review_regression": {
+      "status": "passed",
+      "mode": "isolated_synthetic",
+      "api_only_thin": true,
+      "enriched_fit_rich": true,
+      "native_chart_best20_unchanged": true,
+      "old_export_and_new_api_titles_inspectable": true,
+      "browser_local_api_date": true,
+      "stale_performance_honest_no_rebuild": true,
+      "api_summary_watts_excluded": true,
+      "activities_search_sort_type": true,
+      "desktop_phone_no_overflow": true
+    }
   },
   "live_acceptance": {
-    "status": "pending_credentials_and_owner_authorization",
-    "initial_sync": null,
-    "restart_rerun": null,
-    "counts": null
+    "status": "verified_awaiting_owner_review",
+    "initial_saved_web_result": {
+      "attention": false,
+      "successful_at": 1791238655,
+      "new_activities": 7,
+      "existing_activities_enriched": 4,
+      "unchanged_observations": 0,
+      "ambiguous_new_associations": 0,
+      "performance_rebuild_recommended": 4
+    },
+    "initial_interaction": "outside_Dex_browser_automation_confirmed_by_Owner_PR_feedback",
+    "final_guarded_settings_restart_reruns": {
+      "status": "passed",
+      "mode": "live_already_authorized_settings_manual_rerun",
+      "observed_previous_web_result": {
+        "attention": false,
+        "successful_at": 1791239124,
+        "new_activities": 0,
+        "existing_activities_enriched": 0,
+        "unchanged_observations": 3,
+        "ambiguous_new_associations": 0,
+        "performance_rebuild_recommended": 0
+      },
+      "reruns": [
+        {
+          "status": "completed",
+          "scope": "activity:read_all",
+          "after": 1790979924,
+          "before": 1791239991,
+          "window_basis": "last_successful_sync_minus_3_days",
+          "overlap_days": 3,
+          "pages_requested": 1,
+          "api_activities_observed": 3,
+          "rate_limits": {
+            "X-RateLimit-Limit": [
+              200,
+              2000
+            ],
+            "X-RateLimit-Usage": [
+              1,
+              4
+            ],
+            "X-ReadRateLimit-Limit": [
+              100,
+              1000
+            ],
+            "X-ReadRateLimit-Usage": [
+              1,
+              4
+            ]
+          },
+          "new_activities": 0,
+          "existing_activities_enriched": 0,
+          "unchanged_observations": 3,
+          "changed_observations": 0,
+          "new_observations": 0,
+          "ambiguous_new_associations": 0,
+          "strong_local_matches": 0,
+          "performance_rebuild_recommended": 0
+        },
+        {
+          "status": "completed",
+          "scope": "activity:read_all",
+          "after": 1790980791,
+          "before": 1791239994,
+          "window_basis": "last_successful_sync_minus_3_days",
+          "overlap_days": 3,
+          "pages_requested": 1,
+          "api_activities_observed": 3,
+          "rate_limits": {
+            "X-RateLimit-Limit": [
+              200,
+              2000
+            ],
+            "X-RateLimit-Usage": [
+              2,
+              5
+            ],
+            "X-ReadRateLimit-Limit": [
+              100,
+              1000
+            ],
+            "X-ReadRateLimit-Usage": [
+              2,
+              5
+            ]
+          },
+          "new_activities": 0,
+          "existing_activities_enriched": 0,
+          "unchanged_observations": 3,
+          "changed_observations": 0,
+          "new_observations": 0,
+          "ambiguous_new_associations": 0,
+          "strong_local_matches": 0,
+          "performance_rebuild_recommended": 0
+        }
+      ],
+      "activities": 1441,
+      "api_observations": 11,
+      "connected_after_server_restart": true,
+      "activities_available_without_restart": true,
+      "browser_privacy": true,
+      "no_native_reads_during_sync": true,
+      "no_archive_reprocessing": true,
+      "no_hidden_performance_rebuild": true,
+      "historical_tables_and_originals_unchanged": true,
+      "new_observations_on_rerun": 0,
+      "integrity": true,
+      "foreign_keys": true,
+      "current_eligible_performance": 1022,
+      "performance_pending": 0
+    },
+    "surfacing_and_explicit_rebuild": {
+      "status": "passed",
+      "new_api_only_activities": 7,
+      "all_absolute_dates": true,
+      "all_non_null_date_keys": true,
+      "all_post_baseline": true,
+      "newest_top_seven_are_new": true,
+      "individually_browser_reachable": 7,
+      "los_angeles_tokyo_display_and_sort": true,
+      "cycling_count": 1417,
+      "activity_count": 1441,
+      "established_id_overlap_enrichments": 4,
+      "overlap_duplicates": 0,
+      "pending_before_explicit_rebuild": 11,
+      "pending_after_explicit_rebuild": 0,
+      "rebuild_evaluated": 1441,
+      "current_eligible_performance": 1022,
+      "reminder_cleared_all_pages": true,
+      "integrity": true,
+      "foreign_keys": true,
+      "resolved_reminder_stays_gone_after_restart": true
+    },
+    "live_disconnect": "not_run_connection_retained_for_owner_review"
   },
   "owner_approval": "pending",
   "analyst_acceptance": "pending",
   "phase_3_started": false,
-  "credential_setup_correction": {
+  "credential_setup": {
     "example_blank_entries": true,
-    "copy_edit_connect_documented": true,
+    "local_credentials_configured": true,
     "callback_domain": "127.0.0.1",
-    "callback_uri": "http://127.0.0.1:8772/strava/callback",
-    "exported_override_preserved": true,
-    "real_credentials_changed": false
+    "web_callback": "http://127.0.0.1:8771/strava/callback",
+    "secondary_cli_callback": "http://127.0.0.1:8772/strava/callback",
+    "exported_override_preserved": true
   },
-  "verification_basis": {
-    "rerun": [
-      "focused_tests",
-      "full_tests",
-      "copied_example_configuration"
-    ],
-    "retained_runtime_evidence_head": "51c700c324deea7ca60a5b077055584e0f3d9300"
+  "schema_version": 5,
+  "api_date_correction": {
+    "cause": "Python_3_10_fromisoformat_rejected_RFC3339_UTC_Z",
+    "original_api_evidence_preserved": true
+  },
+  "rebuild_boundary": {
+    "shared_accepted_algorithm": true,
+    "explicit_post_only": true,
+    "no_automatic_sync_rebuild": true,
+    "reminder_derived_from_freshness": true,
+    "no_dismissible_flag": true,
+    "failed_rebuild_preserves_history": true
   }
 }

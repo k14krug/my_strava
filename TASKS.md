@@ -305,7 +305,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** implemented in draft PR #17; Owner credential setup correction at `dea29b97622fcdd21a392e071932fbc8b9b83a9c` under JIT `159b236` adds safe example entries and explicit copy/edit/connect/domain steps; 206 full / 20 focused tests, copied-history preservation/restart and isolated synthetic sync/idempotence/Chromium pass. Stopped at HARD — Owner: real client credentials/authorization and live acceptance pending. No Phase 3 work.
+**Execution state:** implemented in draft PR #17 under Analyst JIT on main `e14c8c0`; in-app Settings/OAuth/sync/status/disconnect, API UTC-date sorting fix, persistent freshness reminder and explicit atomic Performance rebuild complete. 219 full / 33 focused tests and actual synthetic/live Chromium pass. Live: 7 new + 4 enrichments; all seven API-only Activities appear newest and are individually reachable; 1,441 total / 1,417 cycling. Restart reruns add no Activities/observations (3 unchanged); explicit rebuild clears 11 pending and restores 1,022 eligible results. Stopped at HARD — Owner for review; approval/Analyst acceptance pending. No Phase 3 work.
 
 **Dependency:** P2-04 complete.
 
