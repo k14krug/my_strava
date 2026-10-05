@@ -15,7 +15,7 @@ from .history import SORTS, browse, presentation
 from .store import Store, resolve_data_dir
 
 STATIC = Path(__file__).with_name('static')
-ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'mark.svg': 'image/svg+xml'}
+ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml'}
 
 
 def duration(seconds):
@@ -81,13 +81,15 @@ def local_time(timestamp, *, compact=False):
             f'{escape(timestamp)} (UTC source time)</time>')
 
 
-def shell(title, content):
+def shell(title, content, *, active='activities'):
+    def nav_state(name):
+        return ' class="active" aria-current="page"' if active == name else ''
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)} · RideWorks</title><link rel="icon" href="/static/mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script></head>
 <body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Activities"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
-<aside class="sidebar"><nav aria-label="Main"><a class="active" href="/" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a></nav></aside>
+<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a></nav></aside>
 <main>{content}</main></body></html>'''
 
 
@@ -279,6 +281,37 @@ def thin_review_page(row):
 <section class="thin-sources" aria-label="Associated source evidence">{''.join(sources)}</section>''')
 
 
+def performance_page(store):
+    from .performance import performance_history
+    history = performance_history(store)
+    payload = json.dumps(history['points'], ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
+    points = history['points']
+    if points:
+        chart = f'''<section class="panel performance-chart-panel"><h2>20-minute power history</h2>
+<p class="performance-count">{len(points):,} eligible ride results · Virtual Ride native power only</p>
+<svg id="performance-chart" role="img" tabindex="0" aria-label="20-minute power history in watts. Arrow keys inspect rides; Enter opens the selected Activity."></svg>
+<div id="performance-readout" aria-live="polite"><time id="performance-date"></time><a id="performance-activity"></a><strong id="performance-watts"></strong></div>
+<details id="performance-point-details"><summary>Selected result provenance</summary><dl id="performance-point-context"></dl></details>
+<p class="chart-footer">Each point is one eligible ride result. Hover or use arrow keys to inspect; click a point or press Enter to open the Activity.</p>
+<noscript>Enable JavaScript to view and inspect the performance chart.</noscript></section>'''
+    else:
+        message = ('Performance history has not been rebuilt yet.' if history['current'] == 0 else
+                   'No current ride result qualifies for the trusted 20-minute history.')
+        chart = f'<section class="panel empty"><h2>20-minute power history</h2><p>{message}</p></section>'
+    notices = []
+    if history['pending']:
+        notices.append(f"{history['pending']:,} Activities need a performance rebuild; changed inputs are not plotted.")
+    if history['missing_dates']:
+        notices.append(f"{history['missing_dates']:,} eligible results lack a supported Activity date and are not plotted.")
+    return shell('Performance', f'''<header><h1>Performance</h1></header>{chart}
+<p class="performance-notice">{escape(' '.join(notices))}</p>
+<details class="panel performance-policy"><summary>Eligibility &amp; calculation</summary>
+<p>Virtual Ride native source power is eligible for this Phase 2 history. Native power presence does not establish that it was measured. Outdoor Ride power is excluded because its evidence quality is suspect.</p>
+<p>RideWorks calculates the highest average over exactly 1,200 consecutive records with one-second timestamps and complete power. Zero watts count; missing power, gaps and duplicate or backward timestamps invalidate affected windows. No interpolation, resampling or repair occurs. Exact ties choose the earliest window; display rounds whole watts half up.</p>
+<p>Method: best-average-power-v1 · Policy: virtual-native-power-v1. One eligible native file Source must support each Activity result. Multiple eligible Sources are ambiguous and excluded. CSV and source summaries never substitute for native power. Ineligible or missing results are not plotted as zero.</p>
+</details><script id="performance-points" type="application/json">{payload}</script><script src="/static/performance.js" defer></script>''', active='performance')
+
+
 class Application:
     """Read-only routes; each request gets its own short-lived Store snapshot."""
     def __init__(self, data_dir=None):
@@ -296,6 +329,8 @@ class Application:
         with Store(self.data_dir) as store:
             if path == '/':
                 return 200, 'text/html', activities_page(store, url.query).encode()
+            if path == '/performance':
+                return 200, 'text/html', performance_page(store).encode()
             if path.startswith('/activities/'):
                 activity_id = path.removeprefix('/activities/')
                 try:

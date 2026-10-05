@@ -109,7 +109,7 @@ whole watts with .5 upward rounding, selected indices/times and eligibility.
 No eligible window returns `unavailable` with a reason and null result values.
 Unexpected power values fail clearly for investigation rather than being repaired.
 
-There is no result cache or analytical database schema. Each call reads the
+The Phase 1 single-Activity analysis remains on demand. Each call reads the
 current extraction and recalculates. Multiple candidate FIT Sources fail with
 an explicit selection-decision error; no source-ranking policy is introduced.
 `tools/verify_rideworks_analysis.py` independently enumerates complete windows,
@@ -242,7 +242,7 @@ written. A structurally valid export with an unreadable or malformed individual
 activity file keeps that row's CSV source and reports the file failure. It does
 not create a successful file Source/extraction for the failed file.
 
-Opening an accepted schema-1 data directory migrates it atomically to schema 3.
+Opening an accepted data directory applies additive migrations through schema 4.
 This is an additive SQLite migration: existing tables, Activity/Source IDs,
 artifacts and FIT extractions remain intact. A failed migration rolls back its
 DDL/version changes; it does not make a partially migrated store appear usable.
@@ -404,3 +404,67 @@ server is already running, open its URL directly. An older Phase 1 process on
 port 8765 may point to the separate one-activity store; that is not the P2-02
 full-history review instance. Use the port and counts above to identify the
 correct store before reviewing the browser.
+
+## Phase 2 trusted performance history
+
+Build the current analytical history explicitly, then open `/performance`:
+
+```bash
+.venv/bin/python -m rideworks --data-dir '<data-dir>' rebuild-performance
+.venv/bin/python -m rideworks --data-dir '<data-dir>' serve --port 8768
+```
+
+The rebuild emits aggregate counts only. Policy `virtual-native-power-v1` uses
+the latest non-empty Strava activity-type observation, or unambiguous native
+virtual-session evidence when that observation is absent. Outdoor Ride and
+non-virtual Activities are excluded before reading native streams. Each FIT,
+TCX or GPX candidate is evaluated with unchanged `best-average-power-v1` rules.
+Exactly one eligible native Source is required; multiple eligible Sources are
+excluded rather than ranked. Native Virtual Ride power is accepted for this
+history, without claiming measured provenance. CSV/session/lap summaries do not
+substitute for native power. Naive native timestamps are not guessed into UTC.
+
+Schema 4 adds a specific `performance_history` table keyed by Activity, duration
+and policy, retaining method, source/extraction identities, classification context,
+raw/display watts, window context and rebuild time. Native records are not copied.
+The entire rebuild uses one transaction; fatal corruption leaves the previously
+committed history intact. Re-extraction removes affected eligible results through
+their foreign key, and metadata/input identity checks hide changed classifications
+or competing sources until a rebuild. No background recalculation is added.
+
+Performance renders persisted current results and metadata without querying
+native streams. All dated eligible results appear chronologically as observed
+points on a zero-based watt axis. Hover, arrow keys, Home/End and Enter inspect or
+open the contributing Activity. Known date/time readouts are browser-local;
+unknown-zone source days stay explicit. Missing dates are reported and not invented.
+Eligibility/method and selected-source provenance are inspectable in details.
+
+Reproducible verification commands, using a disposable full-history copy:
+
+```bash
+.venv/bin/python tools/verify_rideworks_performance.py \
+  --data-dir '<data-dir>' --representative '<representative.fit.gz>'
+.venv/bin/python tools/verify_rideworks_performance_http.py \
+  --data-dir '<data-dir>' --representative '<representative.fit.gz>'
+.venv/bin/python tools/verify_rideworks_performance_ui.py \
+  --data-dir '<data-dir>' --port 8768 --session rideworks-p2-03
+```
+
+The independent verifier segments complete timing/power runs and enumerates
+windows with prefix sums and Decimal rounding, independently of the production
+rolling-sum function. It checks the entire population and all eligible results,
+classification/source identities, rebuild idempotence, restart and SQLite integrity.
+HTTP verification includes accepted Activities/rich/thin review regressions and
+two Performance server processes. UI verification needs an existing managed
+Chromium Playwright CLI session and the server; it writes ignored local screenshots
+and emits aggregate JSON. No private titles or IDs are emitted by these tools.
+
+The prepared P2-03 Owner review copy is `local_data/p2-03-review`:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-03-review serve --port 8768
+```
+
+Open **http://127.0.0.1:8768/performance** for P2-03 review. This copy contains
+1,434 Activities and 1,022 current eligible points. The accepted P2-02 store and
+older review servers are separate instances.
