@@ -6,7 +6,7 @@
 
 **Current task:** P2-04 — in_progress.
 
-**Implementation state:** awaiting_owner_review — Owner-requested presentation correction and verification complete under refreshed Analyst JIT `7831e6e`; stopped again at Gate 1 HARD — Owner.
+**Implementation state:** ready_for_review — Gate 2 HARD — Analyst; Owner approved the final six-week comparison usability result.
 
 **Branch / PR:** `task/p2-04-recent-context` / [#16](https://github.com/k14krug/my_strava/pull/16) (draft).
 
@@ -20,6 +20,6 @@
 
 **Owner review:** http://127.0.0.1:8769/. Startup: `.venv/bin/python -m rideworks --data-dir local_data/p2-04-review serve --port 8769`. Private exact routes: `output/playwright/p2-04-review-links.json` (`representative`, `no_prior`, `outdoor`). Screenshots: `output/playwright/p2-04-recent-desktop.png`, `output/playwright/p2-04-recent-phone.png`. Inputs/copy/links/images remain ignored/local.
 
-**Blockers:** Owner usability approval pending; no implementation/verification blocker.
+**Blockers:** none; final Analyst acceptance pending.
 
-**Next action:** Ken reviews whether the corrected Compared with previous 6 weeks block is immediately noticeable and answers the prior-six-week question clearly without cluttering Activity Review. After explicit Owner approval, record it and stop at HARD — Analyst. Do not begin P2-05 automatically.
+**Next action:** Analyst reviews PR #16 against the final P2-04 JIT and verification evidence, then accepts or leaves actionable feedback. Keep P2-04 `in_progress`; do not begin P2-05 automatically.
