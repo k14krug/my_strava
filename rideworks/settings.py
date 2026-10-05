@@ -8,6 +8,8 @@ import time
 from urllib.parse import parse_qs
 
 from .config import ConfigurationError, strava_credentials
+from .errors import RideWorksError
+from .performance import rebuild_performance
 from .store import Store
 from .strava import (ApiClient, ApiError, AuthenticationError, OperationBusyError, TokenFile, authorization_url,
                      callback_values, complete_connect, disconnect, sync)
@@ -91,12 +93,10 @@ class Settings:
                        f'{saved[COUNTS[2]]:,} unchanged</p>')
             if saved[COUNTS[3]]:
                 outcome += f'<p>{saved[COUNTS[3]]:,} ambiguous local matches created separate Activities.</p>'
-            if saved[COUNTS[4]]:
-                activities = 'Activity needs' if saved[COUNTS[4]] == 1 else 'Activities need'
-                outcome += f'<p>{saved[COUNTS[4]]:,} {activities} an explicit Performance rebuild; changed results remain hidden.</p>'
+            outcome += '<p><a href="/?sort=newest">View Activities</a></p>'
         def action(name, label, secondary=False):
             button_class = ' class="secondary"' if secondary else ''
-            return (f'<form method="post" action="/settings/strava/{name}">'
+            return (f'<form method="post" data-settings-action action="/settings/strava/{name}">'
                     f'<input type="hidden" name="nonce" value="{self.nonce}">'
                     f'<button type="submit"{button_class}>{label}</button></form>')
         actions = ''
@@ -112,8 +112,7 @@ class Settings:
 <div><dt>App credentials</dt><dd id="strava-credentials">{'Configured' if credentials else 'Missing'}</dd></div>
 <div><dt>Last successful sync</dt><dd id="strava-last-sync">{last_time}</dd></div></dl>
 {setup}{notice}{outcome}<div class="strava-actions">{actions}</div>
-<p class="strava-manual-note">Sync runs only when you choose Sync now. It does not run continuously.</p></section>
-<script src="/static/settings.js" defer></script>'''
+<p class="strava-manual-note">Sync runs only when you choose Sync now. It does not run continuously.</p></section>'''
 
     @staticmethod
     def redirect(location='/settings'):
@@ -144,7 +143,7 @@ class Settings:
             valid = False
         if origin not in origins or not valid:
             return 403, {}, b'Invalid Settings action. Reload Settings and try again.'
-        if path not in ('/settings/strava/connect', '/settings/strava/sync', '/settings/strava/disconnect'):
+        if path not in ('/settings/strava/connect', '/settings/strava/sync', '/settings/strava/disconnect', '/settings/performance/rebuild'):
             return 404, {}, b'Unknown Settings action.'
         if not self.operation.acquire(blocking=False):
             return 409, {}, NOTICES['busy'].encode()
@@ -153,6 +152,11 @@ class Settings:
         self.notice = None
         try:
             with Store(self.data_dir) as store:
+                if path == '/settings/performance/rebuild':
+                    with TokenFile(self.data_dir).lock():
+                        result = rebuild_performance(store)
+                    self.notice = f"Performance rebuilt: {result['evaluated']:,} Activities evaluated · {result['eligible']:,} eligible results."
+                    return self.redirect()
                 credentials = self.configured()
                 if path.endswith('/disconnect'):
                     result = disconnect(store, self.client_factory(credentials) if credentials else None)
@@ -170,8 +174,11 @@ class Settings:
                             return self.redirect(authorization_url(client.client_id, f'http://127.0.0.1:{self.port}/strava/callback', state))
                     result = sync(store, client)
                     self.remember({'attention': False, 'successful_at': result['before'], **{k: result[k] for k in COUNTS}})
-        except (SyncError, ConfigurationError, OSError) as error:
-            self.failure(error)
+        except (RideWorksError, OSError) as error:
+            if path == '/settings/performance/rebuild':
+                self.notice = 'Performance rebuild failed. Existing results were retained. Check local source availability and try again; the update reminder stays until resolved.'
+            else:
+                self.failure(error)
         finally:
             self.operation.release()
         return self.redirect()

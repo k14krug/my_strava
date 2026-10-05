@@ -1,7 +1,7 @@
 """Narrow, read-only browser presentation; no canonical Activity values.
 
 Title/type use latest applicable Strava observations. Date prefers a directly
-supplied file session start, then parsed CSV date. Summary uses the first file
+supplied file session start, then current API absolute start, then parsed CSV date. Summary uses the first file
 with an understood session value (or a single TCX lap); unspecified CSV units
 are never guessed. Ties are stable by Source ID. All alternatives stay in Store.
 """
@@ -20,7 +20,8 @@ def _date(value):
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value)
+        # Strava supplies RFC 3339 UTC 'Z'; Python 3.10 needs an explicit offset.
+        return datetime.fromisoformat(value.replace('Z', '+00:00'))
     except ValueError:
         return None
 

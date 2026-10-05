@@ -577,7 +577,9 @@ for credentials. Choose **Connect Strava**, authorize the Owner's account and
 grant `activity:read_all`, then choose **Sync now**. The callback returns to a clean
 Settings URL. New/enriched/unchanged counts, material exceptions, rebuild needs
 and last successful sync time are shown compactly. Open Activities to see updates
-immediately. Sync is manual; it does not run continuously. **Disconnect** removes
+immediately, with valid API UTC `Z` dates sorted and displayed under the accepted
+browser-local date policy. A successful sync that creates Activities offers
+**View Activities** back to the normal newest-first browser. Sync is manual; it does not run continuously. **Disconnect** removes
 local authorization while retaining activity history and attempts remote revocation.
 
 Settings actions use POST, a random one-use action nonce and same-origin checks;
@@ -631,6 +633,17 @@ inspectable. API-only review stays thin. FIT summaries/native streams remain
 unchanged. API summary watts never become native Performance evidence. Changed
 source context may suppress stale Performance results until an explicit rebuild;
 sync never runs `rebuild-performance` or reparses original files.
+
+When Performance has pending/stale Activities, a neutral **Performance update needed**
+reminder appears on Settings, Activities, Performance and Activity Review. It shows
+the affected count and explains that affected results are temporarily hidden while
+ride data is retained. The reminder derives from current freshness on every page;
+it survives restart and cannot be dismissed while work remains. Choose **Rebuild
+Performance** explicitly from the reminder. This uses the accepted CLI algorithm and
+atomic transaction, protected by the same POST/nonce/origin checks. A successful
+rebuild shows evaluated/eligible counts and clears the reminder when pending reaches
+zero. Failure retains prior results and the reminder. The CLI rebuild command is
+secondary maintenance/recovery; Sync now does not invoke it.
 
 Restart the server, confirm Settings still shows Connected, and choose Sync now again
 to verify overlap idempotence. Manual

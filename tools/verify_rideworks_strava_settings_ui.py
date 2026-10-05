@@ -3,12 +3,14 @@
 import argparse
 import csv
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 from io import BytesIO
 import json
 from pathlib import Path
 import subprocess
 import sys
 import threading
+from unittest.mock import patch
 import time
 from urllib.parse import parse_qs, urlsplit
 
@@ -16,7 +18,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT)); sys.path.insert(0, str(ROOT/'tests'))
 from fit_fixture import make_fit
 from rideworks.config import ConfigurationError
-from rideworks.performance import rebuild_performance
+from rideworks.errors import RideWorksError
+from rideworks.performance import rebuild_performance, performance_history
 from rideworks.settings import Settings
 from rideworks.store import Store
 from rideworks.strava import ApiClient, TokenFile
@@ -57,7 +60,7 @@ def fixture(root):
     observations = [dict(id=1, name='Synthetic API enriched ride', type='Ride', sport_type='VirtualRide',
                          start_date=start, elapsed_time=1200, distance=0, average_watts=999),
                     dict(id=2, name='Synthetic API-only ride', type='Ride', sport_type='VirtualRide',
-                         start_date=datetime.fromtimestamp(now-3600, timezone.utc).isoformat(),
+                         start_date=datetime.fromtimestamp(now-3600, timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
                          elapsed_time=1200, distance=1000, average_watts=999)]
     return observations, current, original
 
@@ -140,7 +143,7 @@ def verify(root, session):
           await page.waitForFunction(()=>[...document.querySelectorAll('.strava-actions button')].every(b=>b.disabled));
           await navigation;await page.waitForSelector('#strava-outcome');
           check(await page.locator('#strava-outcome').textContent()==='1 new · 1 enriched · 0 unchanged','Initial counts');
-          check((await page.locator('body').textContent()).includes('explicit Performance rebuild'),'Rebuild notice');
+          check((await page.locator('body').textContent()).includes('Performance update needed'),'Rebuild notice');
           check(await page.locator('#strava-last-sync time').count()===1,'Sync time');
           check(!(await page.locator('#strava-last-sync').textContent()).includes('(GMT'),'Date suffix');
           const markup=await page.content();check(!/synthetic-only-(access|refresh|client-secret|code)/.test(markup),'Secret markup');
@@ -149,7 +152,8 @@ def verify(root, session):
           check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Settings phone overflow');
           await page.screenshot({path:'output/playwright/p2-05-settings-phone.png',fullPage:true});
           await page.getByRole('link',{name:'Activities',exact:true}).click();await page.waitForSelector('.activity-row');
-          check(await page.locator('.activity-row').count()===3,'Activities need restart to update');return true;
+          check(await page.locator('.activity-row').count()===3,'Activities need restart to update');
+          check(await page.locator('.activity-row h2').first().textContent()==='Synthetic API-only ride','New API date not sorted first');return true;
         """)
         with Store(root) as store:
             assert store.get_source(current['source_id']) == original
@@ -159,6 +163,26 @@ def verify(root, session):
             (ROOT/'output/playwright/p2-05-synthetic-links.json').write_text(json.dumps(links))
             before = [tuple(row) for row in store.connection.execute('SELECT * FROM performance_history ORDER BY activity_id')]
         reviews = verify_reviews(port, session)
+        for zone in ('America/Los_Angeles', 'Asia/Tokyo'):
+            local = datetime.fromisoformat(observations[1]['start_date'].replace('Z', '+00:00')).astimezone(ZoneInfo(zone))
+            expected = local.strftime('%b %-d, %Y, %-I:%M %p')
+            run('''
+              const context=await page.context().browser().newContext({timezoneId:ZONE,locale:'en-US'});
+              const local=await context.newPage();try{
+                await local.goto(base+'/?tz='+encodeURIComponent(ZONE));await local.waitForSelector('.activity-row time');
+                const first=local.locator('.activity-row').first();
+                check(await first.locator('h2').textContent()==='Synthetic API-only ride','Z date newest ordering');
+                check((await first.locator('time').textContent()).replaceAll('\\u202f',' ')===EXPECTED,'Local API Date display');
+                check(await first.locator('time').getAttribute('data-local-day')===DAY,'Local API calendar day');
+                await local.goto(base+'/?sort=oldest&tz='+encodeURIComponent(ZONE));await local.waitForSelector('.activity-row');
+                check(await local.locator('.activity-row h2').last().textContent()==='Synthetic API-only ride','Z date oldest ordering');
+              }finally{await context.close();}return true;
+            '''.replace('ZONE', json.dumps(zone)).replace('EXPECTED', json.dumps(expected)).replace('DAY', json.dumps(local.date().isoformat())))
+        run('''
+          for(const path of ['/settings','/','/performance',RICH]){
+            await page.goto(base+path);check(await page.locator('.performance-update').count()===1,'App-wide reminder');
+          }return true;
+        '''.replace('RICH', json.dumps(links['rich'])))
         stop(server, thread)
         token_file = TokenFile(root); token = token_file.read(); token['expires_at'] = int(time.time()); token_file.save(token)
         server, thread = start(port)
@@ -169,6 +193,22 @@ def verify(root, session):
           await page.getByRole('button',{name:'Sync now',exact:true}).click();await page.waitForSelector('#strava-outcome');
           check(await page.locator('#strava-outcome').textContent()==='0 new · 0 enriched · 2 unchanged','Restart rerun');
           await page.screenshot({path:'output/playwright/p2-05-settings-rerun.png',fullPage:true});
+          check(await page.locator('.performance-update').count()===1,'Reminder missing after restart');return true;
+        """)
+        with Store(root) as store:
+            assert before == [tuple(row) for row in store.connection.execute('SELECT * FROM performance_history ORDER BY activity_id')]
+        with patch('rideworks.performance.evaluate', side_effect=RideWorksError('Synthetic rebuild failure')):
+            run("""
+              await page.getByRole('button',{name:'Rebuild Performance',exact:true}).click();
+              check((await page.locator('#strava-notice').textContent()).includes('rebuild failed'),'Rebuild failure notice');
+              check(await page.locator('.performance-update').count()===1,'Failed rebuild dismissed reminder');return true;
+            """)
+        with Store(root) as store:
+            assert before == [tuple(row) for row in store.connection.execute('SELECT * FROM performance_history ORDER BY activity_id')]
+        run("""
+          await page.getByRole('button',{name:'Rebuild Performance',exact:true}).click();
+          check(await page.locator('.performance-update').count()===0,'Successful rebuild reminder stays');
+          check((await page.locator('#strava-notice').textContent()).includes('3 Activities evaluated'),'Rebuild result');
           await page.getByRole('button',{name:'Disconnect',exact:true}).click();
           check(await page.locator('#strava-connection').textContent()==='Not connected','Disconnect state');
           await page.getByRole('link',{name:'Activities',exact:true}).click();await page.waitForSelector('.activity-row');
@@ -182,7 +222,7 @@ def verify(root, session):
         with Store(root) as store:
             assert store.connection.execute('SELECT COUNT(*) FROM activities').fetchone()[0] == 3
             assert store.connection.execute('SELECT COUNT(*) FROM strava_api_sources').fetchone()[0] == 2
-            assert before == [tuple(row) for row in store.connection.execute('SELECT * FROM performance_history ORDER BY activity_id')]
+            assert performance_history(store)['pending'] == 0
             assert store.get_source(current['source_id']) == original
             assert store.connection.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
             assert not store.connection.execute('PRAGMA foreign_key_check').fetchall()
@@ -193,7 +233,10 @@ def verify(root, session):
                     no_browser_secrets=True, desktop_phone_no_overflow=True,
                     server_restart_connected_and_outcome_persist=True, near_expiry_refresh=True,
                     rerun_new_activities=0, rerun_new_observations=0, rerun_unchanged=2,
-                    disconnect_retains_history=True, native_evidence_and_persisted_performance_unchanged=True,
+                    disconnect_retains_history=True, native_evidence_unchanged=True,no_automatic_rebuild=True,
+                    persistent_reminder_after_restart=True,failed_rebuild_preserves_history=True,
+                    explicit_rebuild_clears_reminder=True,new_api_first_in_newest=True,
+                    los_angeles_tokyo_api_date_and_newest_oldest=True,app_wide_reminder=True,
                     activity_review_regression=reviews)
     finally:
         stop(server, thread)

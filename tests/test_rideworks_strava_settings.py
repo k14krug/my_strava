@@ -12,6 +12,12 @@ from urllib.parse import parse_qs, urlencode, urlsplit
 import test_rideworks_strava as fixture
 from test_rideworks_strava import CREDS, Response, FakeHTTP
 from rideworks.config import ConfigurationError
+from rideworks.errors import RideWorksError
+from rideworks.history import browse, presentation
+from rideworks.performance import rebuild_performance, performance_history
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+import csv
 from rideworks.settings import Settings
 from rideworks.strava import ApiClient, TokenFile, sync, disconnect
 from rideworks.web import Application, create_server
@@ -131,7 +137,7 @@ class SettingsTests(unittest.TestCase):
             self.assertEqual(self.post('sync')[0], 303)
         self.assertEqual(shared.call_count, 1)
         html = self.html(); self.assertIn('1 new · 1 enriched · 0 unchanged', html)
-        self.assertIn('explicit Performance rebuild', html); self.assert_private(html)
+        self.assertIn('Rebuild Performance', html); self.assert_private(html)
         checkpoint = tuple(self.store.connection.execute('SELECT * FROM strava_sync_state').fetchone())
         old_count = self.count('strava_api_sources')
         state = self.tokens.read(); state['expires_at'] = self.now; self.tokens.save(state)
@@ -188,6 +194,66 @@ class SettingsTests(unittest.TestCase):
         with TokenFile(self.store.data_dir).lock():
             self.post('sync')
         self.assertIn('Another Strava operation', self.html()); self.assertEqual(self.http.requests, [])
+
+    def test_mixed_rfc3339_api_file_export_unknown_dates_local_filters_and_order(self):
+        with (self.export/'activities.csv').open('a', newline='') as stream:
+            csv.writer(stream).writerow(['3', 'Unknown date', 'Virtual Ride', 'unparsed source date', ''])
+        self.store.import_strava_export(self.export)
+        stamp = datetime.combine(self.start.date()+timedelta(days=1), datetime.min.time(), timezone.utc)+timedelta(minutes=30)
+        item = self.observation(identity=2); item['start_date'] = stamp.strftime('%Y-%m-%dT%H:%M:%SZ')
+        self.http.responses.append(Response([self.observation(), item]))
+        with patch('rideworks.strava.time.time', return_value=int(stamp.timestamp())+3600):
+            self.post('sync')
+        self.assertEqual(self.count('activities'), 3)  # One enrichment, one new API-only, one unknown CSV.
+        for zone in ('America/Los_Angeles', 'Asia/Tokyo'):
+            newest = browse(self.store, 'tz='+zone)['rows']; oldest = browse(self.store, 'sort=oldest&tz='+zone)['rows']
+            self.assertEqual(newest[0]['title'], 'API title'); self.assertTrue(newest[0]['absolute_time'])
+            self.assertEqual(newest[0]['date_key'], stamp.replace(tzinfo=None).isoformat())
+            self.assertEqual(newest[0]['date_day'], stamp.astimezone(ZoneInfo(zone)).date().isoformat())
+            self.assertEqual(newest[-1]['title'], 'Unknown date'); self.assertEqual(oldest[-1]['title'], 'Unknown date')
+            self.assertEqual(oldest[0]['activity_id'], self.native['activity_id'])
+            self.assertEqual(newest[1]['activity_id'], self.native['activity_id'])
+            day = newest[0]['date_day']
+            filtered = browse(self.store, 'tz='+zone+'&from='+day+'&to='+day)['rows']
+            self.assertIn(newest[0]['activity_id'], [r['activity_id'] for r in filtered])
+            self.assertNotIn(newest[-1]['activity_id'], [r['activity_id'] for r in filtered])
+        api_row = newest[0]
+        self.assertEqual(self.store.get_activity(api_row['activity_id'])['sources'][0]['summary']['values']['start_date'], item['start_date'])
+        self.assertIn('View Activities', self.html())
+        self.assertEqual(self.app.get('/activities/'+api_row['activity_id'])[0], 200)
+
+    def test_persistent_app_wide_reminder_explicit_shared_rebuild_and_atomic_failure(self):
+        self.http.responses.append(Response([self.observation(), self.observation(identity=2, seconds=1)]))
+        with patch('rideworks.settings.rebuild_performance', side_effect=AssertionError('Hidden rebuild')):
+            self.post('sync')
+        before = [tuple(r) for r in self.store.connection.execute('SELECT * FROM performance_history')]
+        routes = ['/settings', '/', '/performance', '/activities/'+self.native['activity_id']]
+        for route in routes:
+            self.assertIn('Performance update needed', self.app.get(route)[2].decode())
+        self.assertEqual(performance_history(self.store)['pending'], 2)
+        restart = Application(self.store.data_dir)
+        self.assertIn('Performance update needed', restart.get('/settings')[2].decode())
+        path = '/settings/performance/rebuild'
+        self.assertEqual(self.settings.post(path, b'nonce=invalid', 'http://127.0.0.1:8765')[0], 403)
+        original_evaluate = __import__('rideworks.performance', fromlist=['evaluate']).evaluate
+        calls = []
+        def fail_after_first(store, snapshot):
+            calls.append(1)
+            if len(calls) > 1:
+                raise RideWorksError('private-secret-that-must-not-appear')
+            return original_evaluate(store, snapshot)
+        with patch('rideworks.performance.evaluate', side_effect=fail_after_first):
+            result = self.settings.post(path, urlencode(dict(nonce=self.settings.nonce)).encode(), 'http://127.0.0.1:8765')
+        self.assertEqual(result[0], 303); self.assertIn('rebuild failed', self.html()); self.assert_private(self.html())
+        self.assertEqual(before, [tuple(r) for r in self.store.connection.execute('SELECT * FROM performance_history')])
+        self.assertIn('Performance update needed', self.html())
+        with patch('rideworks.settings.rebuild_performance', wraps=rebuild_performance) as shared:
+            self.settings.post(path, urlencode(dict(nonce=self.settings.nonce)).encode(), 'http://127.0.0.1:8765')
+        self.assertEqual(shared.call_count, 1); self.assertEqual(performance_history(self.store)['pending'], 0)
+        for route in routes:
+            self.assertNotIn('Performance update needed', self.app.get(route)[2].decode())
+        self.assertIn('Performance rebuilt: 2 Activities evaluated', self.html())
+        self.assertNotIn('Performance update needed', Application(self.store.data_dir).get('/settings')[2].decode())
 
     def test_http_second_operation_rejected_while_first_sync_waits(self):
         entered, release = threading.Event(), threading.Event()

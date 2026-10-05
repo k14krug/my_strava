@@ -233,3 +233,9 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 .strava-actions .secondary { background: var(--surface); color: #a42e28; border: 1px solid var(--border); }
 .strava-actions button:disabled { opacity: .65; cursor: wait; }
 .strava-manual-note { color: var(--muted); font-size: 12px; }
+
+.performance-update { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-bottom: 16px; padding: 14px 16px; border: 1px solid #e0c990; border-radius: 5px; background: #fff8e6; }
+.performance-update > div { flex: 1 1 300px; }
+.performance-update p { margin-top: 4px; }
+.performance-update button { padding: 8px 12px; border: 1px solid #a88c4c; border-radius: 5px; background: #fff; color: var(--navy); font: inherit; cursor: pointer; }
+.performance-update button:disabled { opacity: .65; cursor: wait; }
