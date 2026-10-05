@@ -1,6 +1,6 @@
 {
-  "implementation_head": "443ab424aba4a468fd0f7cbb6b828174039b57cd",
-  "controlling_main": "c3c9b7e",
+  "implementation_head": "cc12f1f9464c9e98d1b05374e881c83337f1aa6b",
+  "controlling_main": "7831e6e",
   "verification_date": "2026-10-05",
   "branch": "task/p2-04-recent-context",
   "pr": "https://github.com/k14krug/my_strava/pull/16",
@@ -80,7 +80,10 @@
     "representative_prior_watts": 195,
     "comparison_heading_clear": true,
     "explicit_prior_action": true,
-    "neutral_difference": "74 W below",
+    "neutral_difference": "75 W below",
+    "difference_uses_displayed_whole_watts": true,
+    "synthetic_equal_sub_watt_cases": 4,
+    "raw_details_preserved": true,
     "representative_native_records": 3621,
     "fit_source_average_watts": 118,
     "prior_activity_and_back": true,
@@ -97,5 +100,13 @@
   },
   "owner_approval": "pending",
   "analyst_acceptance": "pending",
-  "owner_correction": "Prominent Compared with previous 6 weeks inset; neutral raw-derived difference; explicit Open prior ride; collapsed details"
+  "owner_correction": "Rider-facing difference subtracts displayed whole watts; raw baseline selection/details unchanged; explicit comparison and prior action retained",
+  "verification_basis": {
+    "rerun": [
+      "full_tests",
+      "focused_tests",
+      "chromium"
+    ],
+    "retained_unchanged_selection_data_access_evidence_head": "443ab424aba4a468fd0f7cbb6b828174039b57cd"
+  }
 }
