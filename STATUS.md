@@ -16,7 +16,7 @@
 
 **Current task:** P2-02 — in_progress.
 
-**Implementation state:** awaiting_owner_review — Gate 1 HARD — Owner; requested corrections implemented and verified.
+**Implementation state:** ready_for_review — Gate 2 HARD — Analyst; Owner approved the corrected visual/usability result.
 
 **Branch / PR:** `task/p2-02-activities-browser` / [#14](https://github.com/k14krug/my_strava/pull/14) (draft).
 
@@ -30,6 +30,6 @@
 
 **Local Owner review:** use the full-history server at **http://127.0.0.1:8766/** (1,410 cycling / 1,434 total). Port 8765 is the separate older one-activity instance and must not be used for this review. Startup from repo root: `.venv/bin/python -m rideworks --data-dir local_data/p2-02-review serve --port 8766`.
 
-**Blockers:** Owner visual/usability approval pending; no implementation/verification blocker.
+**Blockers:** none; final Analyst acceptance pending.
 
-**Next action:** Ken reviews the corrected full-history browser on port 8766 and records explicit approval or bounded corrections. After Owner approval, record it and stop at Gate 2 HARD — Analyst. Do not begin P2-03.
+**Next action:** Analyst reviews PR #14 against the final P2-02 JIT and verification evidence, then accepts or leaves actionable feedback. Keep P2-02 `in_progress`; do not begin P2-03 automatically.
