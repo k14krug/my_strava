@@ -13,12 +13,18 @@
     ? new Intl.DateTimeFormat(undefined, {year:'numeric', month:'short', day:'numeric',
       ...(clock ? {hour:'numeric', minute:'2-digit'} : {})}).format(new Date(p.start_time))
     : (clock ? p.start_time.replace('T', ' ') : p.date_day) + ' · timezone unknown';
-  const year = p => p.absolute_time ? new Date(p.start_time).getFullYear() : Number(p.date_day.slice(0, 4));
+  function period(p) {
+    const date = p.absolute_time ? new Date(p.start_time) : null;
+    const year = date ? date.getFullYear() : Number(p.date_day.slice(0, 4));
+    const month = date ? date.getMonth() + 1 : Number(p.date_day.slice(5, 7));
+    return aggregation === 'monthly' ? year + '-' + String(month).padStart(2, '0') : String(year);
+  }
+  const periodLabel = key => key.length === 4 ? key : new Intl.DateTimeFormat(undefined, {month:'short', year:'numeric'}).format(new Date(Number(key.slice(0,4)), Number(key.slice(5,7))-1, 15));
   const query = new URLSearchParams(location.search);
-  let mode = ['current','trend','history'].includes(query.get('mode')) ? query.get('mode') : 'trend';
+  let aggregation = ['rolling','monthly','yearly'].includes(query.get('view')) ? query.get('view') : 'rolling';
   let range = ['3mo','6mo','1yr','3yr','all'].includes(query.get('range')) ? query.get('range') : '1yr';
   let rides = query.get('rides') === '1', pageNumber = 0;
-  let visible = [], series = [], peaks = [], targets = [], selected = null, geometry, marker;
+  let visible = [], series = [], peaks = [], primaryTargets = [], targets = [], selected = null, geometry, marker;
   const make = (tag, attrs, text) => {
     const node = document.createElementNS(ns, tag);
     Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
@@ -30,7 +36,7 @@
       (points[i].date_key < points[winner].date_key || (points[i].date_key === points[winner].date_key && points[i].activity_id < points[winner].activity_id))) ? i : winner, null);
   const saveState = () => {
     const url = new URL(location.href);
-    url.searchParams.set('mode', mode); url.searchParams.set('range', range); url.searchParams.set('rides', rides ? '1' : '0');
+    url.searchParams.delete('mode'); url.searchParams.set('view', aggregation); url.searchParams.set('range', range); url.searchParams.set('rides', rides ? '1' : '0');
     history.replaceState(null, '', url);
   };
   function inspect(target) {
@@ -39,11 +45,11 @@
     $('performance-readout').dataset.pointIndex = p ? index : '';
     $('performance-selection-label').textContent = target?.kind === 'trend'
       ? '42-day best at ' + new Intl.DateTimeFormat(undefined, {year:'numeric',month:'short',day:'numeric'}).format(target.time)
-      : mode === 'history' ? 'Annual peak in selected range' : 'Eligible ride result';
+      : target?.kind === 'peak' ? (aggregation === 'monthly' ? 'Monthly' : 'Yearly') + ' best · ' + periodLabel(target.label) + ' · within range' : 'Eligible ride result';
     $('performance-point-context').replaceChildren();
     if (!p) {
       $('performance-date').textContent = '';
-      $('performance-activity').textContent = 'No qualifying result in this 42-day window';
+      $('performance-activity').textContent = aggregation === 'rolling' ? 'No qualifying result in this 42-day window' : 'No qualifying result in this range';
       $('performance-activity').removeAttribute('href'); $('performance-watts').textContent = 'Unavailable';
       if (marker) marker.setAttribute('visibility', 'hidden'); return;
     }
@@ -61,7 +67,7 @@
     });
     if (marker && geometry) {
       marker.setAttribute('visibility', 'visible');
-      marker.setAttribute('cx', mode === 'history' ? geometry.peakX(index) : geometry.x(target.time));
+      marker.setAttribute('cx', geometry.x(target.time));
       marker.setAttribute('cy', geometry.y(p.average_watts));
     }
   }
@@ -88,57 +94,59 @@
     view.rolling.forEach(s => {const time = Date.parse(s.at); if (time > minimum && time <= asOf) series.push({time, index:s.index, kind:'trend'});});
     series.push({time:asOf, index:series.at(-1).index, kind:'trend'});
     const groups = new Map();
-    visible.forEach(i => {const key = year(points[i]); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(i);});
-    peaks = [...groups].sort(([a],[b]) => a - b).map(([label, indexes]) => ({index:best(indexes), label, kind:'peak'}));
-    targets = mode === 'history' ? peaks : rides ? visible.map(i => ({index:i,time:dates[i],kind:'ride'})) : series.filter(s => s.index !== null);
-    svg.dataset.mode = mode; svg.dataset.range = range; svg.dataset.visibleRides = visible.length;
-    $('performance-chart-title').textContent = mode === 'current' ? 'Recently demonstrated' : mode === 'history' ? 'Annual peaks' : 'Rolling 42-day best';
-    $('performance-chart-caption').textContent = mode === 'current' ? 'Recent qualifying evidence and its freshness'
-      : mode === 'history' ? 'Strongest eligible result in each displayed year within this range' : 'Strongest qualifying ride in each trailing 42-day window';
-    document.querySelectorAll('.performance-modes [data-mode]').forEach(b => b.setAttribute('aria-selected', b.dataset.mode === mode));
+    if (aggregation !== 'rolling') {
+      visible.forEach(i => {
+        const key = period(points[i]);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(i);
+      });
+    }
+    peaks = [...groups].sort(([a], [b]) => a.localeCompare(b)).map(([label, indexes]) => {
+      const index = best(indexes);
+      return {index, label, time:dates[index], kind:'peak'};
+    });
+    primaryTargets = aggregation === 'rolling' ? series.filter(s => s.index !== null) : peaks;
+    targets = rides ? visible.map(i => ({index:i, time:dates[i], kind:'ride'})) : primaryTargets;
+    svg.dataset.view = aggregation; svg.dataset.range = range; svg.dataset.visibleRides = visible.length;
+    $('performance-chart-title').textContent = {rolling:'Rolling 42-day best', monthly:'Monthly best', yearly:'Yearly best'}[aggregation];
+    $('performance-chart-caption').textContent = aggregation === 'rolling'
+      ? 'Strongest qualifying ride in each trailing 42-day window'
+      : 'Strongest qualifying ride in each displayed calendar ' + (aggregation === 'monthly' ? 'month' : 'year') + ' within this range';
+    document.querySelectorAll('[data-view]').forEach(b => {
+      if (b.tagName === 'BUTTON') b.setAttribute('aria-pressed', b.dataset.view === aggregation);
+    });
     document.querySelectorAll('[data-range]').forEach(b => b.setAttribute('aria-pressed', b.dataset.range === range));
     document.querySelectorAll('[data-evidence]').forEach(b => b.setAttribute('aria-pressed', (b.dataset.evidence === 'rides') === rides));
-    document.querySelector('.performance-ranges').hidden = mode === 'current';
-    document.querySelector('.performance-evidence-control').hidden = mode !== 'trend';
-    svg.toggleAttribute('hidden', mode === 'current'); $('performance-current').hidden = mode !== 'current'; $('performance-chart-help').hidden = mode === 'current';
     $('performance-visible-count').textContent = visible.length.toLocaleString() + ' eligible rides in range';
-    const freshness = index => index === null ? 'No qualifying result' : view.ages_days[String(index)] === undefined ? 'Source timezone unknown' : 'Demonstrated ' + view.ages_days[String(index)] + ' days ago';
-    $('performance-current').replaceChildren();
-    for (const [label, index] of [['42-day best evidence', view.summaries.current], ['Latest ride evidence', view.summaries.latest]]) {
-      const p = document.createElement('p'), strong = document.createElement('strong'); strong.textContent = label;
-      p.append(strong, document.createTextNode(freshness(index))); $('performance-current').append(p);
-    }
     evidenceTable(); return {minimum, maximum:asOf};
   }
   function draw(reset = false) {
     const bounds = prepare(); svg.replaceChildren(); marker = null;
-    if (mode === 'current') { $('performance-chart-empty').hidden = true; inspect({index:view.summaries.current,kind:'ride',time:asOf}); return; }
     const width = Math.max(260, svg.clientWidth), height = 310, left = 44, right = width - 18, top = 18, bottom = height - 34;
-    const chartIndexes = mode === 'history' ? peaks.map(p => p.index) : [...visible, ...series.filter(s => s.index !== null).map(s => s.index)];
+    const chartIndexes = [...primaryTargets.map(p => p.index), ...(rides ? visible : [])];
     const maxPower = Math.max(0, ...chartIndexes.map(i => points[i].average_watts));
     const step = Math.max(10, Math.ceil(maxPower / 50) * 10), ceiling = Math.max(step, Math.ceil(maxPower / step) * step);
     geometry = {x:time => left + (time - bounds.minimum) / Math.max(86400000,bounds.maximum - bounds.minimum) * (right - left),
-      y:power => bottom - power / ceiling * (bottom - top), peakX:index => left + (peaks.findIndex(p => p.index === index) + .5) / Math.max(1,peaks.length) * (right - left)};
+      y:power => bottom - power / ceiling * (bottom - top)};
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`); make('text', {x:4,y:14}, 'W');
     for (let power = 0; power <= ceiling; power += step) {
       const y = geometry.y(power); make('line', {x1:left,x2:right,y1:y,y2:y,class:'chart-grid'});
       make('text', {x:left - 8,y:y + 4,'text-anchor':'end'}, power);
     }
-    if (mode === 'history') {
+    const ticks = width < 500 ? 3 : 6;
+    for (let i = 0; i < ticks; i++) {
+      const time = bounds.minimum + (bounds.maximum - bounds.minimum) * i / (ticks - 1);
+      make('text', {x:geometry.x(time), y:height-10, 'text-anchor':i===0?'start':i===ticks-1?'end':'middle'},
+        new Intl.DateTimeFormat(undefined, {month:'short', year:range==='all'||range==='3yr'?'numeric':undefined}).format(time));
+    }
+    if (rides) visible.forEach(i => make('circle', {cx:geometry.x(dates[i]), cy:geometry.y(points[i].average_watts), r:2, class:'performance-point', 'data-point-index':i}));
+    if (aggregation !== 'rolling') {
       peaks.forEach(p => {
-        const x = geometry.peakX(p.index), y = geometry.y(points[p.index].average_watts), barWidth = Math.min(34,(right-left)/peaks.length*.35);
-        make('rect', {x:x-barWidth/2,y,width:barWidth,height:Math.max(1,bottom-y),class:'performance-peak','data-point-index':p.index});
-        if (width >= 500 || peaks.length <= 5) make('text', {x,y:y-8,'text-anchor':'middle'}, points[p.index].rounded_watts+' W');
-        make('text', {x,y:height-10,'text-anchor':'middle'}, p.label);
+        const x = geometry.x(p.time), y = geometry.y(points[p.index].average_watts);
+        make('line', {x1:x, x2:x, y1:y, y2:bottom, class:'performance-period-stem'});
+        make('circle', {cx:x, cy:y, r:4, class:'performance-period-best', 'data-point-index':p.index, 'data-period':p.label});
       });
     } else {
-      const ticks = width < 500 ? 3 : 6;
-      for (let i = 0; i < ticks; i++) {
-        const time = bounds.minimum + (bounds.maximum - bounds.minimum) * i / (ticks - 1);
-        make('text', {x:geometry.x(time),y:height-10,'text-anchor':i===0?'start':i===ticks-1?'end':'middle'},
-          new Intl.DateTimeFormat(undefined,{month:'short',year:range==='all'||range==='3yr'?'numeric':undefined}).format(time));
-      }
-      if (rides) visible.forEach(i => make('circle', {cx:geometry.x(dates[i]),cy:geometry.y(points[i].average_watts),r:2,class:'performance-point','data-point-index':i}));
       let path = '', active = false;
       series.forEach(s => {
         const x = geometry.x(s.time);
@@ -150,20 +158,20 @@
     marker=make('circle',{r:4,class:'performance-selected','pointer-events':'none'});
     $('performance-chart-empty').hidden=targets.length!==0;
     const previous=selected&&targets.find(t=>t.index===selected.index&&t.kind===selected.kind&&t.time===selected.time);
-    inspect(!reset&&previous?previous:targets.at(-1)??null);
+    inspect(!reset && previous ? previous : primaryTargets.at(-1) ?? targets.at(-1) ?? null);
   }
   function pointerTarget(event) {
     const box=svg.getBoundingClientRect(),x=event.clientX-box.left,y=event.clientY-box.top;
-    if(mode==='history') return peaks.reduce((best,p)=>!best||Math.abs(geometry.peakX(p.index)-x)<Math.abs(geometry.peakX(best.index)-x)?p:best,null);
     if(rides) {
       let nearest=null,distance=64;
       visible.forEach(i=>{const d=(geometry.x(dates[i])-x)**2+(geometry.y(points[i].average_watts)-y)**2;
         if(d<distance){distance=d;nearest={index:i,time:dates[i],kind:'ride'};}});
       if(nearest)return nearest;
     }
+    if (aggregation !== 'rolling') return peaks.reduce((best, p) => !best || Math.abs(geometry.x(p.time)-x) < Math.abs(geometry.x(best.time)-x) ? p : best, null);
     return series.filter(s=>geometry.x(s.time)<=x).at(-1)??series[0];
   }
-  document.querySelectorAll('.performance-modes [data-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;pageNumber=0;saveState();draw(true);}));
+  document.querySelectorAll('.performance-views [data-view]').forEach(b=>b.addEventListener('click',()=>{aggregation=b.dataset.view;saveState();draw(true);}));
   document.querySelectorAll('[data-range]').forEach(b=>b.addEventListener('click',()=>{range=b.dataset.range;pageNumber=0;saveState();draw(true);}));
   document.querySelectorAll('[data-evidence]').forEach(b=>b.addEventListener('click',()=>{rides=b.dataset.evidence==='rides';saveState();draw(true);}));
   $('performance-rides-prev').addEventListener('click',()=>{pageNumber--;evidenceTable();});
@@ -172,7 +180,7 @@
   svg.addEventListener('click',event=>{inspect(pointerTarget(event));if($('performance-activity').hasAttribute('href'))location.href=$('performance-activity').href;});
   svg.addEventListener('keydown',event=>{
     if(event.key==='Enter'){event.preventDefault();if($('performance-activity').hasAttribute('href'))location.href=$('performance-activity').href;return;}
-    const index=targets.findIndex(t=>t.index===selected?.index&&t.time===selected?.time&&t.kind===selected?.kind);
+    const index=targets.findIndex(t=>t.index===selected?.index && (rides || (t.time===selected?.time && t.kind===selected?.kind)));
     const choices={ArrowLeft:index-1,ArrowRight:index+1,Home:0,End:targets.length-1};
     if(event.key in choices){event.preventDefault();inspect(targets[Math.max(0,Math.min(targets.length-1,choices[event.key]))]??null);}
   });

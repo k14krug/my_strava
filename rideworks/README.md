@@ -432,21 +432,26 @@ committed history intact. Re-extraction removes affected eligible results throug
 their foreign key, and metadata/input identity checks hide changed classifications
 or competing sources until a rebuild. No background recalculation is added.
 
-Performance renders persisted current results and metadata without querying
-native streams. Current shows recent evidence and its age. Trend defaults to one
-year with the rolling 42-day demonstrated-best line; optional subdued ride dots
-remain observations. History shows annual peaks within the selected range.
-Controls offer 3 months, 6 months, 1 year, 3 years and All. Four compact cards
-show current 42-day best, latest eligible ride, best in the last 12 months and
-lifetime best. All eligible results remain inspectable in 30-row evidence pages.
+Performance is one analysis surface, rendering persisted results and metadata
+without querying native streams. Range offers 3 months, 6 months, 1 year, 3 years
+and All. View offers Rolling 42-day (default), Monthly best and Yearly best.
+The default range is one year. Optional subdued ride dots remain supporting
+observations. Four compact cards show current 42-day best, latest eligible ride,
+best in the last 12 months and lifetime best, with Activity date/link and freshness.
+All eligible results remain inspectable in 30-row evidence pages. A collapsed
+Future Performance candidates section labels possible later direction explicitly;
+it does not implement or commit to those capabilities.
 
 The rolling line is the highest raw result in `(t - 42 days, t]`; exact ties
 retain the earliest Activity. Entry and exact 42-day expiry cause discrete changes;
 periods without qualifying evidence have gaps. It does not estimate daily fitness.
 Ranges and summaries end at the page's as-of UTC instant, with calendar-month
-cutoffs clamped at month ends. Displayed calendar years group History peaks.
-Unknown-zone source dates remain explicitly source-dated in History and lifetime
-evidence, without being assigned membership in absolute timed windows.
+cutoffs clamped at month ends. Monthly/yearly bests group the displayed local
+calendar month/year and use only rides inside the selected range. One best is
+shown per non-empty period, at its contributing ride date; empty periods have no
+mark. The same raw-max/earliest-tie rule applies, without averaging or smoothing.
+Unknown-zone source dates remain explicitly source-dated in period views and
+lifetime evidence, without membership in absolute timed windows.
 
 Hover, arrow keys, Home/End and Enter inspect or open the contributing Activity.
 Known date/time readouts are browser-local, compact and omit GMT offset suffixes;
@@ -473,7 +478,9 @@ and all four summary contexts on the full eligible history.
 HTTP verification includes accepted Activities/rich/thin review regressions and
 two Performance server processes. UI verification needs an existing managed
 Chromium Playwright CLI session and the server; it writes ignored local screenshots
-and emits aggregate JSON. No private titles or IDs are emitted by these tools.
+and emits aggregate JSON. Monthly/yearly winners are checked against independent
+calendar grouping at every range, in two browser timezones, with synthetic
+raw/tie/zero, month/year-boundary and partial-range cases. No private titles or IDs are emitted by these tools.
 
 The prepared P2-03 Owner review copy is `local_data/p2-03-review`:
 

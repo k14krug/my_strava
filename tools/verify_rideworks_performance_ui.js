@@ -21,7 +21,11 @@ async (page) => {
     return index;
   };
   const chart=page.locator('#performance-chart');
-  check(await chart.getAttribute('data-mode')==='trend'&&await chart.getAttribute('data-range')==='1yr','Wrong default view');
+  check(await chart.getAttribute('data-view')==='rolling'&&await chart.getAttribute('data-range')==='1yr','Wrong default view');
+  check(await page.locator('.performance-modes, [data-mode]').count()===0,'Obsolete tabs remain');
+  const future=page.locator('.performance-future');
+  check(await future.getAttribute('open')===null,'Future candidates should be subordinate/collapsed');
+  check((await future.textContent()).includes('not implemented features or delivery commitments'),'Future direction implies implemented features');
   check(await page.locator('.performance-point').count()===0,'Default chart is noisy ride scatter');
   check(await verifyReadout(page)===view.summaries.current,'Default selected result is not recent meaningful evidence');
   for(const key of ['current','latest','year','lifetime']) {
@@ -29,29 +33,56 @@ async (page) => {
     check(Number(await card.getAttribute('data-point-index'))===view.summaries[key],'Summary context differs');
     check((await card.textContent()).includes(String(points[view.summaries[key]].rounded_watts)),'Summary watts missing');
   }
+  const periodOracle=async (probe, fixturePoints, aggregation, cutoff, asOf)=>probe.evaluate(({points,aggregation,cutoff,asOf})=>{
+    const formatter=new Intl.DateTimeFormat('en-US',{year:'numeric',month:'2-digit'});
+    const candidates=points.map((p,i)=>({p,i})).filter(({p})=>{
+      const stamp=Date.parse(p.absolute_time?p.start_time:p.date_key+'Z');
+      return stamp>=cutoff&&stamp<=asOf;
+    }).sort((a,b)=>b.p.average_watts-a.p.average_watts||a.p.date_key.localeCompare(b.p.date_key)||a.p.activity_id.localeCompare(b.p.activity_id));
+    const winners=new Map();
+    for(const {p,i} of candidates){
+      const parts=p.absolute_time?Object.fromEntries(formatter.formatToParts(new Date(p.start_time)).map(part=>[part.type,part.value]))
+        :{year:p.date_day.slice(0,4),month:p.date_day.slice(5,7)};
+      const period=parts.year+(aggregation==='monthly'?'-'+parts.month:'');
+      if(!winners.has(period))winners.set(period,i);
+    }
+    return [...winners].sort(([a],[b])=>a.localeCompare(b)).map(([period,index])=>({period,index}));
+  },{points:fixturePoints,aggregation,cutoff,asOf});
+  const inspectPeriodView=async (probe, fixturePoints, aggregation, cutoff, asOf)=>{
+    const oracle=await periodOracle(probe,fixturePoints,aggregation,cutoff,asOf);
+    const actual=await probe.locator('.performance-period-best').evaluateAll(nodes=>nodes.map(n=>({period:n.dataset.period,index:Number(n.dataset.pointIndex)})));
+    check(JSON.stringify(actual)===JSON.stringify(oracle),'Period winners differ from independent raw maxima');
+    const selected=Number(await probe.locator('#performance-readout').getAttribute('data-point-index'));
+    if(oracle.length)check(selected===oracle.at(-1).index,'Period view does not default to recent meaningful best');
+    else {
+      check(await probe.locator('#performance-readout').getAttribute('data-point-index')==='','Empty period invents a selected result');
+      check(await probe.locator('#performance-activity').getAttribute('href')===null,'Empty range opens an invented Activity');
+      check(await probe.locator('#performance-watts').textContent()==='Unavailable','Empty range is fabricated zero');
+    }
+    return oracle;
+  };
   for(const key of ['3mo','6mo','1yr','3yr','all']) {
     await page.locator('[data-range="'+key+'"]').click();
     const cutoff=key==='all'?-Infinity:Date.parse(view.range_starts[key]);
     const expectedCount=points.filter(p=>Date.parse(p.start_time)>=cutoff&&Date.parse(p.start_time)<=Date.parse(view.as_of)).length;
-    check(Number(await chart.getAttribute('data-visible-rides'))===expectedCount,'Range count differs');
-    check(await page.locator('.performance-trend').count()===1,'Range loses primary trend');
+    for(const aggregation of ['rolling','monthly','yearly']) {
+      await page.locator('.performance-views [data-view="'+aggregation+'"]').click();
+      check(Number(await chart.getAttribute('data-visible-rides'))===expectedCount,'Range count differs');
+      if(aggregation==='rolling')check(await page.locator('.performance-trend').count()===1,'Range loses primary trend');
+      else {
+        const oracle=await inspectPeriodView(page,points,aggregation,cutoff,Date.parse(view.as_of));
+        await chart.focus();await page.keyboard.press('Home');check(await verifyReadout(page)===oracle[0].index,'Period Home failed');
+        await page.keyboard.press('End');check(await verifyReadout(page)===oracle.at(-1).index,'Period End failed');
+        await page.keyboard.press('Enter');await page.waitForURL(base+'/activities/'+points[oracle.at(-1).index].activity_id);
+        await page.goBack();await page.waitForSelector('.performance-period-best');
+        check(await chart.getAttribute('data-view')===aggregation&&await chart.getAttribute('data-range')===key,'Range/View state lost on back');
+        await page.locator('[data-evidence="rides"]').click();
+        check(await page.locator('.performance-point').count()===expectedCount,'Period view omits supporting rides');
+        await inspectPeriodView(page,points,aggregation,cutoff,Date.parse(view.as_of));
+        await page.locator('[data-evidence="trend"]').click();
+      }
+    }
   }
-  await page.locator('.performance-modes [data-mode="current"]').click();
-  check(await chart.isHidden(),'Current should emphasize evidence without a large chart');
-  check((await page.locator('#performance-current').textContent()).includes('days ago'),'Current freshness unavailable');
-  check(await verifyReadout(page)===view.summaries.current,'Current result differs');
-  await page.locator('.performance-modes [data-mode="history"]').click();
-  const annual=await page.evaluate(points=>{
-    const groups=new Map();
-    points.forEach((p,i)=>{const year=new Date(p.start_time).getFullYear();const prior=groups.get(year);
-      if(prior===undefined||p.average_watts>points[prior].average_watts)groups.set(year,i);});
-    return [...groups].sort(([a],[b])=>a-b).map(([,i])=>i);
-  },points);
-  const bars=await page.locator('.performance-peak').evaluateAll(nodes=>nodes.map(n=>Number(n.dataset.pointIndex)));
-  check(JSON.stringify(bars)===JSON.stringify(annual),'Annual peaks differ from raw result maxima');
-  check(await verifyReadout(page)===annual.at(-1),'History defaults to oldest peak');
-  await chart.focus();await page.keyboard.press('Home');check(await verifyReadout(page)===annual[0],'History Home failed');
-  await page.keyboard.press('End');check(await verifyReadout(page)===annual.at(-1),'History End failed');
   await page.getByText('Eligible ride results',{exact:false}).last().click();
   const seen=new Set();
   while(true) {
@@ -61,7 +92,7 @@ async (page) => {
     await page.locator('#performance-rides-next').click();
   }
   check(seen.size===expected,'Complete supporting history is not inspectable');
-  await page.locator('.performance-modes [data-mode="trend"]').click();
+  await page.locator('.performance-views [data-view="rolling"]').click();
   await page.locator('[data-evidence="rides"]').click();
   check(await page.locator('.performance-point').count()===expected,'All-range ride evidence omits points');
   check(await page.locator('.performance-trend').count()===1,'Ride evidence removes primary trend');
@@ -86,6 +117,15 @@ async (page) => {
   await page.getByText('Eligibility & method',{exact:true}).click();
   const policy=await page.locator('.performance-policy').textContent();
   check(policy.includes('best-average-power-v1')&&policy.includes('Outdoor Ride power is excluded')&&policy.includes('never substitute'),'Trust explanation missing');
+  const fixtureTimes=['2023-12-31T16:30:00+00:00','2024-01-01T07:30:00+00:00','2024-01-15T12:00:00+00:00',
+    '2024-01-20T12:00:00+00:00','2024-02-01T07:30:00+00:00','2024-02-29T08:00:00+00:00',
+    '2024-03-01T00:30:00+00:00','2024-03-01T01:00:00','2024-04-01T12:00:00+00:00','2024-06-01T00:00:00+00:00'];
+  const fixtureWatts=[100,200.1,200.2,200.2,300,50,0,60,0,999];
+  const fixturePoints=fixtureTimes.map((stamp,i)=>({...points[0],activity_id:'synthetic-'+i,title:'Synthetic period evidence',
+    start_time:stamp,date_key:stamp.replace('+00:00',''),date_day:stamp.slice(0,10),absolute_time:i!==7,
+    average_watts:fixtureWatts[i],rounded_watts:Math.floor(fixtureWatts[i]+.5)}));
+  const fixtureView={...view,as_of:'2024-05-01T12:00:00+00:00',rolling:[],
+    range_starts:{...view.range_starts,'3mo':'2024-02-15T00:00:00+00:00','6mo':'2024-04-15T00:00:00+00:00'}};
   for(const zone of ['America/Los_Angeles','Asia/Tokyo']) {
     const context=await page.context().browser().newContext({timezoneId:zone,viewport:{width:1448,height:1086}});
     try {
@@ -93,6 +133,23 @@ async (page) => {
       const index=Number(await probe.locator('#performance-readout').getAttribute('data-point-index'));
       const expectedDate=await probe.evaluate(p=>new Intl.DateTimeFormat(undefined,{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(p.start_time)),points[index]);
       check(await probe.locator('#performance-date').textContent()===expectedDate,'Date is not browser-local');
+      await probe.locator('[data-range="all"]').click();
+      for(const aggregation of ['monthly','yearly']) {
+        await probe.locator('.performance-views [data-view="'+aggregation+'"]').click();
+        await inspectPeriodView(probe,points,aggregation,-Infinity,Date.parse(view.as_of));
+      }
+      const fixtureHtml=html.replace(/(<script id="performance-points" type="application\/json">)[\s\S]*?(<\/script>)/,
+        (_,start,end)=>start+JSON.stringify(fixturePoints)+end).replace(/(<script id="performance-view" type="application\/json">)[\s\S]*?(<\/script>)/,
+        (_,start,end)=>start+JSON.stringify(fixtureView)+end);
+      await probe.route('**/performance',route=>route.fulfill({status:200,contentType:'text/html',body:fixtureHtml}));
+      await probe.goto(base+'/performance');await probe.waitForSelector('#performance-chart[data-view="rolling"]');
+      for(const range of ['all','3mo','6mo']) {
+        await probe.locator('[data-range="'+range+'"]').click();
+        for(const aggregation of ['monthly','yearly']) {
+          await probe.locator('.performance-views [data-view="'+aggregation+'"]').click();
+          await inspectPeriodView(probe,fixturePoints,aggregation,range==='all'?-Infinity:Date.parse(fixtureView.range_starts[range]),Date.parse(fixtureView.as_of));
+        }
+      }
     } finally {await context.close();}
   }
   await page.goto(base+'/performance');await page.waitForSelector('.performance-trend');
@@ -100,22 +157,24 @@ async (page) => {
     await page.setViewportSize({width,height});
     check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Responsive horizontal overflow');
     check((await chart.boundingBox()).height>=300,'Responsive chart is decorative/tiny');
-    for(const mode of ['current','history','trend']) {
-      await page.locator('.performance-modes [data-mode="'+mode+'"]').click();
-      check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Mode horizontal overflow');
+    for(const aggregation of ['rolling','monthly','yearly']) {
+      await page.locator('.performance-views [data-view="'+aggregation+'"]').click();
+      check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'View horizontal overflow');
     }
   }
+  await page.locator('.performance-views [data-view="rolling"]').click();
   await page.screenshot({path:'output/playwright/p2-03-performance-phone.png',fullPage:true});
   await page.setViewportSize({width:1448,height:1086});
   await page.screenshot({path:'output/playwright/p2-03-performance-desktop.png',fullPage:true});
-  await page.locator('.performance-modes [data-mode="current"]').click();
-  await page.screenshot({path:'output/playwright/p2-03-current-desktop.png',fullPage:true});
-  await page.locator('.performance-modes [data-mode="history"]').click();await page.locator('[data-range="all"]').click();
-  await page.screenshot({path:'output/playwright/p2-03-history-desktop.png',fullPage:true});
+  await page.locator('.performance-views [data-view="monthly"]').click();
+  await page.screenshot({path:'output/playwright/p2-03-monthly-desktop.png',fullPage:true});
+  await page.locator('.performance-views [data-view="yearly"]').click();await page.locator('[data-range="all"]').click();
+  await page.screenshot({path:'output/playwright/p2-03-yearly-desktop.png',fullPage:true});
   await page.goto(base+'/performance');await page.waitForSelector('.performance-trend');
   return {result:'passed',browser:'Chromium',payload_eligible_results:points.length,all_range_ride_points:points.length,
-    default_trend_one_year:true,rolling_line_dominant:true,current_trend_history:true,all_range_controls:true,
-    summaries_and_freshness:true,annual_peaks_verified:true,complete_paged_evidence:true,
+    default_rolling_one_year:true,rolling_line_dominant:true,single_performance_surface:true,all_range_view_combinations:true,
+    summaries_and_freshness:true,monthly_yearly_bests_independently_verified:true,synthetic_calendar_raw_tie_range_tests:true,
+    supporting_rides_in_all_views:true,future_candidates_secondary:true,complete_paged_evidence:true,
     first_middle_last_pointer:true,keyboard_inspection:true,point_activity_and_back:true,
     source_title_date_watts:true,eligibility_provenance:true,local_date_zones:['America/Los_Angeles','Asia/Tokyo'],
     desktop_tablet_phone_no_overflow:true,no_native_stream_payload:true};

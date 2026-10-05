@@ -3,7 +3,7 @@
 The rolling signal is the raw maximum in (t - 42 days, t], tied by earliest
 Activity start then ID. Events occur at ride starts and exact 42-day expiry.
 An unknown-zone Activity date cannot establish membership in a clock window;
-that result remains in source-dated History and lifetime evidence, explicitly.
+that result remains in source-dated period views and lifetime evidence, explicitly.
 """
 from calendar import monthrange
 from datetime import datetime, timedelta, timezone
