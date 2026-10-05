@@ -262,7 +262,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-04 — Six-week historical context in Activity Review
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Put an eligible ride's best-20 result into recent historical context.
 
@@ -278,6 +278,8 @@ Only one implementation/research task should normally be `in_progress`.
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-04.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Execution state:** implemented/verified on PR #16; 185 full / 15 focused tests, all 1,022 eligible baseline selections independently verified (1,012 available / 10 unavailable), data-access guards and restart/Chromium acceptance passed. Stopped at Gate 1 HARD — Owner.
 
 **Dependency:** P2-03 complete.
 

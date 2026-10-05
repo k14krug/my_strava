@@ -1,0 +1,97 @@
+{
+  "implementation_head": "8ef30c93ce797f4a0e019c34b6663fb3f00c84be",
+  "controlling_main": "8d573e3",
+  "verification_date": "2026-10-05",
+  "branch": "task/p2-04-recent-context",
+  "pr": "https://github.com/k14krug/my_strava/pull/16",
+  "method": "best-average-power-v1",
+  "policy": "virtual-native-power-v1",
+  "duration_seconds": 1200,
+  "interval": "(t - 42 days, t)",
+  "automated_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests",
+    "passed": 185
+  },
+  "focused_tests": {
+    "command": ".venv/bin/python -m unittest discover -s tests -p 'test_rideworks_recent_context.py'",
+    "passed": 15
+  },
+  "independent": {
+    "result": "passed",
+    "evaluated_activities": 1434,
+    "eligible_evaluated": 1022,
+    "with_prior": 1012,
+    "no_prior": 10,
+    "ineligible_checked": 412,
+    "unknown_eligible_times": 0,
+    "exact_open_42_day_interval": true,
+    "current_excluded": true,
+    "all_baseline_identities_raw_display_verified": true,
+    "no_native_baseline_reads": true,
+    "no_import_reparse_rebuild": true,
+    "persisted_history_unchanged": true,
+    "originals_unchanged": true,
+    "restart_verified": true,
+    "sqlite_integrity": true,
+    "foreign_keys": true,
+    "representative_best20_watts": 120,
+    "representative_fit_average_watts": 118,
+    "representative_native_records": 3621,
+    "representative_prior_watts": 195
+  },
+  "http_restart": {
+    "result": "passed",
+    "recent_context_process_restart": true,
+    "persisted_history_unchanged": true,
+    "available_unavailable_outdoor_verified": true,
+    "no_native_comparison_payload": true,
+    "accepted_browser_and_activity_regression": {
+      "result": "passed",
+      "activity_count": 1434,
+      "cycling_count": 1410,
+      "type_counts": {
+        "Virtual Ride": 1264,
+        "Ride": 146,
+        "Run": 22,
+        "Walk": 1,
+        "Rowing": 1
+      },
+      "page_size": 30,
+      "cycling_pages": 47,
+      "all_pages": 48,
+      "query_filters_verified": true,
+      "source_title_search_and_display_verified": true,
+      "format_routes": {
+        "FIT": "rich",
+        "TCX": "thin",
+        "GPX": "thin",
+        "CSV-only": "thin"
+      },
+      "process_restart_verified": true,
+      "representative_fit_average_watts": 118,
+      "representative_best20_display_watts": 120,
+      "privacy_checks_passed": true
+    }
+  },
+  "chromium": {
+    "result": "passed",
+    "browser": "Chromium",
+    "representative_this_ride_watts": 120,
+    "representative_prior_watts": 195,
+    "representative_native_records": 3621,
+    "fit_source_average_watts": 118,
+    "prior_activity_and_back": true,
+    "view_performance_and_back": true,
+    "no_baseline_unavailable": true,
+    "ineligible_rich_unavailable": true,
+    "secondary_provenance": true,
+    "accepted_chart_summary_title_preserved": true,
+    "desktop_phone_no_overflow": true,
+    "local_dates_zones": [
+      "America/Los_Angeles",
+      "Asia/Tokyo"
+    ]
+  },
+  "owner_approval": "pending",
+  "analyst_acceptance": "pending"
+}
