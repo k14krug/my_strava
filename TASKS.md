@@ -262,7 +262,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-04 — Six-week historical context in Activity Review
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Put an eligible ride's best-20 result into recent historical context.
 
@@ -309,7 +309,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 is accepted and complete. P2-01/P2-02/P2-03 are accepted and complete. P2-04 is the next implementation boundary once its JIT is invoked with `/TASK` or `/AUTOTASK`.
+Phase 1 is accepted and complete. P2-01/P2-02/P2-03/P2-04 are accepted and complete. P2-05 is the next implementation boundary after its JIT is authored and invoked.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
