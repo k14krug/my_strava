@@ -6,7 +6,7 @@
 
 **Current task:** P2-03 — in_progress.
 
-**Implementation state:** awaiting_owner_review — Monthly/Yearly line correction complete under JIT at `c540165`; stopped again at Gate 1 HARD — Owner.
+**Implementation state:** ready_for_review — Gate 2 HARD — Analyst; Owner approved the final Performance visual/usability result.
 
 **Branch / PR:** `task/p2-03-performance-history` / [#15](https://github.com/k14krug/my_strava/pull/15) (draft).
 
@@ -20,6 +20,6 @@
 
 **Owner review:** **http://127.0.0.1:8768/performance**, disposable `local_data/p2-03-review`. Startup: `.venv/bin/python -m rideworks --data-dir local_data/p2-03-review serve --port 8768`. Rebuild if needed: `.venv/bin/python -m rideworks --data-dir local_data/p2-03-review rebuild-performance`. Screenshots: `output/playwright/p2-03-performance-desktop.png`, `p2-03-performance-phone.png`, `p2-03-monthly-desktop.png`, `p2-03-yearly-desktop.png`, `p2-03-monthly-phone.png`, `p2-03-yearly-phone.png` in that same directory.
 
-**Blockers:** Owner visual/usability approval pending; no implementation/verification blocker.
+**Blockers:** none; final Analyst acceptance pending.
 
-**Next action:** Ken reviews usefulness of the single Performance surface, Range/View/evidence controls, three analytical views, summaries, information hierarchy and visual quality. After explicit Owner approval, record it and stop at Gate 2 HARD — Analyst. Do not begin P2-04 automatically.
+**Next action:** Analyst reviews PR #15 against the final P2-03 JIT and verification evidence, then accepts or leaves actionable feedback. Keep P2-03 `in_progress`; do not begin P2-04 automatically.
