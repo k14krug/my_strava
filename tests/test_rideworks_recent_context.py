@@ -162,14 +162,17 @@ class PersistedContextTests(unittest.TestCase):
         for term in ('fitness improved','fitness declined','trend-up','trend-down','var(--green)','%'):
             self.assertNotIn(term,html)
 
-    def test_difference_uses_raw_averages_with_neutral_above_below_and_equal_labels(self):
+    def test_difference_matches_displayed_watts_with_neutral_above_below_and_equal_labels(self):
         from rideworks.web import recent_context_panel
         for current, prior, label in [(125,120,'5 W above'), (120,215,'95 W below'),
                                       (120,120,'Same displayed watts'),
-                                      (120.4,119.6,'1 W above'), (120,120.5,'1 W below'),
-                                      (120.51,120.49,'Less than 1 W above')]:
+                                      (120.4,119.6,'Same displayed watts'), (120,120.5,'1 W below'),
+                                      (120.51,120.49,'1 W above'), (119.49,119.51,'1 W below'),
+                                      (120.11916666666667,194.54333333333332,'75 W below')]:
             with self.subTest(current=current,prior=prior):
                 context=select_recent_context(history([point('prior',-1,prior),point('current',0,current)]),'current')
                 before=copy.deepcopy(context)
-                self.assertIn('id="recent-difference">'+label,recent_context_panel(context))
+                html=recent_context_panel(context)
+                self.assertIn('id="recent-difference">'+label,html)
+                self.assertIn(str(current),html);self.assertIn(str(prior),html)
                 self.assertEqual(context,before)

@@ -7,7 +7,7 @@ async (page) => {
   await page.locator('a[href="'+links.representative+'"]').first().click();await page.waitForSelector('#recent-context-title');
   const title=await page.locator('h1').textContent();
   check(await page.locator('#recent-context-title').textContent()==='Compared with previous 6 weeks','Comparison purpose is unclear');
-  check(await page.locator('#recent-difference').textContent()==='74 W below','Neutral raw watt difference is incorrect');
+  check(await page.locator('#recent-difference').textContent()==='75 W below','Difference disagrees with displayed watts');
   check(await page.locator('#recent-prior-activity').textContent()==='Open prior ride','Explicit prior action missing');
   check(await page.locator('.best-value').textContent()==='120 W','Representative best-20 changed');
   check(await page.locator('#recent-current-watts').textContent()==='120 W','Trusted current result changed');
@@ -54,9 +54,24 @@ async (page) => {
       check(await probe.locator('.recent-contribution time').textContent()===expected,'Prior date is not browser-local/compact');
     }finally{await context.close();}
   }
+  // Equal/sub-watt cases use synthetic evidence rendered by the production panel.
+  const synthetic=await page.context().newPage();
+  try{
+    for(const fixture of SYNTHETIC_CASES){
+      await synthetic.setContent(fixture.html);
+      check(await synthetic.locator('#recent-current-watts').textContent()===fixture.current+' W','Synthetic current display differs');
+      check(await synthetic.locator('#recent-prior-watts').textContent()===fixture.prior+' W','Synthetic prior display differs');
+      check(await synthetic.locator('#recent-difference').textContent()===fixture.expected,'Equal/sub-watt display arithmetic differs');
+      for(const [name,raw] of [['Current',fixture.current_raw],['Prior',fixture.prior_raw]]){
+        const value=await synthetic.locator('#recent-context-details dl > div').filter({hasText:name+' raw average (W)'}).locator('dd').textContent();
+        check(value===String(raw),'Raw evidence lost in details');
+      }
+    }
+  }finally{await synthetic.close();}
   await page.setViewportSize({width:1448,height:1086});await page.goto(base+links.representative);await page.waitForSelector('#recent-context-title');
   return {result:'passed',browser:'Chromium',representative_this_ride_watts:120,representative_prior_watts:links.representative_prior_watts,
-    comparison_heading_clear:true,explicit_prior_action:true,neutral_difference:'74 W below',
+    comparison_heading_clear:true,explicit_prior_action:true,neutral_difference:'75 W below',
+    difference_uses_displayed_whole_watts:true,synthetic_equal_sub_watt_cases:4,raw_details_preserved:true,
     representative_native_records:3621,fit_source_average_watts:118,prior_activity_and_back:true,view_performance_and_back:true,
     no_baseline_unavailable:true,ineligible_rich_unavailable:true,secondary_provenance:true,accepted_chart_summary_title_preserved:true,
     desktop_phone_no_overflow:true,local_dates_zones:['America/Los_Angeles','Asia/Tokyo']};

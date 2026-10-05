@@ -499,10 +499,10 @@ older review servers are separate instances.
 Rich Activity Review adds a distinct **Compared with previous 6 weeks** inset
 inside Best 20-minute power: prominent This ride and Prior 42-day best values,
 a neutral watt difference, compact prior date/title, Open prior ride and View
-Performance. The difference subtracts raw averages, then rounds whole watts
-half up; it is not the subtraction of the two rounded labels. Differences
-rounding to zero show Same displayed watts when those labels agree, otherwise
-Less than 1 W above/below. No difference is fabricated without a baseline.
+Performance. The visible difference subtracts the displayed whole-watt values,
+so 120 W versus 195 W shows 75 W below; equal values show Same displayed watts.
+Raw averages still choose the prior result and remain inspectable in details.
+No difference is fabricated without a baseline.
 Values stay neutral; no fitness interpretation is added. Collapsed Comparison
 details retain raw values, selected input
 identities, method/policy/duration, exact bounds and current-Activity exclusion.
