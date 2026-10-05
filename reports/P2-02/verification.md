@@ -1,9 +1,9 @@
-# P2-02 verification — Gate 1 Owner review
+# P2-02 verification — accepted
 
 **Date:** 2026-10-04.  
 **Branch / PR:** `task/p2-02-activities-browser` / [#14](https://github.com/k14krug/my_strava/pull/14).  
 **Implementation head:** `a1a42eb767ab7434ef0a9f2890cd912054183441`; final handoff publication is documentation/evidence only.
-**State:** Owner Gate 1 approved; stopped at **Gate 2 HARD — Analyst**. P2-02 remains `in_progress`. Final Analyst acceptance is pending.
+**State:** accepted / complete. Owner Gate 1 and Analyst Gate 2 are complete. PR #14 was merged to `main` as `683c9880bb0b6ed1cd9569a58be61093ec2cce0e`.
 
 ## Result and implementation
 
@@ -204,3 +204,23 @@ corrections.
 
 P2-02 remains `in_progress`. Final acceptance belongs to the Analyst at Gate 2.
 P2-03 has not begun.
+
+
+## Analyst acceptance
+
+On **2026-10-04**, the Analyst reviewed the final Owner-approved P2-02
+implementation at implementation head `a1a42eb767ab7434ef0a9f2890cd912054183441`
+and final handoff head `33fadb0f450a3ddc272dee1642f9fe216233bac8`
+against `docs/tasks/P2-02.md` and the Phase 2 Activities-browser acceptance
+contract and **accepted P2-02**.
+
+The review confirmed the full 1,434-Activity browser, 30-row bounded pages,
+source-title enrichment, search/type/date/sort behavior, browser-local Date column
+and matching local-day filters, explicit timezone-unknown handling, stable rich
+and thin Activity routes, unchanged accepted FIT best-20 behavior, 142 passing
+tests, full-history restart/browser verification, privacy boundaries, and absence
+of P2-03 scope creep.
+
+PR #14 was merged to `main` as
+`683c9880bb0b6ed1cd9569a58be61093ec2cce0e`. P2-03 implementation did not
+begin as part of this acceptance.
