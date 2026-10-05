@@ -7,7 +7,7 @@ sums independently enumerate all valid windows, with Decimal rounding.
 """
 import argparse
 from collections import Counter
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from decimal import Decimal, ROUND_HALF_UP
 from hashlib import sha256
 import json
@@ -68,6 +68,42 @@ def independent_type(snapshot):
 def stable_rows(store):
     return [dict(activity_id=r['activity_id'], input_signature=r['input_signature'], result=json.loads(r['result_json']))
             for r in store.connection.execute('SELECT * FROM performance_history ORDER BY activity_id')]
+
+
+def independent_presentation(points):
+    """Compare heap presentation against a direct scan at every entry/expiry."""
+    from rideworks.performance_view import performance_view
+    now = datetime.now(timezone.utc)
+    view = performance_view(points, as_of=now)
+    stamps = {i: datetime.fromisoformat(p['start_time']) for i, p in enumerate(points)
+              if p['absolute_time']}
+    times = sorted({t + timedelta(days=d) for t in stamps.values() for d in (0, 42)
+                    if t + timedelta(days=d) <= now} | {now})
+    steps = iter(view['rolling'])
+    upcoming = next(steps, None)
+    actual = None
+    def winner(indexes):
+        return min(indexes, key=lambda i: (-points[i]['average_watts'],
+                   points[i]['date_key'], points[i]['activity_id']), default=None)
+    for t in times:
+        while upcoming and datetime.fromisoformat(upcoming['at']) <= t:
+            actual = upcoming['index']
+            upcoming = next(steps, None)
+        expected = winner(i for i, stamp in stamps.items() if t-timedelta(days=42) < stamp <= t)
+        assert actual == expected, 'Rolling presentation differs from direct window scan'
+    assert view['summaries']['current'] == actual
+    assert view['summaries']['lifetime'] == winner(range(len(points)))
+    assert view['summaries']['latest'] == max(range(len(points)),
+           key=lambda i: (points[i]['date_key'], points[i]['activity_id']), default=None)
+    # Current archive clock is not a leap-day boundary. Compute the independent
+    # one-year calendar cutoff without using production month arithmetic.
+    try: year_start = now.replace(year=now.year-1)
+    except ValueError: year_start = now.replace(year=now.year-1, day=28)
+    assert view['summaries']['year'] == winner(i for i, stamp in stamps.items() if year_start <= stamp <= now)
+    return dict(result='passed', independently_checked_event_times=len(times),
+                rolling_changes=len(view['rolling']), all_four_summaries_verified=True,
+                exact_42_day_expiry=True, raw_comparison=True,
+                unknown_activity_timezones=view['unknown_timezones'])
 
 
 def verify(data_dir, representative):
@@ -131,6 +167,7 @@ def verify(data_dir, representative):
         assert stable_rows(store)==initial, 'Rebuild changed analytical results'
         assert performance_history(store)['points']==points
         span=[points[0]['date_day'],points[-1]['date_day']]
+        presentation=independent_presentation(points)
     with Store(data_dir) as restarted:
         assert stable_rows(restarted)==initial
         assert performance_history(restarted)['points']==points
@@ -142,7 +179,7 @@ def verify(data_dir, representative):
                 representative_display_watts=120, representative_records=3621,
                 all_source_extraction_identities_verified=True, exact_ties_verified=True,
                 no_summary_substitution=True, idempotent_rebuild=True, restart_preserved=True,
-                sqlite_integrity=True, foreign_keys=True, rerun_report=rebuild_report)
+                sqlite_integrity=True, foreign_keys=True, presentation=presentation, rerun_report=rebuild_report)
 
 
 if __name__=='__main__':

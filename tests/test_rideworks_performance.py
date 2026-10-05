@@ -212,6 +212,11 @@ class PerformanceTests(unittest.TestCase):
         self.assertIn('href="/performance" class="active" aria-current="page"',html)
         self.assertIn('href="/" class="active" aria-current="page"',self.app.get('/')[2].decode())
         self.assertIn('\\u003c',html)
+        self.assertIn('data-mode="trend"',html)
+        self.assertIn('data-range="1yr" aria-pressed="true"',html)
+        self.assertIn('Current 42-day best',html)
+        self.assertIn('Best in last 12 months',html)
+        self.assertIn('id="performance-view"',html)
         payload=html.split('<script id="performance-points" type="application/json">')[1].split('</script>')[0]
         points=json.loads(payload)
         self.assertEqual(points,history['points'])

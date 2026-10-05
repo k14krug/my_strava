@@ -283,17 +283,44 @@ def thin_review_page(row):
 
 def performance_page(store):
     from .performance import performance_history
+    from .performance_view import performance_view
     history = performance_history(store)
-    payload = json.dumps(history['points'], ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
     points = history['points']
+    view = performance_view(points)
+    def safe_json(value):
+        return json.dumps(value, ensure_ascii=True).replace('<', '\\u003c').replace('>', '\\u003e').replace('&', '\\u0026')
+    def summary_card(key, label):
+        index = view['summaries'][key]
+        if index is None:
+            return f'<article class="performance-card" data-summary="{key}"><h2>{label}</h2><strong>Unavailable</strong><p>No qualifying result in this period</p></article>'
+        point = points[index]
+        age = view['ages_days'].get(str(index))
+        freshness = f"{age} days ago" if age is not None else 'Timezone unknown'
+        return f'''<article class="performance-card" data-summary="{key}" data-point-index="{index}"><h2>{label}</h2>
+<strong>{point['rounded_watts']} <span>W</span></strong><p class="performance-card-date">{browser_time(point, compact=True)}</p>
+<a href="/activities/{point['activity_id']}" title="{escape(point['title'], quote=True)}">{escape(point['title'])}</a><p class="performance-freshness">{freshness}</p></article>'''
     if points:
-        chart = f'''<section class="panel performance-chart-panel"><h2>20-minute power history</h2>
-<p class="performance-count">{len(points):,} eligible ride results · Virtual Ride native power only</p>
-<svg id="performance-chart" role="img" tabindex="0" aria-label="20-minute power history in watts. Arrow keys inspect rides; Enter opens the selected Activity."></svg>
-<div id="performance-readout" aria-live="polite"><time id="performance-date"></time><a id="performance-activity"></a><strong id="performance-watts"></strong></div>
-<details id="performance-point-details"><summary>Selected result provenance</summary><dl id="performance-point-context"></dl></details>
-<p class="chart-footer">Each point is one eligible ride result. Hover or use arrow keys to inspect; click a point or press Enter to open the Activity.</p>
-<noscript>Enable JavaScript to view and inspect the performance chart.</noscript></section>'''
+        cards = ''.join(summary_card(key, label) for key, label in [('current','Current 42-day best'),
+                        ('latest','Latest eligible ride'),('year','Best in last 12 months'),('lifetime','Lifetime best')])
+        chart = f'''<div class="performance-workspace">
+<div class="performance-modes" role="tablist" aria-label="Performance mode">
+<button type="button" role="tab" aria-selected="false" data-mode="current">Current</button>
+<button type="button" role="tab" aria-selected="true" data-mode="trend">Trend</button>
+<button type="button" role="tab" aria-selected="false" data-mode="history">History</button></div>
+<section class="performance-summary" aria-label="Trusted power summaries">{cards}</section>
+<section class="panel performance-chart-panel"><div class="performance-chart-heading"><div><h2 id="performance-chart-title">Rolling 42-day best</h2><p id="performance-chart-caption">Strongest qualifying ride in each trailing 42-day window</p></div>
+<div class="performance-ranges" role="group" aria-label="Time range"><button type="button" data-range="3mo">3 mo</button><button type="button" data-range="6mo">6 mo</button><button type="button" data-range="1yr" aria-pressed="true">1 yr</button><button type="button" data-range="3yr">3 yr</button><button type="button" data-range="all">All</button></div></div>
+<div class="performance-evidence-control" role="group" aria-label="Chart evidence"><button type="button" data-evidence="trend" aria-pressed="true">Trend only</button><button type="button" data-evidence="rides">Trend + rides</button><span id="performance-visible-count"></span></div>
+<div id="performance-current" hidden></div>
+<svg id="performance-chart" role="img" tabindex="0" aria-label="20-minute power history in watts. Arrow keys inspect results; Enter opens the selected Activity."></svg>
+<p id="performance-chart-empty" hidden>No eligible evidence in this period. Choose a longer range.</p>
+<div class="performance-selection"><p id="performance-selection-label">Selected result</p><div id="performance-readout" aria-live="polite"><time id="performance-date"></time><a id="performance-activity"></a><strong id="performance-watts"></strong></div>
+<details id="performance-point-details"><summary>Selected result provenance</summary><dl id="performance-point-context"></dl></details></div>
+<p class="chart-footer" id="performance-chart-help">Hover or use arrow keys to inspect. Click a result or press Enter to open the Activity.</p>
+<noscript>Enable JavaScript to view the chart and use Performance modes.</noscript></section>
+<details class="panel performance-evidence"><summary>Eligible ride results <span id="performance-evidence-count"></span></summary>
+<div class="performance-evidence-table"><table><thead><tr><th>Date</th><th>Activity</th><th>Best 20 min</th></tr></thead><tbody id="performance-rides"></tbody></table></div>
+<div class="performance-evidence-pages"><button type="button" id="performance-rides-prev">Previous</button><span id="performance-rides-page"></span><button type="button" id="performance-rides-next">Next</button></div></details></div>'''
     else:
         message = ('Performance history has not been rebuilt yet.' if history['current'] == 0 else
                    'No current ride result qualifies for the trusted 20-minute history.')
@@ -303,13 +330,16 @@ def performance_page(store):
         notices.append(f"{history['pending']:,} Activities need a performance rebuild; changed inputs are not plotted.")
     if history['missing_dates']:
         notices.append(f"{history['missing_dates']:,} eligible results lack a supported Activity date and are not plotted.")
-    return shell('Performance', f'''<header><h1>Performance</h1></header>{chart}
+    if view['unknown_timezones']:
+        notices.append(f"{view['unknown_timezones']:,} results have source dates with unknown timezones: available in History, unavailable for exact timed-window summaries.")
+    return shell('Performance', f'''<header><h1>Performance</h1><p class="performance-count">20-minute power · {len(points):,} eligible ride results · Virtual Ride native power</p></header>{chart}
 <p class="performance-notice">{escape(' '.join(notices))}</p>
-<details class="panel performance-policy"><summary>Eligibility &amp; calculation</summary>
+<details class="panel performance-policy"><summary>Eligibility &amp; method</summary>
 <p>Virtual Ride native source power is eligible for this Phase 2 history. Native power presence does not establish that it was measured. Outdoor Ride power is excluded because its evidence quality is suspect.</p>
 <p>RideWorks calculates the highest average over exactly 1,200 consecutive records with one-second timestamps and complete power. Zero watts count; missing power, gaps and duplicate or backward timestamps invalidate affected windows. No interpolation, resampling or repair occurs. Exact ties choose the earliest window; display rounds whole watts half up.</p>
+<p>The trend retains the strongest qualifying result in the trailing 42 days, changing when a ride enters or leaves the window. A result expires exactly 42 days after its Activity start. Gaps mean there is no qualifying result; the line is demonstrated evidence rather than an estimated daily performance series. Time ranges end at the page's current time; annual peaks use displayed calendar years within the selected range.</p>
 <p>Method: best-average-power-v1 · Policy: virtual-native-power-v1. One eligible native file Source must support each Activity result. Multiple eligible Sources are ambiguous and excluded. CSV and source summaries never substitute for native power. Ineligible or missing results are not plotted as zero.</p>
-</details><script id="performance-points" type="application/json">{payload}</script><script src="/static/performance.js" defer></script>''', active='performance')
+</details><script id="performance-points" type="application/json">{safe_json(points)}</script><script id="performance-view" type="application/json">{safe_json(view)}</script><script src="/static/performance.js" defer></script>''', active='performance')
 
 
 class Application:

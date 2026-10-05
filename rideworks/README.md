@@ -433,9 +433,23 @@ their foreign key, and metadata/input identity checks hide changed classificatio
 or competing sources until a rebuild. No background recalculation is added.
 
 Performance renders persisted current results and metadata without querying
-native streams. All dated eligible results appear chronologically as observed
-points on a zero-based watt axis. Hover, arrow keys, Home/End and Enter inspect or
-open the contributing Activity. Known date/time readouts are browser-local;
+native streams. Current shows recent evidence and its age. Trend defaults to one
+year with the rolling 42-day demonstrated-best line; optional subdued ride dots
+remain observations. History shows annual peaks within the selected range.
+Controls offer 3 months, 6 months, 1 year, 3 years and All. Four compact cards
+show current 42-day best, latest eligible ride, best in the last 12 months and
+lifetime best. All eligible results remain inspectable in 30-row evidence pages.
+
+The rolling line is the highest raw result in `(t - 42 days, t]`; exact ties
+retain the earliest Activity. Entry and exact 42-day expiry cause discrete changes;
+periods without qualifying evidence have gaps. It does not estimate daily fitness.
+Ranges and summaries end at the page's as-of UTC instant, with calendar-month
+cutoffs clamped at month ends. Displayed calendar years group History peaks.
+Unknown-zone source dates remain explicitly source-dated in History and lifetime
+evidence, without being assigned membership in absolute timed windows.
+
+Hover, arrow keys, Home/End and Enter inspect or open the contributing Activity.
+Known date/time readouts are browser-local, compact and omit GMT offset suffixes;
 unknown-zone source days stay explicit. Missing dates are reported and not invented.
 Eligibility/method and selected-source provenance are inspectable in details.
 
@@ -454,6 +468,8 @@ The independent verifier segments complete timing/power runs and enumerates
 windows with prefix sums and Decimal rounding, independently of the production
 rolling-sum function. It checks the entire population and all eligible results,
 classification/source identities, rebuild idempotence, restart and SQLite integrity.
+A direct scan independently checks rolling winners at every entry/expiry event
+and all four summary contexts on the full eligible history.
 HTTP verification includes accepted Activities/rich/thin review regressions and
 two Performance server processes. UI verification needs an existing managed
 Chromium Playwright CLI session and the server; it writes ignored local screenshots
