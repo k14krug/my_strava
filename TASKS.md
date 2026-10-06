@@ -176,7 +176,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Phase 2 — Historical context and performance history
 
-**Status:** in_progress — P2-01 through P2-04 accepted; P2-05 JIT ready.
+**Status:** accepted / complete — P2-01 through P2-05 accepted; PR #17 merged on 2026-10-05.
 
 **Acceptance contract:** `docs/PHASE_2_ACCEPTANCE.md`
 
@@ -287,7 +287,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-05 — Incremental Strava synchronization
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Bring post-export activities and useful Strava metadata into RideWorks through a normal forward-looking sync path.
 
@@ -305,7 +305,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Execution state:** implemented in draft PR #17 under Analyst JIT on main `e14c8c0`; in-app Settings/OAuth/sync/status/disconnect, API UTC-date sorting fix, persistent freshness reminder and explicit atomic Performance rebuild complete. 219 full / 33 focused tests and actual synthetic/live Chromium pass. Live: 7 new + 4 enrichments; all seven API-only Activities appear newest and are individually reachable; 1,441 total / 1,417 cycling. Restart reruns add no Activities/observations (3 unchanged); explicit rebuild clears 11 pending and restores 1,022 eligible results. Stopped at HARD — Owner for review; approval/Analyst acceptance pending. No Phase 3 work.
+**Acceptance result:** Owner and Analyst accepted PR #17; merged to `main` as `e78c8a6c2de4f4e21aaa2937ae33d1e011901947`. 219 tests passed; live sync created 7 post-export Activities, enriched 4 overlaps with no duplicates, restart reruns were idempotent, and explicit rebuild cleared 11 pending Performance results.
 
 **Dependency:** P2-04 complete.
 
@@ -313,7 +313,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 is accepted and complete. P2-01/P2-02/P2-03/P2-04 are accepted and complete. P2-05 is the next implementation boundary after its JIT is authored and invoked.
+Phase 1 and Phase 2 are accepted and complete. The Owner has explicitly prioritized a bounded Strava activity-stream enrichment/FIT-comparison follow-up before Phase 3 dashboard work.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
