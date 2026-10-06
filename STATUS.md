@@ -1,13 +1,27 @@
 # STATUS.md
 
-**Product:** RideWorks. Phase 1 and Phase 2 accepted / complete; Phase 3 not started.
+**Product:** RideWorks.
 
-**Current task:** STRAVA-004 — `in_progress`, invoked with `/TASK PR18`. State: `ready_for_review` at **Gate 2 — HARD — Analyst** after explicit Owner approval.
+**Phase 1:** accepted / complete.
 
-**Branch / PR:** `task/strava-004-streams` / [PR #18](https://github.com/k14krug/my_strava/pull/18) (draft). Analyst JIT `f9711f4` refreshed from main `2e3ca9b`; runtime implementation `cce020b`.
+**Phase 2 — Historical context and performance history:** accepted / complete.
 
-**Implemented:** `virtual-power-evidence-v2` preserves file-backed power precedence and admits strict current API stream fallback for Virtual Rides. Shared web/CLI sync automatically rebuilds only when pending; failure preserves synchronized evidence/checkpoint and prior Performance, with an exception banner and Retry Performance update. Eligible API reviews include normal six-week context and inspectable source provenance.
+**STRAVA-004 — Strava activity-stream enrichment and FIT comparison:** accepted / complete.
 
-**Verified:** 253 full / 57 focused Strava / 38 focused Performance tests passed; live/synthetic Chromium, failure/retry/restart/idempotence passed. All 1,022 file-backed results unchanged and independently recomputed; five API results and six-week contributors independently verified. **1,027 eligible / zero pending**, two HR-only outdoor rides current/ineligible; no overlap duplicates. 1,441 Activities / 11 stream observations; historical v1 rows, originals and native/export evidence retained. Correction: three bounded metadata GETs, zero new stream GETs. Real Settings Sync now shows Performance is current without a banner. Evidence: `reports/STRAVA-004/verification.md` and `acceptance.json`.
+**PR #18:** Owner and Analyst accepted; merged to `main` as `e7920493dfadbb5f15b0352315cce433f7991ecd`.
 
-**Next action:** Analyst reviews PR #18 against the final STRAVA-004 JIT and verification evidence, then accepts or returns actionable feedback. Keep STRAVA-004 `in_progress`; do not begin another task or Phase 3.
+**Current Performance policy:** `virtual-power-evidence-v2` / `best-average-power-v1` / 1,200 s.
+
+**Final live result:** 1,441 Activities / 11 retained stream observations / **1,027 eligible Performance / 0 pending**. All 1,022 prior file-backed eligible results reproduce unchanged; 5 validated API-only Virtual Rides are eligible; 2 HR-only outdoor rides are current/ineligible. FIT/API overlaps remain single file-backed points.
+
+**Sync behavior:** normal Sync now performs bounded metadata + stream enrichment and automatically converges Performance only when current-policy history is pending/stale. Successful sync leaves Performance current. The app-wide Performance banner is reserved for unresolved update/failure and offers retry.
+
+**Verification:** 253 full / 57 focused Strava / 38 focused Performance tests, independent file/API result verification, six-week contributor verification, Chromium desktop/phone + LA/Tokyo, failure/retry, restart/idempotence, SQLite integrity/FKs all passed. Initial stream access remained bounded at 11 GETs; the final correction made zero new stream GETs.
+
+**Evidence:** `reports/STRAVA-004/verification.md`, `reports/STRAVA-004/acceptance.json`.
+
+**Phase 3:** not started.
+
+**Current implementation task:** none.
+
+**Next action:** await Owner direction before authoring or starting the next implementation task.
