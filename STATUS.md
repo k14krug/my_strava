@@ -12,7 +12,7 @@
 
 **Final Phase 2 live evidence:** 1,441 Activities / 1,417 cycling after forward Strava sync; 7 post-export API-only Activities surfaced in correct chronology; 4 overlap rides enriched without duplication; restart reruns created no duplicate Activities/observations; explicit Performance rebuild evaluated 1,441 Activities, retained 1,022 eligible results and cleared 11 pending to zero. 219 full / 33 focused tests and Chromium acceptance passed.
 
-**Current task boundary:** STRAVA-004 — Strava activity-stream enrichment and FIT comparison.
+**Current task boundary:** STRAVA-004 — Strava activity-stream enrichment and FIT comparison; Owner-authorized final Performance-policy correction is active on PR #18.
 
 **JIT:** `docs/tasks/STRAVA-004.md` authored from current Strava stream/authentication documentation.
 
@@ -25,3 +25,10 @@
 **Phase 3:** not started.
 
 **Next action:** invoke STRAVA-004 when ready. Stage A compares live Strava streams with FIT before product use; material mismatch stops the task before graph integration.
+
+
+**Owner correction — Performance v2:** adopt `virtual-power-evidence-v2`. Existing file-backed Virtual Ride power keeps precedence; validated current Strava API time+watts streams may contribute only for API-only Virtual Rides that satisfy the strict evidence-quality rules in the JIT. Current live expectation after rebuild: 1,022 unchanged file-backed eligible + 5 qualifying API-only = 1,027 eligible; 2 HR-only rides remain current/ineligible.
+
+**Sync convergence:** normal Sync now must automatically rebuild Performance only when current-policy history is pending/stale/policy-outdated. Successful sync leaves Performance current with no routine banner. The app-wide Performance banner is reserved for unresolved freshness/failure and provides a retry action.
+
+**Owner review still pending:** API-only ride must show normal six-week context after v2 rebuild, Settings must show a successful sync with Performance already current, and exception banner behavior must be verified without Phase 3 work.
