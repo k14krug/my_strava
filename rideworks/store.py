@@ -208,6 +208,36 @@ COMMIT;
 """
 
 
+MIGRATION_6 = """
+BEGIN IMMEDIATE;
+CREATE TABLE strava_stream_sources (
+    source_id TEXT PRIMARY KEY,
+    activity_id TEXT NOT NULL REFERENCES activities(activity_id),
+    external_id TEXT NOT NULL REFERENCES strava_api_activities(external_id),
+    summary_source_id TEXT NOT NULL REFERENCES strava_api_sources(source_id),
+    observation_sha256 TEXT NOT NULL,
+    retrieved_at TEXT NOT NULL,
+    mapping_version TEXT NOT NULL,
+    requested_json TEXT NOT NULL,
+    evidence_json TEXT NOT NULL,
+    UNIQUE(external_id, summary_source_id, observation_sha256)
+);
+CREATE INDEX stream_sources_activity ON strava_stream_sources(activity_id);
+CREATE TABLE strava_stream_current (
+    external_id TEXT PRIMARY KEY REFERENCES strava_api_activities(external_id),
+    source_id TEXT NOT NULL UNIQUE REFERENCES strava_stream_sources(source_id)
+);
+CREATE TABLE strava_stream_attempts (
+    external_id TEXT PRIMARY KEY REFERENCES strava_api_activities(external_id),
+    attempted_at TEXT NOT NULL,
+    outcome TEXT NOT NULL CHECK(outcome IN ('fetched','unavailable','failed')),
+    reason TEXT NOT NULL
+);
+PRAGMA user_version = 6;
+COMMIT;
+"""
+
+
 def resolve_data_dir(data_dir=None) -> Path:
     """Resolve once; default does not depend on the working directory."""
     selected = data_dir if data_dir is not None else os.environ.get("RIDEWORKS_DATA_DIR", "~/.rideworks")
@@ -248,7 +278,7 @@ class Store:
         self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.execute("PRAGMA synchronous = FULL")
         version = self.connection.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1, 2, 3, 4, 5):
+        if version not in (0, 1, 2, 3, 4, 5, 6):
             self.close()
             raise RideWorksError(f"Unsupported RideWorks schema version: {version}")
         try:
@@ -266,6 +296,9 @@ class Store:
                 version = self.connection.execute('PRAGMA user_version').fetchone()[0]
             if version == 4:
                 self.connection.executescript(MIGRATION_5)
+                version = self.connection.execute('PRAGMA user_version').fetchone()[0]
+            if version == 5:
+                self.connection.executescript(MIGRATION_6)
             _sync_directory(self.data_dir)
         except BaseException:
             self.connection.rollback()
@@ -563,6 +596,11 @@ class Store:
             FROM strava_api_sources s JOIN strava_api_activities a ON a.external_id=s.external_id
         '''+where+' ORDER BY s.imported_at, s.source_id', (activity_id,) if activity_id else ())]
 
+    def strava_stream_evidence(self, activity_id):
+        # Separate typed evidence: never enter the file/native Performance signature.
+        from .strava_streams import evidence
+        return evidence(self, activity_id)
+
     def inspect(self, activity_id) -> dict:
         snapshot = self.get_activity(activity_id)
         compact_sources = []
@@ -580,7 +618,9 @@ class Store:
         if any("fit_lap_timestamps" in evidence for evidence in snapshot["sources"]):
             timezone_label += "; uninterpreted FIT lap integers have no established timebase"
         return dict(activity=snapshot["activity"], sources=compact_sources,
-                    summary_units=SUMMARY_UNITS, timestamp_timezone=timezone_label)
+                    summary_units=SUMMARY_UNITS, timestamp_timezone=timezone_label,
+                    strava_stream_sources=[{k: observation[k] for k in ('source_id', 'summary_source_id', 'retrieved_at', 'mapping_version', 'requested', 'metadata', 'is_current')}
+                                           for observation in self.strava_stream_evidence(activity_id)])
 
     def preserve_export_snapshot(self, payload):
         """One exact CSV snapshot per byte identity, not one copy per row."""

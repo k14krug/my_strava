@@ -78,7 +78,9 @@ class StravaTests(unittest.TestCase):
                     start_latlng=[1,2],description='unnecessary',**changes)
 
     def client(self,*responses):
-        http=FakeHTTP(*responses);return ApiClient(CREDS,opener=http),http
+        http=FakeHTTP(*responses);client=ApiClient(CREDS,opener=http)
+        client.streams=lambda access,identity:{}  # These tests isolate metadata; stream HTTP is covered separately.
+        return client,http
 
     def count(self,table):return self.store.connection.execute('SELECT COUNT(*) FROM '+table).fetchone()[0]
 
@@ -313,7 +315,7 @@ class StravaTests(unittest.TestCase):
             self.assertEqual(db.execute("SELECT COUNT(*) FROM sqlite_master WHERE name='strava_api_sources'").fetchone()[0],0)
         with Store(root) as migrated:
             self.assertEqual(migrated.get_source(native['source_id']),before)
-            self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],5)
+            self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],6)
 
 
 if __name__=='__main__':unittest.main()

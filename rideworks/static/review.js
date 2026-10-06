@@ -36,20 +36,22 @@
       element.textContent = `${formatted} (${offset})`;
     }
   });
-  const payload = document.getElementById('native-records');
+  const nativePayload = document.getElementById('native-records');
+  const payload = nativePayload || document.getElementById('api-stream-samples');
+  const apiMode = !nativePayload;
   if (!payload) return;
   const records = JSON.parse(payload.textContent);
   const svg = document.getElementById('chart-svg');
   const container = document.getElementById('ride-chart');
   const readout = document.getElementById('sample-readout');
   const ns = 'http://www.w3.org/2000/svg';
-  const millis = records.map(record => record.timestamp === null ? null : Date.parse(record.timestamp));
+  const millis = apiMode ? [] : records.map(record => record.timestamp === null ? null : Date.parse(record.timestamp));
   const valid = millis.filter(t => t !== null && Number.isFinite(t));
   const sourceStart = Date.parse(container.dataset.startTime);
   const first = Number.isFinite(sourceStart) ? sourceStart : (valid[0] ?? 0);
-  const elapsed = millis.map(t => t === null || !Number.isFinite(t) ? null : (t - first) / 1000);
+  const elapsed = apiMode ? records.map(r=>r.time_offset) : millis.map(t => t === null || !Number.isFinite(t) ? null : (t - first) / 1000);
   const timed = elapsed.filter(t => t !== null);
-  const minimum = Math.min(0, ...timed), maximum = Math.max(0, ...timed);
+  const minimum = timed.reduce((a,b)=>Math.min(a,b),0), maximum = timed.reduce((a,b)=>Math.max(a,b),0);
   const span = Math.max(1, maximum - minimum);
   const formatDuration = seconds => {
     if (seconds === null) return 'Time unavailable';
@@ -70,7 +72,11 @@
     selected = Math.max(0, Math.min(records.length - 1, index));
     const record = records[selected], t = elapsed[selected];
     readout.textContent = `${formatDuration(t)} · Power ${sensor(record.power, 'W')} · Heart rate ${sensor(record.heart_rate, 'bpm')}`;
-    readout.dataset.recordIndex = record.record_index;
+    if(apiMode){
+      readout.dataset.sampleIndex = record.sample_index;
+      const absolute=new Date(Date.parse(container.dataset.startTime)+t*1000);
+      if(Number.isFinite(absolute.getTime())) readout.textContent += ' · '+absolute.toLocaleString();
+    }else readout.dataset.recordIndex = record.record_index;
     cursor.setAttribute('visibility', t === null ? 'hidden' : 'visible');
     if (t !== null) {
       cursor.setAttribute('x1', geometry.x(t)); cursor.setAttribute('x2', geometry.x(t));
@@ -92,7 +98,7 @@
     const limits = {};
     ['power', 'heart_rate'].forEach(signal => {
       const step = signal === 'power' ? 50 : 20;
-      limits[signal] = Math.max(step, Math.ceil(Math.max(0, ...records.map(r => r[signal] ?? 0)) / step) * step);
+      limits[signal] = Math.max(step, Math.ceil(records.reduce((maximum,r)=>Math.max(maximum,r[signal] ?? 0),0) / step) * step);
     });
     geometry = {left, right, x: t => left + (t - minimum) / span * (right - left),
       y: (v, signal) => bottom - v / limits[signal] * (bottom - top)};
@@ -131,13 +137,13 @@
       // Fill each observed segment separately: no fill bridges a missing
       // sample or time break, and the line still contains only native points.
       if (!signalIndex) make('path', {d: area, class: 'chart-power-area'});
-      make('path', {d: path, class: signalIndex ? 'chart-hr' : 'chart-power', 'data-native-points': count});
+      make('path', {d: path, class: signalIndex ? 'chart-hr' : 'chart-power', [apiMode ? 'data-api-points' : 'data-native-points']: count});
     });
     cursor = make('line', {x1: left, x2: left, y1: top, y2: bottom, class: 'chart-cursor', visibility: 'hidden'});
     markers = [make('circle', {r: 4, class: 'chart-point-power', visibility: 'hidden'}),
       make('circle', {r: 4, class: 'chart-point-hr', visibility: 'hidden'})];
     if (selected !== null) inspect(selected);
-    if (!timed.length) readout.textContent = 'No timestamped native samples available. Use arrow keys to inspect records.';
+    if (!timed.length) readout.textContent = apiMode ? 'No timed API samples available.' : 'No timestamped native samples available. Use arrow keys to inspect records.';
   }
   svg.addEventListener('pointermove', event => {
     const rect = svg.getBoundingClientRect();

@@ -198,7 +198,7 @@ def recent_context_panel(context):
     return f'''<section class="recent-context" aria-labelledby="recent-context-title" data-recent-status="{'available' if prior else 'unavailable'}"><div class="recent-heading"><h3 id="recent-context-title">Compared with previous 6 weeks</h3><a id="recent-performance" href="/performance">View Performance</a></div>{values}{difference}{contribution}<p class="recent-note">{escape(note)}</p><details id="recent-context-details"><summary>Comparison details</summary>{detail_rows(rows)}<p>The prior window is (Activity start − 42 days, Activity start), with both endpoints excluded. The current Activity is excluded from its own baseline. Only current trusted results with absolute Activity times participate. Highest raw watts win; exact ties use earliest Activity start, then Activity ID. The displayed watt difference subtracts the two displayed whole-watt values; raw averages remain above for inspection and baseline selection. No source summaries or older period bests substitute.</p></details></section>'''
 
 
-def review_page(analysis, metadata=None, recent=None):
+def review_page(analysis, metadata=None, recent=None, streams=None):
     summary = analysis['source_summary']['values']
     source, extraction = analysis['source'], analysis['extraction']
     best = analysis['best_20_minute_power']
@@ -292,10 +292,43 @@ def review_page(analysis, metadata=None, recent=None):
 <details><summary>Calculation details</summary>{detail_rows(best_rows)}<p>Complete 1,200-sample windows with one-second timestamps and no missing power. Earliest window wins a tie; whole watts round half up. No repaired or estimated samples.</p></details>{recent_context_panel(recent)}</section>
 <details class="panel provenance"><summary>Source &amp; provenance</summary><p>Ride summary values are FIT session source evidence. Sensor origins remain unknown; presence does not establish measurement origin.</p>{detail_rows(source_rows)}</details></div>
 <aside class="panel ride-summary"><h2>{icon('summary')}Ride summary</h2><p class="source-caption">FIT session source evidence</p>{detail_rows(summary_rows)}</aside></div>
-<script id="native-records" type="application/json">{payload}</script>''')
+<script id="native-records" type="application/json">{payload}</script>{stream_details(streams or [])}''')
 
 
-def thin_review_page(row):
+def stream_details(observations):
+    parts=[]
+    for observation in observations:
+        rows=[('Source ID',observation['source_id']),('Related API summary Source',observation['summary_source_id']),
+              ('Retrieved at (UTC)',observation['retrieved_at']),('Mapping',observation['mapping_version']),
+              ('Current stream observation',bool(observation['is_current'])),
+              ('Requested types',', '.join(observation['requested'])),('Summary start_date',observation['start_date'])]
+        for key,metadata in observation['metadata'].items():
+            rows += [(key+' '+field,value) for field,value in metadata.items()]
+        parts.append('<details class="panel provenance stream-provenance"><summary>Strava API stream evidence</summary>'
+                     '<p>Additional API source evidence; not a native-file extraction. Signal presence does not establish measured origin.</p>'
+                     +detail_rows(rows)+'</details>')
+    return ''.join(parts)
+
+
+def stream_chart(observation):
+    streams=observation['streams'];offsets=streams['time']['data']
+    power=streams.get('watts',{}).get('data',[None]*len(offsets))
+    hr=streams.get('heartrate',{}).get('data',[None]*len(offsets))
+    samples=[dict(sample_index=i,time_offset=t,power=power[i],heart_rate=hr[i]) for i,t in enumerate(offsets)]
+    payload=json.dumps(samples,allow_nan=False).replace("<", "\\u003c").replace("&", "\\u0026")
+    return f'''<section class="panel chart-panel" aria-labelledby="chart-title">
+<h2 id="chart-title">Ride power &amp; heart rate</h2><p class="source-caption">Strava API stream evidence</p>
+<div class="legend"><span><i class="power-swatch"></i>Power · W</span><span><i class="hr-swatch"></i>Heart rate · bpm</span></div>
+<div id="ride-chart" data-api-sample-count="{len(samples)}" data-start-time="{escape(observation['start_date'],quote=True)}"><svg id="chart-svg" role="img" aria-label="Strava API power and heart rate at returned elapsed time offsets" aria-describedby="chart-help"></svg></div>
+<div id="sample-readout" role="status" aria-live="polite">Move over the chart to inspect returned Strava samples.</div>
+<div class="chart-footer"><span>{len(samples):,} returned samples · elapsed time</span><span id="chart-help">Focus chart + arrow keys to inspect</span></div>
+<p class="source-caption">Returned time offsets are used directly. Missing values and gaps longer than one second break the lines; no intermediate samples are invented. These streams do not enter trusted Performance history.</p>
+<details><summary>Time mapping</summary><p>For local date/time inspection, the related Strava summary start_date plus the returned time offset supplies a presentation timestamp. Original offsets and source metadata are retained separately.</p></details>
+<noscript>Enable JavaScript to review the Strava stream chart.</noscript></section>
+<script id="api-stream-samples" type="application/json">{payload}</script>'''
+
+
+def thin_review_page(row, streams=None, stream_reason=None):
     sources = []
     for evidence in row['sources']:
         source, summary = evidence['source'], evidence['summary']
@@ -310,7 +343,7 @@ def thin_review_page(row):
                    'average_watts':'W','weighted_average_watts':'W','max_watts':'W','kilojoules':'kJ',
                    'average_heartrate':'bpm','max_heartrate':'bpm','average_cadence':'rpm','utc_offset':'s'}
             values += [(key.replace('_',' ').capitalize()+(f' ({units[key]})' if key in units else ''),value)
-                       for key,value in summary['values'].items()]
+                       for key,value in summary['values'].items() if key!='id']
             note = 'Strava API summaries are source evidence. Native streams and trusted best-20 results are unavailable from this source.'
         elif csv:
             values += [('Title', summary.get('title')), ('Activity type', summary.get('activity_type')),
@@ -338,8 +371,18 @@ def thin_review_page(row):
                            (f'Lap {i} maximum heart rate', sensor(lap.get('max_heart_rate'), 'bpm'))]
             note = 'Native source evidence is preserved. Detailed RideWorks review is not yet supported for this evidence. Signal presence does not establish measurement origin.'
         sources.append(f'<details class="panel provenance" open><summary>{escape(name)}</summary><p>{escape(note)}</p>{detail_rows(values)}</details>')
-    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Activity details</div><h1>{escape(row['title'])}</h1><p class="title-origin">{escape(row['title_origin'])}</p><p class="ride-meta">{browser_time(row)} · Type: {escape(row['activity_type'])} · Subtype: {escape(row['subtype'] or 'Unavailable')}</p></header>
-<section class="panel review-unavailable"><h2>Detailed RideWorks review unavailable</h2><p>This activity does not currently have a single supported FIT analysis source. Available source evidence is shown below; no charts or best-20 result are substituted.</p></section>
+    observations=streams or []
+    current=next((s for s in reversed(observations) if s['is_current']),None)
+    api_only=all(e['source']['kind']=='strava_api' for e in row['sources'])
+    if api_only and current and current['chart_unavailable_reason'] is None:
+        intro=stream_chart(current)
+    else:
+        from .strava_streams import REASONS
+        explanation=REASONS.get((current or {}).get('chart_unavailable_reason') or stream_reason or 'not_fetched','Stream review is unavailable.')
+        reason_note=f'<p>{escape(explanation)}</p>' if all(e['source']['kind']=='strava_api' for e in row['sources']) else ''
+        intro=f'<section class="panel review-unavailable"><h2>Detailed RideWorks review unavailable</h2><p>This activity does not currently have a single supported FIT analysis source. Available source evidence is shown below; no charts or best-20 result are substituted.</p>{reason_note}</section>'
+    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Activity details</div><h1>{escape(row['title'])}</h1><p class="title-origin">{escape(row['title_origin'])}</p><p class="ride-meta">{browser_time(row,compact=bool(api_only and current and current['chart_unavailable_reason'] is None))} · Type: {escape(row['activity_type'])} · Subtype: {escape(row['subtype'] or 'Unavailable')}</p></header>
+{intro}{stream_details(observations)}
 <section class="thin-sources" aria-label="Associated source evidence">{''.join(sources)}</section>''')
 
 
@@ -440,15 +483,18 @@ class Application:
                     if not snapshots:
                         return self.not_found()
                     metadata = presentation(snapshots[0])
+                    streams=store.strava_stream_evidence(activity_id)
+                    failure=store.connection.execute('''SELECT reason FROM strava_stream_attempts t JOIN strava_api_activities a ON a.external_id=t.external_id WHERE a.activity_id=?''',(activity_id,)).fetchone()
+                    stream_reason=failure[0] if failure else None
                     fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
                     if len(fit_sources) != 1:
-                        return 200, 'text/html', self.page(store, thin_review_page(metadata))
+                        return 200, 'text/html', self.page(store, thin_review_page(metadata,streams,stream_reason))
                     try:
                         analysis = analyze_activity(store, activity_id)
                     except RideWorksError:
-                        html = thin_review_page(metadata)
+                        html = thin_review_page(metadata,streams,stream_reason)
                     else:
-                        html = review_page(analysis, metadata, recent_context(store, activity_id))
+                        html = review_page(analysis, metadata, recent_context(store, activity_id),streams)
                     return 200, 'text/html', self.page(store, html)
         return self.not_found()
 

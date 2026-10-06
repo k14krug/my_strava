@@ -32,11 +32,16 @@ class SettingsTests(unittest.TestCase):
         self.http = FakeHTTP()
         self.credentials = CREDS
         self.settings = Settings(self.store.data_dir, credentials=self.configured,
-                                 client_factory=lambda credentials: ApiClient(credentials, opener=self.http))
+                                 client_factory=lambda credentials: self.metadata_client(credentials))
         self.settings.port = 8765
         self.app = Application(self.store.data_dir, settings_factory=lambda root: self.settings)
         self.clock = patch('rideworks.strava.time.time', return_value=self.now)
         self.clock.start(); self.addCleanup(self.clock.stop)
+
+    def metadata_client(self, credentials):
+        client=ApiClient(credentials, opener=self.http)
+        client.streams=lambda access,identity:{}  # Metadata/Settings tests; separate stream integration covers fetches.
+        return client
 
     def configured(self):
         if self.credentials is None:
@@ -142,7 +147,7 @@ class SettingsTests(unittest.TestCase):
         old_count = self.count('strava_api_sources')
         state = self.tokens.read(); state['expires_at'] = self.now; self.tokens.save(state)
         restarted = Settings(self.store.data_dir, credentials=self.configured,
-                             client_factory=lambda credentials: ApiClient(credentials, opener=self.http))
+                             client_factory=lambda credentials: self.metadata_client(credentials))
         restarted_app = Application(self.store.data_dir, settings_factory=lambda root: restarted)
         self.assertIn('1 new · 1 enriched · 0 unchanged', restarted_app.get('/settings')[2].decode())
         self.http.responses.extend([self.token_response(), Response([self.observation(), self.observation(identity=2, seconds=1)])])

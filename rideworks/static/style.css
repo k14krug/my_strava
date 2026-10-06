@@ -239,3 +239,5 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 .performance-update p { margin-top: 4px; }
 .performance-update button { padding: 8px 12px; border: 1px solid #a88c4c; border-radius: 5px; background: #fff; color: var(--navy); font: inherit; cursor: pointer; }
 .performance-update button:disabled { opacity: .65; cursor: wait; }
+
+.ride-meta time[data-compact-time] { white-space: nowrap; }

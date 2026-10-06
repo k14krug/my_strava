@@ -86,6 +86,8 @@ def verify(root, session):
             elif path == '/api/v3/athlete/activities':
                 time.sleep(.75)  # Allows the real browser to verify disabled action controls.
                 result = observations
+            elif path.startswith('/api/v3/activities/') and path.endswith('/streams'):
+                result = {}  # P2-05 regression fixture intentionally has no optional streams.
             elif path == '/oauth/revoke':
                 result = {}
             else:

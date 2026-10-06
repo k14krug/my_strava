@@ -678,3 +678,37 @@ success is separate from real authorization/sync acceptance.
 Screenshots and this file stay local/ignored. The verifier emits aggregate JSON
 and independently checks every eligible prior baseline without a production
 selector oracle or native stream reads, then verifies persisted history/restart.
+
+## Strava stream review (STRAVA-004)
+
+Normal **Sync now** also fetches `time,watts,heartrate,cadence,moving` sequentially
+for recent API-only cycling Activities that lack usable stream evidence. It
+reuses usable cached observations. Optional missing signals stay missing;
+stream failures leave successful metadata/checkpoint changes intact and are
+shown separately, with retry on a later manual sync. Rate/auth failures stop
+further stream requests without busy retry. The existing private token state
+and atomic refresh logic serve both metadata and streams.
+
+Stream Sources retain exact returned order/values, resolution, series type,
+original size, retrieval time, requested keys, mapping version and related API
+summary Source. Identical observations are reused; changed observations remain
+inspectable. These are separate from FIT/native records and Performance inputs.
+The stream JSON limit is 16 MiB (five arrays for long rides), while metadata/token
+responses retain their 2 MiB limit. Both use fixed HTTPS endpoints, redirect
+rejection and a 20-second timeout. No location streams are requested or retained.
+
+API-only review charts use returned offsets directly, with power/HR where
+available. Missing values and gaps over one second break paths; no intermediate
+samples are invented. Absolute inspection time explicitly maps the related
+summary start_date plus an original offset. Array length/sampling metadata must
+support pairing with time; ambiguous or duplicate/backward timing remains thin
+with an explanation. Summary average watts never substitute for a series.
+Source details distinguish stream observations from summary metadata. Supported
+FIT-backed review keeps its existing native graph and best-20; API streams are
+additional provenance only. Stream enrichment does not change trusted Performance
+eligibility or trigger a hidden rebuild.
+
+The task's bounded initial catch-up covered the seven known P2-05 API-only rides;
+it did not fetch streams across the historical archive. Stage A independently
+compared four overlap rides with FIT first. See
+`reports/STRAVA-004/verification.md` for the evidence and limits.

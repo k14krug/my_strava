@@ -17,6 +17,7 @@ from .strava_api import SyncError
 
 COUNTS = ('new_activities', 'existing_activities_enriched', 'unchanged_observations',
           'ambiguous_new_associations', 'performance_rebuild_recommended')
+STREAM_COUNTS = ('stream_enriched','stream_unavailable','stream_failed','stream_deferred','stream_reused')
 NOTICES = {
     'connected': 'Strava connected. You can sync now.',
     'disconnected': 'Strava disconnected. Your activity history is retained.',
@@ -55,6 +56,8 @@ class Settings:
             if not isinstance(value, dict):
                 return {}
             result = {'attention': value.get('attention') is True}
+            result.update({k:value[k] for k in STREAM_COUNTS if type(value.get(k)) is int and value[k]>=0})
+            result['stream_rate_limited']=value.get('stream_rate_limited') is True
             if type(value.get('successful_at')) is int and value['successful_at'] > 0:
                 result['successful_at'] = value['successful_at']
                 if all(type(value.get(k)) is int and value[k] >= 0 for k in COUNTS):
@@ -93,6 +96,13 @@ class Settings:
                        f'{saved[COUNTS[2]]:,} unchanged</p>')
             if saved[COUNTS[3]]:
                 outcome += f'<p>{saved[COUNTS[3]]:,} ambiguous local matches created separate Activities.</p>'
+            if saved.get('stream_enriched'):
+                noun = 'Activity' if saved['stream_enriched']==1 else 'Activities'
+                outcome += f"<p>Graphs added for {saved['stream_enriched']:,} {noun}.</p>"
+            if saved.get('stream_failed') or saved.get('stream_unavailable') or saved.get('stream_deferred'):
+                outcome += f"<p>Metadata sync succeeded. Graphs: {saved.get('stream_failed',0):,} fetch failures · {saved.get('stream_unavailable',0):,} unavailable · {saved.get('stream_deferred',0):,} deferred. Retry with a later Sync now.</p>"
+            if saved.get('stream_rate_limited'):
+                outcome += '<p>Stream enrichment stopped at a Strava rate limit without retry.</p>'
             outcome += '<p><a href="/?sort=newest">View Activities</a></p>'
         def action(name, label, secondary=False):
             button_class = ' class="secondary"' if secondary else ''
@@ -173,7 +183,9 @@ class Settings:
                             self.pending = state, time.monotonic() + 180
                             return self.redirect(authorization_url(client.client_id, f'http://127.0.0.1:{self.port}/strava/callback', state))
                     result = sync(store, client)
-                    self.remember({'attention': False, 'successful_at': result['before'], **{k: result[k] for k in COUNTS}})
+                    self.remember({'attention': result.get('stream_authorization_attention',False), 'successful_at': result['before'],
+                                   **{k: result[k] for k in COUNTS},**{k:result.get(k,0) for k in STREAM_COUNTS},
+                                   'stream_rate_limited':result.get('stream_rate_limited',False)})
         except (RideWorksError, OSError) as error:
             if path == '/settings/performance/rebuild':
                 self.notice = 'Performance rebuild failed. Existing results were retained. Check local source availability and try again; the update reminder stays until resolved.'
