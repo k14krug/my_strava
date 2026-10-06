@@ -21,8 +21,12 @@ The task starts with evidence, not UI implementation:
 4. only if the evidence supports it, persist Strava stream evidence and use it
    for Activity Review charts on post-export API-only rides.
 
-This task does **not** automatically make Strava API power eligible for trusted
-Performance history or personal records.
+Stage A has now established exact FIT/API agreement on the four overlap rides.
+By explicit Owner decision on 2026-10-06, STRAVA-004 also updates the versioned
+Performance eligibility policy so that **validated Strava API power-stream
+evidence may contribute to Performance when no file-backed power evidence is
+available**. This is a controlled policy revision, not a claim that all API
+streams are inherently equivalent to FIT.
 
 ## 2. Why this task exists
 
@@ -169,8 +173,10 @@ its raw/display result and selected elapsed window with the FIT result.
 This comparison must use an independent verifier rather than calling the
 production FIT analysis as its own oracle.
 
-Even an exact match here does **not** enroll API streams into trusted
-Performance history in STRAVA-004.
+The original JIT treated exact overlap agreement as research only. After the
+observed exact match and Owner review, that conservative boundary is superseded
+by §9: only API observations matching the validated evidence shape may become
+Performance-eligible under the new versioned policy.
 
 ### 5.3 HARD evidence stop
 
@@ -343,15 +349,18 @@ This result is calculated from **Strava API stream evidence**, not native FIT
 evidence. The panel must say so prominently enough that the provenance is not
 ambiguous.
 
-The API-stream ride-local result:
+The API-stream ride-local calculation is also the candidate calculation used by
+the Performance policy in §9. It remains source-attributable as Strava API
+stream evidence and must never be relabeled as native FIT evidence.
 
-- is allowed for this Activity Review only;
-- must **not** be persisted into the accepted trusted `performance_history`
-  cohort;
-- must **not** enter rolling/monthly/yearly/lifetime Performance;
-- must **not** receive prior-six-week trusted comparison;
-- must not cause the API Activity to be labeled eligible under
-  `virtual-native-power-v1`.
+If the Activity satisfies §9's API eligibility requirements, the same
+best-average result may be persisted into Performance history under
+`virtual-power-evidence-v2` and participate normally in rolling/monthly/yearly/
+lifetime Performance and the prior-six-week comparison.
+
+If the Activity does not satisfy §9, the ride-local panel may still show the
+result only when its own complete-window requirements are met, but it must state
+that it is excluded from Performance history and give the eligibility reason.
 
 Where no qualifying API watts/time window exists, show **Unavailable** with an
 honest reason such as no watts stream, activity too short, incomplete power, or
@@ -361,10 +370,10 @@ The calculation details should expose returned-offset window bounds, raw
 average, sample count, eligible-window count and the API-stream source/method
 without pretending to have native FIT record indices/timestamps.
 
-This is intentionally a narrower decision than trusted Performance eligibility:
-the four exact FIT/API overlap comparisons support using the API stream for an
-individual ride review, while longitudinal eligibility remains a separate
-future policy decision.
+The four exact FIT/API overlap comparisons are the evidence basis for the
+narrow API eligibility path in §9. Performance provenance remains explicit so a
+future policy can be recalculated without confusing API streams with file
+evidence.
 
 ### 8.3 API-only Activity without usable streams
 
@@ -372,29 +381,210 @@ Keep thin review and say why stream review is unavailable.
 
 Do not substitute summary average watts for a time series.
 
-## 9. Performance boundary
+## 9. Performance eligibility policy v2
 
-STRAVA-004 is primarily an Activity Review task. The Owner has explicitly
-requested normal Activity Review structural parity where current API evidence
-supports it, including a ride-local best-20 result as defined in §8.2.
+The original accepted policy `virtual-native-power-v1` was intentionally
+file/native-only. STRAVA-004 evidence showed that, for all four comparable
+overlap rides, current Strava power and heart-rate streams matched preserved FIT
+samples exactly at the same absolute timestamps, including zeros and the shared
+gap, and produced identical qualifying best-20 results/windows.
 
-Regardless of Stage A similarity:
+By explicit Owner decision, replace that policy for current Performance with:
 
-- do not automatically add API-only rides to `virtual-native-power-v1`;
-- do not change the 1,022 accepted eligible Performance cohort merely because
-  Strava streams were fetched;
-- do not recast API stream watts as FIT/native evidence;
-- do not add API-stream best-20 to lifetime/monthly/yearly/rolling trends;
-- do not change prior-six-week trusted context.
+```
+virtual-power-evidence-v2
+```
 
-Stage A should produce a clear recommendation for a **future** eligibility
-decision:
+The method remains `best-average-power-v1` / 1,200 seconds.
 
-1. API streams appear equivalent enough to investigate trusted analytical use;
-2. API streams are suitable for visual review but not trusted Performance;
-3. API streams are too transformed/incomplete for either use.
+This is an **eligibility policy**, not an assertion that every source is equally
+authoritative or that every Strava stream is measured power.
 
-That recommendation is evidence, not an automatic policy change.
+### 9.1 Classification boundary
+
+Only Activities classified as **Virtual Ride** are candidates.
+
+Outdoor Ride power remains excluded under the existing evidence-quality
+decision. STRAVA-004 does not change outdoor estimated/measured-power policy.
+
+### 9.2 Evidence precedence
+
+Evaluate evidence in this order:
+
+1. **File-backed power evidence controls when present.**
+   - Preserve the accepted native-file evaluation semantics.
+   - If exactly one supported file-backed power candidate is eligible, use it.
+   - If file-backed power exists but is ineligible because its own timing/power
+     evidence does not produce an eligible result, do **not** use the API stream
+     to bypass that failure.
+   - Existing multiple-native-source ambiguity remains an ineligible condition.
+2. **Strava API stream fallback is allowed only when there is no file-backed
+   power evidence for the Activity.**
+
+Therefore the four FIT/API overlaps remain file-backed Performance results; API
+streams are corroborating evidence on those Activities, not duplicate points.
+
+### 9.3 API-stream eligibility requirements
+
+An API-only Virtual Ride may contribute to Performance only when all of the
+following are true:
+
+- there is exactly one **current** Strava stream observation associated with the
+  current Strava summary observation;
+- the current Strava summary says `device_watts=true`; false or missing does
+  not establish eligible device power;
+- both `time` and `watts` streams are present;
+- both streams report `resolution=high`;
+- for both streams, `original_size == returned_length`;
+- the returned `time` and `watts` arrays have the same length;
+- time offsets are finite non-negative integer seconds, strictly increasing;
+- watts values are finite non-negative numeric values or explicit missing
+  values as supported by the retained stream contract;
+- the accepted complete-window calculation finds at least one window of exactly
+  1,200 returned samples with consecutive one-second offsets and complete power;
+- zero watts count;
+- gaps, missing power, duplicate/backward timing and non-one-second edges
+  invalidate affected windows;
+- no interpolation, resampling, smoothing or repair occurs.
+
+The best result uses the same raw-max / earliest-exact-tie /
+whole-watt-half-up rules as the file-backed method.
+
+A `high` label alone is not sufficient; the returned arrays/timing must pass
+the checks above. Conversely, do not manufacture extra requirements not backed
+by the validated overlap evidence.
+
+### 9.4 API ineligibility reasons
+
+Persist explicit reasons such as:
+
+- `api_power_stream_unavailable`;
+- `api_device_watts_not_confirmed`;
+- `api_stream_not_high_resolution`;
+- `api_stream_not_full_length`;
+- `api_stream_length_mismatch`;
+- `api_stream_invalid_timing`;
+- `activity_shorter_than_required`;
+- `no_complete_timestamp_contiguous_window`;
+- `no_complete_power_window`.
+
+The two current HR-only rides are expected to remain legitimately ineligible and
+must **not** keep any warning/banner active once Performance is current.
+
+### 9.5 Durable provenance
+
+A persisted API-stream Performance result must remain distinguishable from a
+file-backed result.
+
+Do not fake an extraction ID or insert Strava stream rows into native
+`records`.
+
+The existing `performance_history.source_id` / `extraction_id` fields may
+remain null for an API-stream result if that is the smallest safe schema choice.
+The result JSON and Performance input signature must explicitly retain at least:
+
+- evidence kind = Strava API stream;
+- stream Source ID;
+- related current Strava summary Source ID;
+- stream observation digest/mapping version;
+- `device_watts` source value;
+- method/policy/duration;
+- returned-offset window bounds;
+- raw average / rounded watts;
+- eligible-window count.
+
+File-backed results retain their current source/extraction provenance.
+
+### 9.6 Performance input signature and policy migration
+
+Performance freshness must include the evidence actually used by v2.
+
+For API-stream candidates, changes to the current stream observation, related
+current summary observation, classification, `device_watts`, or relevant
+mapping/content digest must make the stored result stale/pending.
+
+Changing `POLICY` from v1 to v2 must itself make the old v1 history non-current
+until a v2 rebuild succeeds. Old v1 rows may remain as historical/reproducible
+evidence; they must not be selected by the current Performance page.
+
+A v2 rebuild must independently verify that all **1,022 existing file-backed
+eligible results reproduce unchanged** and add only API-stream results that pass
+§9.3. On the current live review store, the expected evidence-derived outcome is
+**1,027 eligible = 1,022 file-backed + 5 API-stream**, with the two HR-only
+post-export Activities remaining ineligible.
+
+### 9.7 Six-week comparison and rider-facing wording
+
+Once an API-stream Activity is eligible under v2, it participates normally in
+the exact accepted prior window `(t - 42 days, t)`, including the
+**Compared with previous 6 weeks** Activity Review panel.
+
+Current and prior results may come from different eligible evidence kinds.
+Winner/tie semantics remain raw best watts, then earliest Activity start, then
+stable Activity ID.
+
+The panel/provenance must make the current result's evidence kind inspectable
+without cluttering the main comparison.
+
+Avoid presenting **Trusted Performance** as an absolute rider-facing quality
+label. Prefer **Performance**, **Performance history**, or
+**Performance-eligible evidence**. The versioned policy and evidence provenance
+carry the actual trust/eligibility semantics.
+
+### 9.8 Sync converges Performance automatically
+
+Revise the earlier explicit-rebuild workflow.
+
+After a successful **Sync now** has completed metadata and bounded stream
+enrichment:
+
+1. inspect current Performance freshness under the current policy;
+2. if `pending == 0`, skip the rebuild;
+3. if any result is missing/stale/pending — including because the policy version
+   changed — run the same atomic `rebuild_performance(store)` used by the
+   maintenance CLI;
+4. report the Performance update as part of the sync outcome.
+
+This must be shared behavior for the in-app Sync now path and the secondary CLI
+sync path; do not maintain two synchronization/rebuild policies.
+
+A successful ordinary sync should therefore leave Performance current without a
+second rider action.
+
+The rebuild remains atomic. If it fails:
+
+- keep successfully synchronized source/stream evidence and the sync checkpoint;
+- preserve the previously committed Performance rows;
+- do not claim Performance is current;
+- show an actionable **Performance update incomplete** state and retain a manual
+  **Retry Performance update** / rebuild action;
+- a later sync must retry while pending remains even if no additional Strava
+  evidence changed.
+
+Do not roll back valid synchronized source evidence merely because derived
+Performance recalculation failed.
+
+### 9.9 Banner semantics
+
+The app-wide Performance banner is now an **exception/freshness indicator**, not
+a routine second step after Sync now.
+
+Normal successful sync + rebuild => no banner.
+
+Show the banner only while current-policy Performance has unresolved
+missing/stale/pending results, for example after:
+
+- a rebuild failure/interruption;
+- a policy-version change before the next successful convergence;
+- relevant evidence changed outside the normal successful sync path.
+
+Suggested rider-facing wording:
+
+> **Performance update incomplete** — RideWorks has new or changed evidence that
+> is not yet reflected in Performance. Retry Performance update.
+
+Legitimately ineligible Activities (for example the two HR-only rides) do not
+keep the banner active once they have current v2 ineligible result rows.
 
 ## 10. Timing semantics
 
@@ -467,7 +657,9 @@ Cover at minimum:
 - API-only + usable streams becomes stream-backed review;
 - API-only + unavailable streams stays thin;
 - API summary watts never become a time series;
-- no change to trusted Performance eligibility.
+- file-backed Performance precedence is retained;
+- qualifying API-only Virtual Ride stream evidence may enter v2 Performance;
+- ineligible API evidence retains an explicit reason.
 
 ### UI
 
@@ -475,14 +667,27 @@ Cover at minimum:
 - API-only Ride summary panel uses available Strava summary fields without FIT-only invention;
 - post-export API-only power/HR chart;
 - qualifying API-only watts/time stream shows activity-local best-20 with exact accepted complete-window semantics;
-- API-only local best-20 is labeled Strava API stream evidence and has no trusted six-week context;
-- HR-only / no-watts stream shows Best 20-minute power as Unavailable rather than using summary watts;
-- API-stream local best-20 does not create/update `performance_history` and leaves the 1,022 accepted cohort unchanged;
+- API-only local best-20 is labeled Strava API stream evidence;
+- qualifying API-only v2 result shows Compared with previous 6 weeks using the exact accepted prior-window semantics;
+- HR-only / no-watts stream shows Best 20-minute power as Unavailable rather than using summary watts and persists a current ineligible Performance result;
+- all 1,022 existing file-backed eligible results reproduce unchanged under v2;
+- current live cohort becomes 1,027 eligible: 1,022 file-backed + 5 API-stream;
+- FIT/API overlap rides remain file-backed Performance results, never duplicate API points;
+- API stream with device_watts false/missing, non-high/full-length evidence, malformed timing or incomplete window remains ineligible;
+- Performance provenance distinguishes file vs Strava API stream;
+- user-facing pages avoid using Trusted Performance as an absolute quality label;
 - source label/provenance;
 - LA/Tokyo absolute date behavior;
 - desktop/phone no overflow;
 - restart retains stream-backed review;
-- P2-05 Settings/Activities/Performance/reminder regressions remain intact.
+- Sync now automatically rebuilds when Performance is pending under v2 and reports Performance updated;
+- idempotent sync with pending=0 skips rebuild;
+- policy migration v1→v2 triggers rebuild even when Strava returns no new Activities/streams;
+- rebuild failure preserves synchronized evidence/checkpoint and prior committed Performance, leaves pending state, shows Performance update incomplete, and a later sync retries;
+- HR-only current ineligible results do not keep the banner visible;
+- successful sync/rebuild clears the banner without a second Owner action;
+- manual rebuild/retry remains available only as recovery;
+- P2-05 Settings/Activities/Performance regressions remain intact.
 
 ## 13. Live verification
 
@@ -504,9 +709,14 @@ Required live evidence:
 7. API-only Activity Review graphs for the recent post-export rides that return
    usable power/HR;
 8. FIT-backed overlap reviews unchanged;
-9. accepted 1,022 Performance eligibility unchanged;
-10. restart/idempotence;
-11. SQLite integrity/foreign keys.
+9. v2 rebuild independently proves all 1,022 accepted file-backed eligible results unchanged;
+10. exactly the five qualifying API-only rides join Performance, for 1,027 eligible total on the current store;
+11. the two HR-only rides have current explicit ineligible results and do not create a banner;
+12. at least one qualifying API-only ride shows the normal Compared with previous 6 weeks panel;
+13. run Sync now after the v2 policy change and prove it automatically converges Performance without a separate rebuild click;
+14. rerun Sync now with no changes and prove it skips unnecessary rebuild/network stream fetches;
+15. restart/idempotence;
+16. SQLite integrity/foreign keys.
 
 ## 14. Verification report
 
@@ -551,15 +761,20 @@ After stream-backed Activity Review is available:
 - point the Owner to at least the newest API-only ride and one FIT-backed
   overlap;
 - show source/provenance details;
-- show the API-only ride with normal summary cards, chart, ride-local best-20 (when qualified) and Ride summary;
-- stop for Owner review of whether the API-only Activity Review as a whole is useful, structurally complete enough, and honest about source/eligibility.
+- show the API-only ride with normal summary cards, chart, Performance-eligible best-20, Ride summary and Compared with previous 6 weeks;
+- show Settings after Sync now with Performance already current and no routine rebuild banner;
+- demonstrate an exception/banner path synthetically or locally without corrupting the live store;
+- stop for Owner review of whether Activity Review and Sync now now behave as one coherent workflow.
 
 ### Gate 2 — HARD — Analyst
 
 After explicit Owner approval:
 
 - verify Stage A evidence and its conclusion;
-- verify no trusted Performance policy changed;
+- verify `virtual-power-evidence-v2` exactly implements the Owner-approved eligibility/preference rules;
+- independently verify 1,022 file-backed results unchanged and the five live API-only results eligible, with two HR-only results explicitly ineligible;
+- verify API/FIT overlap precedence and no duplicate Performance points;
+- verify automatic post-sync Performance convergence and exception-only banner semantics;
 - verify source precedence/provenance/timing;
 - verify bounded API access and no historical stream harvest;
 - verify tests/restart/idempotence/integrity;
@@ -572,7 +787,7 @@ Do not begin Phase 3 automatically after STRAVA-004.
 STRAVA-004 does not implement:
 
 - historical bulk stream harvesting;
-- automatic trusted Performance eligibility for API streams;
+- broader/unvalidated API-stream eligibility beyond the exact v2 rules in §9;
 - new power-duration policies;
 - TSS/CTL/ATL/TSB;
 - FTP history;
@@ -594,7 +809,7 @@ Stop and report if:
 - stream timing cannot support an honest chart without interpolation/invention;
 - live stream access unexpectedly needs broader OAuth scope;
 - the task would require historical API stream crawling;
-- implementation would change trusted Performance eligibility;
+- implementation would broaden API Performance eligibility beyond §9 without another Owner decision;
 - stream enrichment would require a generalized source-reconciliation redesign;
 - Phase 3/dashboard work begins to enter scope.
 
@@ -606,11 +821,14 @@ At Owner Gate provide:
 - focused/full test counts;
 - Stage A comparison summary;
 - graph-suitability conclusion;
-- trusted-Performance conclusion;
+- Performance-v2 eligibility conclusion and exact policy identifier;
 - number of recent API-only Activities stream-enriched;
 - number with usable power/HR graphs;
-- number with qualifying API-stream ride-local best-20 results and number unavailable;
-- proof trusted Performance remains unchanged;
+- number of API-only Activities eligible/ineligible for Performance and reasons;
+- independent proof all 1,022 file-backed results are unchanged;
+- final eligible cohort count (expected 1,027 on current live evidence);
+- proof qualifying API ride receives prior-six-week context;
+- proof Sync now automatically converges Performance and leaves no routine banner;
 - bounded live API request count;
 - review URL;
 - verification report path;

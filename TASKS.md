@@ -69,14 +69,17 @@ Only one implementation/research task should normally be `in_progress`.
 * preserve API stream provenance distinctly from FIT/native-file evidence
 * keep FIT-backed review authoritative when a supported FIT exists
 * allow API-only post-export rides to gain stream-backed power/HR charts when evidence is adequate
-* keep trusted Performance eligibility unchanged in this task
+* apply Owner-approved `virtual-power-evidence-v2` with file-backed power precedence and strict API fallback eligibility
+* automatically converge Performance after normal Sync now; keep the banner for unresolved freshness/failure
 * perform only bounded recent/post-export stream access; no historical stream harvest
+
+**Current Owner correction:** adopt `virtual-power-evidence-v2`, admit only validated API-only Virtual Ride power streams under strict evidence rules, preserve file precedence, and make Sync now automatically rebuild Performance only when current history is pending/stale. The Performance banner becomes an exception/failure state rather than a routine second step.
 
 **Acceptance:** See `docs/tasks/STRAVA-004.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Current result:** Owner Activity Review correction implemented from Analyst JIT `d88033b` on draft [PR #18](https://github.com/k14krug/my_strava/pull/18); re-presented Gate 1 — HARD — Owner. Four exact power/HR overlaps; seven API-only reviews with summary cards and Ride summary (five qualifying local best-20 results, two HR-only unavailable). 243 full / 57 focused tests and Chromium/restart/idempotence/integrity checks passed. No additional live stream requests; trusted Performance and all 16 accepted tables unchanged, 1,022 eligible / 0 pending. See `reports/STRAVA-004/verification.md`. Awaiting Owner approval; Analyst acceptance remains pending.
+**Current result:** addressing the Owner-authorized Performance-v2 and automatic sync-convergence correction on PR #18 from updated Analyst JIT `f9711f4` on refreshed main `2e3ca9b`. Previous Activity Review implementation and 243/57 verification remain recorded in `reports/STRAVA-004/verification.md`. Expected live migration: 1,022 unchanged file-backed results + five API results = 1,027 eligible / zero pending; two HR-only rides current/ineligible. Re-present HARD — Owner after verification.
 
 **Dependency:** Phase 2 accepted / complete.
 
