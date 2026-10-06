@@ -3,7 +3,7 @@
 **Date:** 2026-10-05. **Branch / PR:** `task/p2-05-strava-sync` / [#17](https://github.com/k14krug/my_strava/pull/17).
 **Runtime implementation:** `e4e77ffd5fa3e092038cecbba38f6d00446da084` (Settings foundation `c6c89f5`).
 **Controlling main/JIT:** `e14c8c0`; includes `61d2ac7` explicit rebuild/reminder authorization.
-P2-05 remains **in_progress**, stopped at **Gate 1 HARD — Owner**. Owner approval and Analyst acceptance are pending. Phase 3 has not begun.
+P2-05 remains **in_progress**. **Gate 1 HARD — Owner is approved**; stopped at **Gate 2 HARD — Analyst / Phase 2 acceptance**. The next implementation task has not begun.
 
 ## Normal workflow and action safety
 
@@ -173,3 +173,13 @@ Published evidence is aggregate-only. Personal archives/DBs, credentials/tokens,
 IDs/titles/coordinates/routes/screenshots remain local/ignored. Review needed: Owner's
 in-app workflow and corrected Activities/rebuild/reminder behavior. After explicit Owner
 approval, record it and stop at **HARD — Analyst / Phase 2 acceptance**. No Phase 3 work.
+
+
+## Owner approval and Gate 2 handoff
+
+On **2026-10-05**, the Owner approved the corrected P2-05 in-app Strava
+workflow after live review of Settings, corrected newest-first Activities,
+persistent Performance-update reminder, and explicit in-app Performance rebuild.
+
+P2-05 remains `in_progress` pending final Analyst / Phase 2 acceptance.
+The next implementation task has not begun.
