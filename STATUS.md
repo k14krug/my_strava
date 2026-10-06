@@ -10,7 +10,7 @@
 
 **Implementation head:** `e4e77ffd5fa3e092038cecbba38f6d00446da084`; subsequent publication updates verification tooling/evidence/status.
 
-**Implementation state:** awaiting_owner_review — /TASK corrections under Analyst JIT on main `e14c8c0` complete. Stopped at Gate 1 HARD — Owner. No Owner approval or Analyst acceptance claimed.
+**Implementation state:** ready_for_review — Gate 1 HARD — Owner approved. Stopped at Gate 2 HARD — Analyst / Phase 2 acceptance.
 
 **Implemented:** normal in-app Settings Connect / Sync now / status / Disconnect; CLI secondary, shared OAuth/token/sync functions. API UTC `Z` dates now parse on Python 3.10 and participate in local display/sorting; View Activities links to the normal browser. Persistent app-wide Performance freshness reminder and explicit POST/nonce-protected Rebuild Performance use accepted atomic logic. Sync never rebuilds automatically.
 
@@ -24,4 +24,4 @@
 
 **Policy boundary:** the documented Strava durable-history/caching/deletion tension remains under JIT §4.6's Owner decision. Manual overlap does not guarantee old-edit/delete detection; public/unattended integration requires revisiting webhooks.
 
-**Next action:** Owner reviews Settings, corrected newest-first Activities and explicit rebuild/reminder behavior. After explicit Owner approval, set ready_for_review and stop at HARD — Analyst / Phase 2 acceptance. Do not begin Phase 3.
+**Next action:** Analyst reviews PR #17 against the final P2-05 JIT and Phase 2 acceptance contract. Keep P2-05 `in_progress`; do not begin the next implementation task automatically.
