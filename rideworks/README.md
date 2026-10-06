@@ -708,6 +708,18 @@ FIT-backed review keeps its existing native graph and best-20; API streams are
 additional provenance only. Stream enrichment does not change trusted Performance
 eligibility or trigger a hidden rebuild.
 
+Stream-backed API-only rides use the normal Activity Review hierarchy: four
+summary cards, power/HR chart, ride-local Best 20-minute power, and Ride summary.
+Cards and Ride summary retain current Strava API summary evidence; supplied
+averages are not recalculated from the stream. The local best-20 is explicitly
+RideWorks-calculated from Strava API stream evidence. It requires 1,200 complete
+power samples at exact consecutive one-second returned offsets, counts zeros,
+and rejects windows crossing gaps or missing power. Raw maximum wins, exact ties
+choose the earliest window, and displayed watts round half up. No qualifying
+window (including HR-only streams) shows Unavailable with a reason. Returned-offset
+bounds and calculation/source details stay inspectable. This read-only review
+result never enters trusted Performance or prior-six-week comparisons.
+
 The task's bounded initial catch-up covered the seven known P2-05 API-only rides;
 it did not fetch streams across the historical archive. Stage A independently
 compared four overlap rides with FIT first. See

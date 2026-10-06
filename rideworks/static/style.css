@@ -65,6 +65,10 @@ header { margin-bottom: 14px; }
 .best-value { font-size: 28px; font-weight: 650; line-height: 1.2; letter-spacing: -.5px; margin-left: 28px; }
 .window-context { font-size: 12px; }
 .best-panel details { grid-column: 1 / -1; margin-top: 6px; border-top: 1px solid var(--border); padding-top: 9px; }
+.api-best20 > .source-caption { grid-column: 1 / -1; }
+@media (max-width: 620px) {
+  .api-best20 > .best-value, .api-best20 > .window-context { grid-column: 1 / -1; }
+}
 .recent-context { grid-column: 1 / -1; border: 1px solid #d3dce6; border-radius: 4px; background: #f3f6fa; padding: 14px; margin-top: 8px; min-width: 0; }
 .recent-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 14px; }
 .recent-heading h3 { font-size: 16px; font-weight: 650; margin: 0; }

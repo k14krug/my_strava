@@ -53,6 +53,64 @@ def chart_reason(streams):
     return None if available else 'power_and_hr_missing'
 
 
+def review_best20(observation):
+    """On-demand ride-local API result; returned offsets, no native conversion/write.
+
+    Match best-average-power-v1 using rolling integer sums and exact timing edges.
+    The independent Stage A prefix-sum verifier remains a separate oracle.
+    """
+    from .analysis import BEST_20_METHOD, WINDOW_SAMPLES
+    streams = observation['streams']
+    result = dict(source_id=observation['source_id'], summary_source_id=observation['summary_source_id'],
+                  origin='calculated', evidence_kind='Strava API stream evidence', method=BEST_20_METHOD,
+                  duration_seconds=WINDOW_SAMPLES, status='unavailable', reason=None,
+                  sample_count=None, eligible_window_count=0, start_offset=None,
+                  end_exclusive_offset=None, average_watts=None, rounded_watts=None)
+    time, watts = streams.get('time'), streams.get('watts')
+    if watts is None:
+        result['reason'] = 'watts_stream_missing'
+        return result
+    if time is None:
+        result['reason'] = 'time_missing'
+        return result
+    offsets, powers = time['data'], watts['data']
+    if (len(offsets) != len(powers)
+            or any(time[field] != watts[field] for field in ('original_size', 'resolution', 'series_type'))):
+        result['reason'] = 'signal_time_pairing_ambiguous'
+        return result
+    if len(offsets) < WINDOW_SAMPLES:
+        result['reason'] = 'activity_shorter_than_required'
+        return result
+    bad_edges = [0] + [int(b-a != 1) for a,b in zip(offsets,offsets[1:])]
+    total = missing = bad_timing = timestamp_windows = 0
+    best_total = best_start = None
+    for end, power in enumerate(powers):
+        total += power if power is not None else 0
+        missing += power is None
+        bad_timing += bad_edges[end]
+        if end >= WINDOW_SAMPLES:
+            leaving = powers[end-WINDOW_SAMPLES]
+            total -= leaving if leaving is not None else 0
+            missing -= leaving is None
+            bad_timing -= bad_edges[end-WINDOW_SAMPLES+1]
+        if end < WINDOW_SAMPLES-1 or bad_timing:
+            continue
+        timestamp_windows += 1
+        if missing:
+            continue
+        result['eligible_window_count'] += 1
+        if best_total is None or total > best_total:
+            best_total, best_start = total, end-WINDOW_SAMPLES+1
+    if best_start is None:
+        result['reason'] = ('no_complete_one_second_window' if not timestamp_windows else 'incomplete_power')
+        return result
+    result.update(status='available', sample_count=WINDOW_SAMPLES,
+                  start_offset=offsets[best_start], end_exclusive_offset=offsets[best_start]+WINDOW_SAMPLES,
+                  average_watts=best_total/WINDOW_SAMPLES,
+                  rounded_watts=(best_total+WINDOW_SAMPLES//2)//WINDOW_SAMPLES)
+    return result
+
+
 REASONS = {
     'not_fetched': 'Strava stream evidence has not been fetched yet.',
     'start_context_changed': 'Strava start-date evidence changed after the stream fetch. Retry with a later Sync now.',

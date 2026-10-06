@@ -328,7 +328,65 @@ def stream_chart(observation):
 <script id="api-stream-samples" type="application/json">{payload}</script>'''
 
 
+def api_review_page(row, observation, observations, source_details):
+    from .strava_streams import review_best20
+    summary_source = next(e for e in row['sources'] if e['source']['kind']=='strava_api' and e['source']['is_current'])
+    summary = summary_source['summary']['values']
+    cards = ''.join(metric(name, value, symbol) for name, value, symbol in [
+        ('Elapsed duration', duration(summary.get('elapsed_time')), 'duration'),
+        ('Distance', distance(summary.get('distance')), 'distance'),
+        ('Average power', sensor(summary.get('average_watts'), 'W'), 'power'),
+        ('Average heart rate', sensor(summary.get('average_heartrate'), 'bpm'), 'heart'),
+    ])
+    summary_rows = [
+        ('Elapsed duration', duration(summary.get('elapsed_time'))),
+        ('Moving duration', duration(summary.get('moving_time'))),
+        ('Distance', distance(summary.get('distance'))),
+        ('Ascent', ascent(summary.get('total_elevation_gain'))),
+        ('Average power', sensor(summary.get('average_watts'), 'W')),
+        ('Maximum power', sensor(summary.get('max_watts'), 'W')),
+        ('Average heart rate', sensor(summary.get('average_heartrate'), 'bpm')),
+        ('Maximum heart rate', sensor(summary.get('max_heartrate'), 'bpm')),
+        ('Average cadence', sensor(summary.get('average_cadence'), 'rpm')),
+        ('Energy', sensor(summary.get('kilojoules'), 'kJ')),
+    ]
+    best = review_best20(observation)
+    reasons = {
+        'watts_stream_missing': 'No Strava watts stream is available.',
+        'time_missing': 'No Strava time stream is available.',
+        'signal_time_pairing_ambiguous': 'Watts and time cannot be paired without assumptions.',
+        'activity_shorter_than_required': 'Fewer than 1,200 returned samples; a complete 20-minute window is unavailable.',
+        'no_complete_one_second_window': 'No complete window of 1,200 consecutive one-second offsets.',
+        'incomplete_power': 'Every complete one-second window contains missing power.',
+    }
+    window_text = reasons.get(best['reason'], '')
+    if best['status']=='available':
+        window_text = f"{duration(best['start_offset'])}–{duration(best['end_exclusive_offset'])} elapsed · {best['sample_count']:,} returned samples"
+    best_rows = [('Origin', 'RideWorks-calculated from Strava API stream evidence'),
+                 ('Method/version', best['method']), ('Stream Source ID', best['source_id']),
+                 ('Related API summary Source ID', best['summary_source_id']),
+                 ('Retrieved at (UTC)', observation['retrieved_at']), ('Stream mapping', observation['mapping_version']),
+                 ('Status', best['status']), ('Unavailable reason', best['reason']),
+                 ('Samples in window', best['sample_count']),
+                 ('Returned-offset start (inclusive, seconds)', best['start_offset']),
+                 ('Returned-offset end (exclusive, seconds)', best['end_exclusive_offset']),
+                 ('Unrounded average', sensor(best['average_watts'], 'W')),
+                 ('Eligible windows', best['eligible_window_count'])]
+    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(row['title'])}</h1><span class="title-origin">{escape(row['title_origin'])}</span></div><p class="ride-meta">{browser_time(row,compact=True)}<span class="meta-separator">·</span>Type: {escape(row['activity_type'])}<span class="meta-separator">·</span>Subtype: {escape(row['subtype'] or 'Unavailable')}<span class="meta-separator">·</span>Strava API source</p></header>
+<section aria-label="Strava API summary evidence"><p class="source-caption">Strava API summary evidence · supplied averages</p><div class="metrics">{cards}</div></section>
+<div class="review-layout"><div class="review-main">{stream_chart(observation)}
+<section class="panel best-panel api-best20" data-best20-status="{best['status']}"><div><h2>{icon('power')}Best 20-minute power</h2><p>RideWorks-calculated from Strava API stream evidence</p></div><strong class="best-value">{sensor(best['rounded_watts'],'W')}</strong><p class="window-context">{escape(window_text)}</p>
+<p class="source-caption">Activity Review only; excluded from trusted Performance and previous-six-week comparisons.</p>
+<details><summary>Calculation details</summary>{detail_rows(best_rows)}<p>Exactly 1,200 complete power samples at consecutive one-second returned offsets. Zero watts count. Highest raw average wins; exact ties choose the earliest window; displayed watts round half up. No interpolation or repaired samples.</p></details></section>
+{stream_details(observations)}<section class="thin-sources" aria-label="Associated source evidence">{source_details}</section></div>
+<aside class="panel ride-summary"><h2>{icon('summary')}Ride summary</h2><p class="source-caption">Strava API summary evidence</p>{detail_rows(summary_rows)}<details><summary>Summary source</summary>{detail_rows([('Source ID',summary_source['source']['source_id']),('Retrieved at (UTC)',summary_source['source']['imported_at']),('Mapping',summary_source['extraction']['mapping_version'])])}<p>Values are supplied by Strava; averages are not calculated from the retained API stream. Stream observations retain their own related summary Source.</p></details></aside></div>''')
+
+
 def thin_review_page(row, streams=None, stream_reason=None):
+    observations=streams or []
+    current=next((s for s in reversed(observations) if s['is_current']),None)
+    api_only=all(e['source']['kind']=='strava_api' for e in row['sources'])
+    rich_api=bool(api_only and current and current['chart_unavailable_reason'] is None)
     sources = []
     for evidence in row['sources']:
         source, summary = evidence['source'], evidence['summary']
@@ -370,12 +428,9 @@ def thin_review_page(row, streams=None, stream_reason=None):
                            (f'Lap {i} average heart rate', sensor(lap.get('avg_heart_rate'), 'bpm')),
                            (f'Lap {i} maximum heart rate', sensor(lap.get('max_heart_rate'), 'bpm'))]
             note = 'Native source evidence is preserved. Detailed RideWorks review is not yet supported for this evidence. Signal presence does not establish measurement origin.'
-        sources.append(f'<details class="panel provenance" open><summary>{escape(name)}</summary><p>{escape(note)}</p>{detail_rows(values)}</details>')
-    observations=streams or []
-    current=next((s for s in reversed(observations) if s['is_current']),None)
-    api_only=all(e['source']['kind']=='strava_api' for e in row['sources'])
-    if api_only and current and current['chart_unavailable_reason'] is None:
-        intro=stream_chart(current)
+        sources.append(f'<details class="panel provenance"{"" if rich_api else " open"}><summary>{escape(name)}</summary><p>{escape(note)}</p>{detail_rows(values)}</details>')
+    if rich_api:
+        return api_review_page(row,current,observations,''.join(sources))
     else:
         from .strava_streams import REASONS
         explanation=REASONS.get((current or {}).get('chart_unavailable_reason') or stream_reason or 'not_fetched','Stream review is unavailable.')

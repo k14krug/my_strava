@@ -12,7 +12,7 @@ import test_rideworks_strava as fixture
 from rideworks.strava import (ApiClient, ApiError, AuthenticationError, MAX_JSON, MAX_STREAM_JSON,
                               STREAM_KEYS, TokenFile, refreshed_connection)
 from rideworks.strava_api import SyncError
-from rideworks.strava_streams import parse_streams
+from rideworks.strava_streams import parse_streams, review_best20
 
 spec=importlib.util.spec_from_file_location('stream_comparison',Path(__file__).resolve().parents[1]/'tools/compare_rideworks_strava_streams.py')
 comparison=importlib.util.module_from_spec(spec);spec.loader.exec_module(comparison)
@@ -118,6 +118,62 @@ class StreamTests(unittest.TestCase):
         self.assertEqual(len(http.requests),1)
 
 
+class ApiReviewBest20Tests(unittest.TestCase):
+    def observed(self, offsets, powers):
+        return dict(source_id='synthetic-stream-source',summary_source_id='synthetic-summary-source',
+                    streams=parse_streams(dict(time=stream(offsets),watts=stream(powers))))
+
+    def test_exact_boundary_zero_tie_and_half_up_with_returned_bounds(self):
+        best=review_best20(self.observed(list(range(17,1217)),[120]*600+[121]*600))
+        self.assertEqual(best['status'],'available');self.assertEqual(best['average_watts'],120.5)
+        self.assertEqual(best['rounded_watts'],121);self.assertEqual(best['eligible_window_count'],1)
+        self.assertEqual((best['start_offset'],best['end_exclusive_offset'],best['sample_count']),(17,1217,1200))
+        self.assertEqual(best['method'],'best-average-power-v1')
+        self.assertNotIn('extraction_id',best);self.assertNotIn('start_record_index',best);self.assertNotIn('start_timestamp',best)
+        zeros=review_best20(self.observed(list(range(1300)),[0]*1300))
+        self.assertEqual((zeros['rounded_watts'],zeros['start_offset'],zeros['eligible_window_count']),(0,0,101))
+
+    def test_raw_maximum_beats_earlier_equal_displayed_watts(self):
+        best=review_best20(self.observed(list(range(1201)),[120]*1200+[121]))
+        self.assertEqual(best['rounded_watts'],120);self.assertGreater(best['average_watts'],120)
+        self.assertEqual(best['start_offset'],1)
+
+    def test_gap_duplicate_backward_and_missing_invalidate_only_affected_windows(self):
+        for offsets,powers,start in (([0]+list(range(5,1205)),[9999]+[100]*1200,5),
+                                     ([0]+list(range(1200)),[9999]+[100]*1200,0),
+                                     ([5]+list(range(1200)),[9999]+[100]*1200,0),
+                                     (list(range(1201)),[None]+[100]*1200,1)):
+            with self.subTest(start=start,first=offsets[:2]):
+                best=review_best20(self.observed(offsets,powers))
+                self.assertEqual(best['eligible_window_count'],1);self.assertEqual(best['average_watts'],100)
+                self.assertEqual(best['start_offset'],start)
+
+    def test_unavailable_never_repairs_absent_short_missing_or_downsampled_evidence(self):
+        cases=[(dict(time=stream(list(range(1200)))),'watts_stream_missing'),
+               (dict(watts=stream([120]*1200)),'time_missing'),
+               (dict(time=stream([0,1]),watts=stream([120])),'signal_time_pairing_ambiguous'),
+               (dict(time=stream([0,1]),watts=stream([120,120],resolution='low')),'signal_time_pairing_ambiguous'),
+               (dict(time=stream(list(range(1199))),watts=stream([120]*1199)),'activity_shorter_than_required'),
+               (dict(time=stream(list(range(0,2400,2))),watts=stream([120]*1200)),'no_complete_one_second_window'),
+               (dict(time=stream(list(range(1200))),watts=stream([120]*1199+[None])),'incomplete_power')]
+        for streams,reason in cases:
+            best=review_best20(dict(source_id='fake',summary_source_id='fake',streams=parse_streams(streams)))
+            self.assertEqual((best['status'],best['reason']),('unavailable',reason))
+            self.assertIsNone(best['rounded_watts']);self.assertIsNone(best['start_offset'])
+
+    def test_matches_independent_prefix_sum_verifier_across_multiple_segments(self):
+        import random
+        powers=[random.Random(i).randrange(0,301) for i in range(4900)]
+        powers[1500]=None
+        offsets=list(range(2500))+list(range(2513,4913))
+        expected=comparison.independent_best(offsets,powers)
+        best=review_best20(self.observed(offsets,powers))
+        for actual,key in (('average_watts','average_watts'),('rounded_watts','rounded_watts'),
+                           ('start_offset','start_elapsed'),('end_exclusive_offset','end_exclusive_elapsed'),
+                           ('eligible_window_count','eligible_window_count')):
+            self.assertEqual(best[actual],expected[key])
+
+
 class ConnectionTests(unittest.TestCase):
     def setUp(self):fixture.StravaTests.setUp(self)
 
@@ -173,7 +229,7 @@ class PersistenceTests(unittest.TestCase):
             compact=restarted.inspect(self.only);self.assertNotIn('streams',compact['strava_stream_sources'][0])
         app=Application(self.store.data_dir);html=app.get('/activities/'+self.only)[2].decode()
         self.assertIn('api-stream-samples',html);self.assertIn('Strava API stream evidence',html)
-        self.assertNotIn('id="native-records"',html);self.assertNotIn('class="best-value"',html)
+        self.assertNotIn('id="native-records"',html);self.assertIn('data-best20-status="unavailable"',html)
         persist(self.store,1,self.payload)
         rich=app.get('/activities/'+self.native['activity_id'])[2].decode()
         self.assertIn('id="native-records"',rich);self.assertIn('120 W',rich)
@@ -183,6 +239,50 @@ class PersistenceTests(unittest.TestCase):
         with patch('rideworks.web.analyze_activity',side_effect=RideWorksError('Synthetic FIT analysis unavailable')):
             unavailable=app.get('/activities/'+self.native['activity_id'])[2].decode()
         self.assertNotIn('api-stream-samples',unavailable)  # Never switch a file-backed ride to API evidence.
+
+    def test_normal_api_review_uses_current_summary_and_calculates_only_ride_local_result(self):
+        from rideworks.strava_streams import persist
+        from rideworks.strava_api import apply_observations,normalize
+        from rideworks.web import Application
+        from rideworks.performance import performance_history
+        payload=dict(time=stream(list(range(100,1300))),watts=stream([120]*600+[121]*600),heartrate=stream([150]*1200))
+        persist(self.store,2,payload)
+        # A later summary supplies different averages; do not calculate/replace them from streams.
+        summary=self.observation(identity=2,seconds=60)|dict(elapsed_time=2400,moving_time=2100,
+            distance=1609.344,total_elevation_gain=30.48,average_watts=123,average_heartrate=111,
+            max_watts=400,max_heartrate=160,average_cadence=80,kilojoules=555)
+        apply_observations(self.store,[normalize(summary)],321,self.now+1)
+        before=comparison.fingerprint(self.store.connection);history=performance_history(self.store)
+        app=Application(self.store.data_dir)
+        with patch('rideworks.web.recent_context',side_effect=AssertionError('API result entered trusted context')):
+            html=app.get('/activities/'+self.only)[2].decode()
+        self.assertIn('data-best20-status="available"',html);self.assertIn('>121 W</strong>',html)
+        self.assertIn('RideWorks-calculated from Strava API stream evidence',html)
+        self.assertIn('>123 W</strong>',html);self.assertIn('>111 bpm</strong>',html);self.assertIn('>1.00 mi</strong>',html)
+        self.assertIn('>40:00</strong>',html);self.assertIn('Moving duration',html);self.assertIn('>35:00</dd>',html)
+        self.assertIn('>100 ft</dd>',html);self.assertIn('>555 kJ</dd>',html);self.assertIn('>400 W</dd>',html)
+        self.assertLess(html.index('class="metrics"'),html.index('id="chart-title"'))
+        self.assertLess(html.index('id="chart-title"'),html.index('class="panel best-panel api-best20"'))
+        self.assertIn('class="panel ride-summary"',html);self.assertIn('Returned-offset start',html)
+        self.assertNotIn('Timer duration',html);self.assertNotIn('<section class="recent-context"',html)
+        self.assertNotIn('Record indices',html);self.assertNotIn('Native samples in window',html)
+        self.assertNotIn('class="panel provenance" open',html)
+        self.assertEqual(comparison.fingerprint(self.store.connection),before)
+        self.assertEqual(performance_history(self.store),history)
+        self.assertEqual(app.get('/activities/'+self.only)[2].decode(),html)
+
+    def test_hr_only_summary_watts_never_substitute_for_missing_best20_and_metrics_stay_missing(self):
+        from rideworks.strava_streams import persist
+        from rideworks.strava_api import apply_observations,normalize
+        from rideworks.web import Application
+        apply_observations(self.store,[normalize(self.observation(identity=2,seconds=60)|dict(average_watts=333))],321,self.now+1)
+        persist(self.store,2,dict(time=stream(list(range(1300))),heartrate=stream([100]*1300)))
+        before=comparison.fingerprint(self.store.connection)
+        html=Application(self.store.data_dir).get('/activities/'+self.only)[2].decode()
+        self.assertIn('data-best20-status="unavailable"',html)
+        self.assertIn('class="best-value">Unavailable',html);self.assertIn('No Strava watts stream',html)
+        self.assertIn('>333 W</strong>',html);self.assertIn('>Unavailable</strong>',html)
+        self.assertNotIn('<section class="recent-context"',html);self.assertEqual(comparison.fingerprint(self.store.connection),before)
 
     def test_pairing_missing_signals_and_unusable_stream_reasons_are_explicit(self):
         from rideworks.strava_streams import chart_reason,persist

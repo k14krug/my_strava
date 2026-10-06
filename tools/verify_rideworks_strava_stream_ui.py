@@ -13,12 +13,17 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from rideworks.analysis import analyze_activity
 from rideworks.performance import performance_history
 from rideworks.store import Store
-from rideworks.web import create_server
+from rideworks.web import create_server, duration, distance, sensor
+from rideworks.strava import TokenFile
+from rideworks.strava_streams import enrich
+from compare_rideworks_strava_streams import fingerprint, independent_best
 from verify_rideworks_strava_settings_ui import browser
 
 
 def verify(data_dir,links,session,port=8774,*,live=False):
     with Store(data_dir) as store:
+        tables_before=fingerprint(store.connection)
+        originals_before={p.name:(p.stat().st_size,p.stat().st_mtime_ns) for p in store.originals.iterdir()}
         baseline=performance_history(store)
         current=next(s for s in store.strava_stream_evidence(links['newest'].split('/')[-1]) if s['is_current'])
         stamp=datetime.fromisoformat(current['start_date'].replace('Z','+00:00'))
@@ -35,8 +40,13 @@ def verify(data_dir,links,session,port=8774,*,live=False):
             watts=observed['streams'].get('watts',{}).get('data',[None]*len(times))
             hearts=observed['streams'].get('heartrate',{}).get('data',[None]*len(times))
             samples=[dict(sample_index=i,time_offset=t,power=watts[i],heart_rate=hearts[i]) for i,t in enumerate(times)]
+            summary=next(e['summary']['values'] for e in store.get_activity(route.split('/')[-1])['sources']
+                         if e['source']['kind']=='strava_api' and e['source']['is_current'])
             graph_checks.append(dict(route=route,count=len(times),first=times[0],last=times[-1],
                 power_count=sum(v is not None for v in watts),hr_count=sum(v is not None for v in hearts),
+                best20=independent_best(times,watts),
+                cards=[duration(summary.get('elapsed_time')),distance(summary.get('distance')),
+                       sensor(summary.get('average_watts'),'W'),sensor(summary.get('average_heartrate'),'bpm')],
                 payload_hash=sha256(json.dumps(samples,separators=(',',':')).encode()).hexdigest()))
     expected_hash=sha256(json.dumps(expected,separators=(',',':')).encode()).hexdigest()
     base=f'http://127.0.0.1:{port}'
@@ -49,8 +59,8 @@ def verify(data_dir,links,session,port=8774,*,live=False):
     try:
         run('''
           await page.goto(base+NEWEST);await page.waitForSelector('.chart-power',{state:'attached'});
-          check(await page.locator('#native-records,.best-value').count()===0,'API evidence became native/best20');
-          const text=await page.locator('.source-caption').first().textContent();check(text.includes('Strava API stream evidence'),'Chart label');
+          check(await page.locator('#native-records,.recent-context').count()===0,'API evidence became native/trusted context');
+          const text=await page.locator('.chart-panel .source-caption').first().textContent();check(text.includes('Strava API stream evidence'),'Chart label');
           const samples=JSON.parse(await page.locator('#api-stream-samples').textContent());
           check(samples.length===COUNT,'Returned samples dropped/invented');
           const digest=await page.evaluate(async()=>{const samples=JSON.parse(document.querySelector('#api-stream-samples').textContent);
@@ -67,6 +77,7 @@ def verify(data_dir,links,session,port=8774,*,live=False):
           await page.locator('.stream-provenance summary').first().click();
           check((await page.locator('.stream-provenance').textContent()).includes('original_size'),'Metadata provenance');
           check((await page.locator('.stream-provenance').textContent()).includes('Retrieved at'),'Retrieval provenance');
+          await page.locator('.stream-provenance summary').first().click();
           await page.screenshot({path:'output/playwright/strava-004-api-desktop.png',fullPage:true});
           await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'API phone overflow');
           await page.screenshot({path:'output/playwright/strava-004-api-phone.png',fullPage:true});
@@ -102,8 +113,29 @@ def verify(data_dir,links,session,port=8774,*,live=False):
           check(await page.locator('.performance-update').count()===0,'Streams staled Performance');
           for(const graph of GRAPHS){
             await page.goto(base+graph.route);await page.waitForSelector('.chart-power',{state:'attached'});
-            check(await page.locator('#native-records,.best-value').count()===0,'API graph claimed native/best20');
-            check((await page.locator('.source-caption').first().textContent()).includes('Strava API stream evidence'),'API graph source label');
+            check(await page.locator('#native-records,.recent-context').count()===0,'API graph claimed native/trusted context');
+            check((await page.locator('.chart-panel .source-caption').first().textContent()).includes('Strava API stream evidence'),'API graph source label');
+            check(JSON.stringify(await page.locator('.metrics .metric strong').allTextContents())===JSON.stringify(graph.cards),'Summary card evidence');
+            check(await page.locator('.metrics').evaluate(el=>!!(el.compareDocumentPosition(document.querySelector('.chart-panel'))&Node.DOCUMENT_POSITION_FOLLOWING)),'Cards must precede chart');
+            check(await page.locator('.review-layout > .review-main .chart-panel').count()===1,'Normal review hierarchy');
+            check(await page.locator('.review-layout > .ride-summary').count()===1,'Ride summary side panel');
+            check((await page.locator('.ride-summary .source-caption').textContent()).includes('Strava API summary evidence'),'Ride summary source label');
+            check(!(await page.locator('.ride-summary').textContent()).includes('Timer duration'),'Invented FIT timer duration');
+            check(await page.locator('.provenance[open]').count()===0,'Provenance must be secondary');
+            const panel=page.locator('.api-best20');
+            check((await panel.textContent()).includes('RideWorks-calculated from Strava API stream evidence'),'Local best20 provenance');
+            check(await panel.getAttribute('data-best20-status')===(graph.best20?'available':'unavailable'),'Local best20 availability');
+            check(await panel.locator('.best-value').textContent()===(graph.best20?graph.best20.rounded_watts+' W':'Unavailable'),'Local best20 watts');
+            const details=await panel.locator('details dl > div').evaluateAll(rows=>Object.fromEntries(rows.map(r=>[r.querySelector('dt').textContent,r.querySelector('dd').textContent])));
+            check(details['Method/version']==='best-average-power-v1','Local best20 method');
+            check(!Object.keys(details).some(k=>/record indices|native samples|window start \(UTC\)/i.test(k)),'Invented native calculation context');
+            if(graph.best20){
+              check(Number(details['Samples in window'])===1200,'Complete local window');
+              check(Number.parseFloat(details['Unrounded average'])===graph.best20.average_watts,'Raw local average');
+              check(Number(details['Returned-offset start (inclusive, seconds)'])===graph.best20.start_elapsed,'Local window start');
+              check(Number(details['Returned-offset end (exclusive, seconds)'])===graph.best20.end_exclusive_elapsed,'Local window end');
+              check(Number(details['Eligible windows'])===graph.best20.eligible_window_count,'Local eligible windows');
+            }else check((await panel.locator('.window-context').textContent()).length>0,'Unavailable reason');
             const samples=JSON.parse(await page.locator('#api-stream-samples').textContent());
             check(samples.length===graph.count&&samples[0].time_offset===graph.first&&samples.at(-1).time_offset===graph.last,'API graph sample count/offsets');
             const digest=await page.evaluate(async()=>{const samples=JSON.parse(document.querySelector('#api-stream-samples').textContent);
@@ -112,6 +144,8 @@ def verify(data_dir,links,session,port=8774,*,live=False):
             check(digest===graph.payload_hash,'API graph values/order');
             check(await page.locator('.chart-power').getAttribute('data-api-points')===String(graph.power_count),'API graph power count');
             check(await page.locator('.chart-hr').getAttribute('data-api-points')===String(graph.hr_count),'API graph HR count');
+            await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'API review phone overflow');
+            await page.setViewportSize({width:1448,height:1086});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'API review desktop overflow');
           }
           return true;
         '''.replace('NEWEST',json.dumps(links['newest'])).replace('ELIGIBLE',str(len(baseline['points'])))
@@ -120,10 +154,27 @@ def verify(data_dir,links,session,port=8774,*,live=False):
             assert performance_history(store)==baseline
             actual=next(s for s in store.strava_stream_evidence(links['newest'].split('/')[-1]) if s['is_current'])
             assert actual==current
+            class ReuseOnly:
+                stream_requests=0
+                def streams(self,*args):raise AssertionError('Idempotent review rerun requested streams')
+            identities=[r[0] for r in store.connection.execute('SELECT external_id FROM strava_api_activities WHERE activity_id IN ('+','.join('?' for _ in graph_checks)+')',
+                       [g['route'].split('/')[-1] for g in graph_checks])]
+            with TokenFile(data_dir).lock():reused=enrich(store,ReuseOnly(),'unused',identities)
+            assert reused['stream_fetches']==0 and reused['stream_reused']==len(graph_checks)
+            assert fingerprint(store.connection)==tables_before,'Review calculation changed persisted tables'
+            assert originals_before=={p.name:(p.stat().st_size,p.stat().st_mtime_ns) for p in store.originals.iterdir()}
+            assert store.connection.execute('PRAGMA integrity_check').fetchone()[0]=='ok'
+            assert not store.connection.execute('PRAGMA foreign_key_check').fetchall()
         return dict(status='passed',mode='live' if live else 'synthetic',api_only_charts=len(links['api_only']),
                     complete_browser_payloads_verified=len(graph_checks),
                     source_labels_metadata=True,returned_offsets_and_samples_retained=True,power_hr_points_retained=True,
-                    inspection_keyboard=True,no_native_or_trusted_best20_claim=True,fit_precedence_and_best20_unchanged=True,
+                    inspection_keyboard=True,no_native_or_trusted_performance_claim=True,fit_precedence_and_best20_unchanged=True,
+                    normal_api_review_hierarchy=True,current_summary_cards_and_ride_summary=True,
+                    local_best20_independently_verified=True,
+                    qualifying_local_best20=sum(g['best20'] is not None for g in graph_checks),
+                    unavailable_local_best20=sum(g['best20'] is None for g in graph_checks),
+                    restart_stream_requests=0,restart_reused=len(graph_checks),all_persisted_tables_unchanged=True,
+                    originals_unchanged=True,integrity=True,foreign_keys=True,
                     overlap_streams_inspectable=True,los_angeles_tokyo_dates=True,desktop_phone_no_overflow=True,
                     restart_retains_graphs_and_connection=True,trusted_performance_unchanged=True,
                     performance_eligible=len(baseline['points']),performance_pending=baseline['pending'])
