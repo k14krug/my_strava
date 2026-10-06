@@ -57,7 +57,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### STRAVA-004 — Strava activity-stream enrichment and FIT comparison
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Validate current Strava activity streams against preserved FIT evidence on the four accepted overlap rides, then—only if the evidence supports it—use bounded post-export Strava stream enrichment to power honest Activity Review graphs for API-only rides.
 
@@ -75,6 +75,8 @@ Only one implementation/research task should normally be `in_progress`.
 **Acceptance:** See `docs/tasks/STRAVA-004.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Current result:** Stage A comparison and Stage B implementation verified on draft [PR #18](https://github.com/k14krug/my_strava/pull/18); stopped at Gate 1 — HARD — Owner. Four exact power/HR overlaps; seven API-only charts (five power+HR, two HR-only); 236 full / 50 focused tests and Chromium/restart/idempotence/integrity checks passed. Trusted Performance remains 1,022 eligible / 0 pending. See `reports/STRAVA-004/verification.md`. Awaiting Owner review; Analyst acceptance remains pending.
 
 **Dependency:** Phase 2 accepted / complete.
 
@@ -338,7 +340,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is the next bounded implementation/research task once invoked. Phase 3 dashboard work remains not started.
+Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is in progress at its HARD — Owner review gate. Phase 3 dashboard work remains not started.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 

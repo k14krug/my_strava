@@ -1,0 +1,836 @@
+{
+  "stage_a": {
+    "stage": "A",
+    "status": "exact_power_hr_evidence_supports_graph_review",
+    "requested_keys": [
+      "time",
+      "watts",
+      "heartrate",
+      "cadence",
+      "moving"
+    ],
+    "scope": "activity:read_all",
+    "overlap_candidates": 4,
+    "compared": 4,
+    "excluded": [],
+    "overlaps": [
+      {
+        "label": "overlap-1",
+        "returned_types": [
+          "time",
+          "watts",
+          "heartrate",
+          "cadence",
+          "moving"
+        ],
+        "missing_types": [],
+        "metadata": {
+          "time": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 2836,
+            "returned_length": 2836
+          },
+          "watts": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 2836,
+            "returned_length": 2836
+          },
+          "heartrate": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 2836,
+            "returned_length": 2836
+          },
+          "cadence": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 2836,
+            "returned_length": 2836
+          },
+          "moving": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 2836,
+            "returned_length": 2836
+          }
+        },
+        "api_time": {
+          "count": 2836,
+          "first": 0,
+          "last": 2847,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 1,
+          "delta_distribution": {
+            "1": 2834,
+            "13": 1
+          }
+        },
+        "fit_record_count": 2836,
+        "fit_time": {
+          "count": 2836,
+          "first": 0.0,
+          "last": 2847.0,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 1,
+          "delta_distribution": {
+            "1.0": 2834,
+            "13.0": 1
+          }
+        },
+        "fit_missing_timestamps": 0,
+        "api_start_minus_fit_session_start_seconds": 0.0,
+        "alignment": "Exact absolute instant: API summary start_date + returned offset versus FIT record timestamp. Duplicate instants excluded; no fitted shift.",
+        "signals": {
+          "watts": {
+            "status": "compared",
+            "api_samples": 2836,
+            "fit_samples": 2836,
+            "timestamp_pairs": 2836,
+            "pairing_coverage": 1.0,
+            "both_present": 2836,
+            "exact_matches": 2836,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 49,
+            "fit_zero": 49,
+            "paired_both_zero": 49,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "heartrate": {
+            "status": "compared",
+            "api_samples": 2836,
+            "fit_samples": 2836,
+            "timestamp_pairs": 2836,
+            "pairing_coverage": 1.0,
+            "both_present": 2836,
+            "exact_matches": 2836,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 45,
+            "fit_zero": 45,
+            "paired_both_zero": 45,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "cadence": {
+            "status": "not_comparable_fit_extraction_has_no_sample_cadence",
+            "api_samples": 2836
+          }
+        },
+        "experimental_best20": {
+          "api": {
+            "sum_watts": 111986,
+            "average_watts": 93.32166666666667,
+            "rounded_watts": 93,
+            "start_elapsed": 13,
+            "end_exclusive_elapsed": 1213,
+            "start_index": 13,
+            "sample_count": 1200,
+            "eligible_window_count": 1040
+          },
+          "fit": {
+            "sum_watts": 111986,
+            "average_watts": 93.32166666666667,
+            "rounded_watts": 93,
+            "start_elapsed": 13.0,
+            "end_exclusive_elapsed": 1213.0,
+            "start_index": 13,
+            "sample_count": 1200,
+            "eligible_window_count": 1040
+          },
+          "raw_difference_watts": 0.0,
+          "window_alignment_equal": true,
+          "trusted_performance_enrollment": false
+        },
+        "evidence_review_reasons": []
+      },
+      {
+        "label": "overlap-2",
+        "returned_types": [
+          "time",
+          "watts",
+          "heartrate",
+          "cadence",
+          "moving"
+        ],
+        "missing_types": [],
+        "metadata": {
+          "time": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3135,
+            "returned_length": 3135
+          },
+          "watts": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3135,
+            "returned_length": 3135
+          },
+          "heartrate": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3135,
+            "returned_length": 3135
+          },
+          "cadence": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3135,
+            "returned_length": 3135
+          },
+          "moving": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3135,
+            "returned_length": 3135
+          }
+        },
+        "api_time": {
+          "count": 3135,
+          "first": 0,
+          "last": 3134,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 0,
+          "delta_distribution": {
+            "1": 3134
+          }
+        },
+        "fit_record_count": 3135,
+        "fit_time": {
+          "count": 3135,
+          "first": 0.0,
+          "last": 3134.0,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 0,
+          "delta_distribution": {
+            "1.0": 3134
+          }
+        },
+        "fit_missing_timestamps": 0,
+        "api_start_minus_fit_session_start_seconds": 0.0,
+        "alignment": "Exact absolute instant: API summary start_date + returned offset versus FIT record timestamp. Duplicate instants excluded; no fitted shift.",
+        "signals": {
+          "watts": {
+            "status": "compared",
+            "api_samples": 3135,
+            "fit_samples": 3135,
+            "timestamp_pairs": 3135,
+            "pairing_coverage": 1.0,
+            "both_present": 3135,
+            "exact_matches": 3135,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 18,
+            "fit_zero": 18,
+            "paired_both_zero": 18,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "heartrate": {
+            "status": "compared",
+            "api_samples": 3135,
+            "fit_samples": 3135,
+            "timestamp_pairs": 3135,
+            "pairing_coverage": 1.0,
+            "both_present": 3135,
+            "exact_matches": 3135,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 165,
+            "fit_zero": 165,
+            "paired_both_zero": 165,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "cadence": {
+            "status": "not_comparable_fit_extraction_has_no_sample_cadence",
+            "api_samples": 3135
+          }
+        },
+        "experimental_best20": {
+          "api": {
+            "sum_watts": 217303,
+            "average_watts": 181.08583333333334,
+            "rounded_watts": 181,
+            "start_elapsed": 71,
+            "end_exclusive_elapsed": 1271,
+            "start_index": 71,
+            "sample_count": 1200,
+            "eligible_window_count": 1936
+          },
+          "fit": {
+            "sum_watts": 217303,
+            "average_watts": 181.08583333333334,
+            "rounded_watts": 181,
+            "start_elapsed": 71.0,
+            "end_exclusive_elapsed": 1271.0,
+            "start_index": 71,
+            "sample_count": 1200,
+            "eligible_window_count": 1936
+          },
+          "raw_difference_watts": 0.0,
+          "window_alignment_equal": true,
+          "trusted_performance_enrollment": false
+        },
+        "evidence_review_reasons": []
+      },
+      {
+        "label": "overlap-3",
+        "returned_types": [
+          "time",
+          "watts",
+          "heartrate",
+          "cadence",
+          "moving"
+        ],
+        "missing_types": [],
+        "metadata": {
+          "time": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3484,
+            "returned_length": 3484
+          },
+          "watts": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3484,
+            "returned_length": 3484
+          },
+          "heartrate": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3484,
+            "returned_length": 3484
+          },
+          "cadence": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3484,
+            "returned_length": 3484
+          },
+          "moving": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3484,
+            "returned_length": 3484
+          }
+        },
+        "api_time": {
+          "count": 3484,
+          "first": 0,
+          "last": 3483,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 0,
+          "delta_distribution": {
+            "1": 3483
+          }
+        },
+        "fit_record_count": 3484,
+        "fit_time": {
+          "count": 3484,
+          "first": 0.0,
+          "last": 3483.0,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 0,
+          "delta_distribution": {
+            "1.0": 3483
+          }
+        },
+        "fit_missing_timestamps": 0,
+        "api_start_minus_fit_session_start_seconds": 0.0,
+        "alignment": "Exact absolute instant: API summary start_date + returned offset versus FIT record timestamp. Duplicate instants excluded; no fitted shift.",
+        "signals": {
+          "watts": {
+            "status": "compared",
+            "api_samples": 3484,
+            "fit_samples": 3484,
+            "timestamp_pairs": 3484,
+            "pairing_coverage": 1.0,
+            "both_present": 3484,
+            "exact_matches": 3484,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 25,
+            "fit_zero": 25,
+            "paired_both_zero": 25,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "heartrate": {
+            "status": "compared",
+            "api_samples": 3484,
+            "fit_samples": 3484,
+            "timestamp_pairs": 3484,
+            "pairing_coverage": 1.0,
+            "both_present": 3484,
+            "exact_matches": 3484,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 0,
+            "fit_zero": 0,
+            "paired_both_zero": 0,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "cadence": {
+            "status": "not_comparable_fit_extraction_has_no_sample_cadence",
+            "api_samples": 3484
+          }
+        },
+        "experimental_best20": {
+          "api": {
+            "sum_watts": 120186,
+            "average_watts": 100.155,
+            "rounded_watts": 100,
+            "start_elapsed": 480,
+            "end_exclusive_elapsed": 1680,
+            "start_index": 480,
+            "sample_count": 1200,
+            "eligible_window_count": 2285
+          },
+          "fit": {
+            "sum_watts": 120186,
+            "average_watts": 100.155,
+            "rounded_watts": 100,
+            "start_elapsed": 480.0,
+            "end_exclusive_elapsed": 1680.0,
+            "start_index": 480,
+            "sample_count": 1200,
+            "eligible_window_count": 2285
+          },
+          "raw_difference_watts": 0.0,
+          "window_alignment_equal": true,
+          "trusted_performance_enrollment": false
+        },
+        "evidence_review_reasons": []
+      },
+      {
+        "label": "overlap-4",
+        "returned_types": [
+          "time",
+          "watts",
+          "heartrate",
+          "cadence",
+          "moving"
+        ],
+        "missing_types": [],
+        "metadata": {
+          "time": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3621,
+            "returned_length": 3621
+          },
+          "watts": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3621,
+            "returned_length": 3621
+          },
+          "heartrate": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3621,
+            "returned_length": 3621
+          },
+          "cadence": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3621,
+            "returned_length": 3621
+          },
+          "moving": {
+            "resolution": "high",
+            "series_type": "distance",
+            "original_size": 3621,
+            "returned_length": 3621
+          }
+        },
+        "api_time": {
+          "count": 3621,
+          "first": 0,
+          "last": 3620,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 0,
+          "delta_distribution": {
+            "1": 3620
+          }
+        },
+        "fit_record_count": 3621,
+        "fit_time": {
+          "count": 3621,
+          "first": 0.0,
+          "last": 3620.0,
+          "duplicates": 0,
+          "backwards": 0,
+          "gap_count": 0,
+          "delta_distribution": {
+            "1.0": 3620
+          }
+        },
+        "fit_missing_timestamps": 0,
+        "api_start_minus_fit_session_start_seconds": 0.0,
+        "alignment": "Exact absolute instant: API summary start_date + returned offset versus FIT record timestamp. Duplicate instants excluded; no fitted shift.",
+        "signals": {
+          "watts": {
+            "status": "compared",
+            "api_samples": 3621,
+            "fit_samples": 3621,
+            "timestamp_pairs": 3621,
+            "pairing_coverage": 1.0,
+            "both_present": 3621,
+            "exact_matches": 3621,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 17,
+            "fit_zero": 17,
+            "paired_both_zero": 17,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "heartrate": {
+            "status": "compared",
+            "api_samples": 3621,
+            "fit_samples": 3621,
+            "timestamp_pairs": 3621,
+            "pairing_coverage": 1.0,
+            "both_present": 3621,
+            "exact_matches": 3621,
+            "exact_match_rate": 1.0,
+            "max_absolute_difference": 0,
+            "mean_absolute_difference": 0.0,
+            "api_missing": 0,
+            "fit_missing": 0,
+            "paired_api_missing": 0,
+            "paired_fit_missing": 0,
+            "api_zero": 0,
+            "fit_zero": 0,
+            "paired_both_zero": 0,
+            "missing_pattern_differences": 0,
+            "first_mismatches": []
+          },
+          "cadence": {
+            "status": "not_comparable_fit_extraction_has_no_sample_cadence",
+            "api_samples": 3621
+          }
+        },
+        "experimental_best20": {
+          "api": {
+            "sum_watts": 144143,
+            "average_watts": 120.11916666666667,
+            "rounded_watts": 120,
+            "start_elapsed": 204,
+            "end_exclusive_elapsed": 1404,
+            "start_index": 204,
+            "sample_count": 1200,
+            "eligible_window_count": 2422
+          },
+          "fit": {
+            "sum_watts": 144143,
+            "average_watts": 120.11916666666667,
+            "rounded_watts": 120,
+            "start_elapsed": 204.0,
+            "end_exclusive_elapsed": 1404.0,
+            "start_index": 204,
+            "sample_count": 1200,
+            "eligible_window_count": 2422
+          },
+          "raw_difference_watts": 0.0,
+          "window_alignment_equal": true,
+          "trusted_performance_enrollment": false
+        },
+        "evidence_review_reasons": []
+      }
+    ],
+    "stream_requests_this_run": 4,
+    "rate_limits": {},
+    "database_unchanged": true,
+    "originals_unchanged": true,
+    "performance_eligible": 1022,
+    "performance_pending": 0,
+    "integrity": true,
+    "foreign_keys": true,
+    "product_stream_writes": 0,
+    "api_only_catchup_requests": 0,
+    "trusted_performance_policy_changed": false,
+    "phase_3_started": false
+  },
+  "live_enrichment": {
+    "status": "passed",
+    "initial": {
+      "stream_candidates": 7,
+      "stream_fetches": 7,
+      "stream_enriched": 7,
+      "stream_reused": 0,
+      "stream_unavailable": 0,
+      "stream_failed": 0,
+      "stream_deferred": 0,
+      "stream_authorization_attention": false,
+      "stream_rate_limited": false
+    },
+    "restart_rerun": {
+      "stream_candidates": 7,
+      "stream_fetches": 0,
+      "stream_enriched": 0,
+      "stream_reused": 7,
+      "stream_unavailable": 0,
+      "stream_failed": 0,
+      "stream_deferred": 0,
+      "stream_authorization_attention": false,
+      "stream_rate_limited": false
+    },
+    "known_api_only_candidates": 7,
+    "usable_api_only_graphs": 7,
+    "overlap_sources_from_existing_cache": 4,
+    "stream_source_observations": 11,
+    "schema_version": 6,
+    "accepted_database_tables_unchanged": true,
+    "originals_unchanged": true,
+    "no_native_reads_during_catchup": true,
+    "no_archive_reimports": true,
+    "no_hidden_rebuild": true,
+    "performance_eligible": 1022,
+    "performance_pending": 0,
+    "integrity": true,
+    "foreign_keys": true,
+    "rate_limits": {}
+  },
+  "live_chromium": {
+    "status": "passed",
+    "mode": "live",
+    "api_only_charts": 7,
+    "complete_browser_payloads_verified": 7,
+    "source_labels_metadata": true,
+    "returned_offsets_and_samples_retained": true,
+    "power_hr_points_retained": true,
+    "inspection_keyboard": true,
+    "no_native_or_trusted_best20_claim": true,
+    "fit_precedence_and_best20_unchanged": true,
+    "overlap_streams_inspectable": true,
+    "los_angeles_tokyo_dates": true,
+    "desktop_phone_no_overflow": true,
+    "restart_retains_graphs_and_connection": true,
+    "trusted_performance_unchanged": true,
+    "performance_eligible": 1022,
+    "performance_pending": 0
+  },
+  "synthetic_chromium": {
+    "status": "passed",
+    "mode": "synthetic",
+    "api_only_charts": 1,
+    "source_labels_metadata": true,
+    "returned_offsets_and_samples_retained": true,
+    "power_hr_points_retained": true,
+    "inspection_keyboard": true,
+    "no_native_or_trusted_best20_claim": true,
+    "fit_precedence_and_best20_unchanged": true,
+    "overlap_streams_inspectable": true,
+    "los_angeles_tokyo_dates": true,
+    "desktop_phone_no_overflow": true,
+    "restart_retains_graphs_and_connection": true,
+    "trusted_performance_unchanged": true,
+    "performance_eligible": 2,
+    "performance_pending": 0,
+    "normal_settings_sync_enriches_new": true,
+    "sequential_stream_requests": 1,
+    "zero_missing_gap_paths_verified": true
+  },
+  "p2_05_chromium_regression": {
+    "status": "passed",
+    "mode": "synthetic_fake_http_actual_chromium",
+    "settings_navigation": true,
+    "missing_configured_connected_attention": true,
+    "oauth_decline_reconnect_clean_url": true,
+    "same_running_server_callback": true,
+    "buttons_disabled_during_sync": true,
+    "compact_outcome_and_local_time": true,
+    "activities_update_without_restart": true,
+    "no_browser_secrets": true,
+    "desktop_phone_no_overflow": true,
+    "server_restart_connected_and_outcome_persist": true,
+    "near_expiry_refresh": true,
+    "rerun_new_activities": 0,
+    "rerun_new_observations": 0,
+    "rerun_unchanged": 2,
+    "disconnect_retains_history": true,
+    "native_evidence_unchanged": true,
+    "no_automatic_rebuild": true,
+    "persistent_reminder_after_restart": true,
+    "failed_rebuild_preserves_history": true,
+    "explicit_rebuild_clears_reminder": true,
+    "new_api_first_in_newest": true,
+    "los_angeles_tokyo_api_date_and_newest_oldest": true,
+    "app_wide_reminder": true,
+    "activity_review_regression": {
+      "status": "passed",
+      "mode": "isolated_synthetic",
+      "api_only_thin": true,
+      "enriched_fit_rich": true,
+      "native_chart_best20_unchanged": true,
+      "old_export_and_new_api_titles_inspectable": true,
+      "browser_local_api_date": true,
+      "stale_performance_honest_no_rebuild": true,
+      "api_summary_watts_excluded": true,
+      "activities_search_sort_type": true,
+      "desktop_phone_no_overflow": true
+    }
+  },
+  "invocation": "/TASK",
+  "gate": "HARD \u2014 Owner",
+  "task_status": "in_progress",
+  "full_tests_passed": 236,
+  "focused_strava_tests_passed": 50,
+  "live_stream_requests_total": 11,
+  "rate_usage": "unavailable: no header values observed/exposed",
+  "phase_3_started": false,
+  "final_store": {
+    "status": "passed",
+    "accepted_tables_verified": 16,
+    "accepted_tables_unchanged": true,
+    "activity_count": 1441,
+    "stream_observations": 11,
+    "performance_eligible": 1022,
+    "performance_pending": 0,
+    "integrity": true,
+    "foreign_keys": true,
+    "graphs": [
+      {
+        "label": "api-only-1",
+        "signals": [
+          "cadence",
+          "heartrate",
+          "moving",
+          "time",
+          "watts"
+        ],
+        "samples": 2877,
+        "power_graph": true,
+        "hr_graph": true
+      },
+      {
+        "label": "api-only-2",
+        "signals": [
+          "cadence",
+          "heartrate",
+          "moving",
+          "time",
+          "watts"
+        ],
+        "samples": 2869,
+        "power_graph": true,
+        "hr_graph": true
+      },
+      {
+        "label": "api-only-3",
+        "signals": [
+          "heartrate",
+          "moving",
+          "time"
+        ],
+        "samples": 22,
+        "power_graph": false,
+        "hr_graph": true
+      },
+      {
+        "label": "api-only-4",
+        "signals": [
+          "heartrate",
+          "moving",
+          "time"
+        ],
+        "samples": 5122,
+        "power_graph": false,
+        "hr_graph": true
+      },
+      {
+        "label": "api-only-5",
+        "signals": [
+          "cadence",
+          "heartrate",
+          "moving",
+          "time",
+          "watts"
+        ],
+        "samples": 2989,
+        "power_graph": true,
+        "hr_graph": true
+      },
+      {
+        "label": "api-only-6",
+        "signals": [
+          "cadence",
+          "heartrate",
+          "moving",
+          "time",
+          "watts"
+        ],
+        "samples": 3617,
+        "power_graph": true,
+        "hr_graph": true
+      },
+      {
+        "label": "api-only-7",
+        "signals": [
+          "cadence",
+          "heartrate",
+          "moving",
+          "time",
+          "watts"
+        ],
+        "samples": 2545,
+        "power_graph": true,
+        "hr_graph": true
+      }
+    ]
+  },
+  "implementation_head": "584de0a0e0dd3511a30c0097cdd72d14bc7cf29c",
+  "branch": "task/strava-004-streams",
+  "pr": 18
+}

@@ -28,6 +28,16 @@ def verify(data_dir,links,session,port=8774,*,live=False):
         power=current['streams'].get('watts',{}).get('data',[None]*len(offsets))
         hr=current['streams'].get('heartrate',{}).get('data',[None]*len(offsets))
         expected=[dict(sample_index=i,time_offset=t,power=power[i],heart_rate=hr[i]) for i,t in enumerate(offsets)]
+        graph_checks=[]
+        for route in links['api_only']:
+            observed=next(s for s in store.strava_stream_evidence(route.split('/')[-1]) if s['is_current'])
+            times=observed['streams']['time']['data']
+            watts=observed['streams'].get('watts',{}).get('data',[None]*len(times))
+            hearts=observed['streams'].get('heartrate',{}).get('data',[None]*len(times))
+            samples=[dict(sample_index=i,time_offset=t,power=watts[i],heart_rate=hearts[i]) for i,t in enumerate(times)]
+            graph_checks.append(dict(route=route,count=len(times),first=times[0],last=times[-1],
+                power_count=sum(v is not None for v in watts),hr_count=sum(v is not None for v in hearts),
+                payload_hash=sha256(json.dumps(samples,separators=(',',':')).encode()).hexdigest()))
     expected_hash=sha256(json.dumps(expected,separators=(',',':')).encode()).hexdigest()
     base=f'http://127.0.0.1:{port}'
     def run(code):
@@ -90,15 +100,28 @@ def verify(data_dir,links,session,port=8774,*,live=False):
           check(JSON.parse(await page.locator('#performance-points').textContent()).length===ELIGIBLE,'Trusted cohort changed');
           await page.goto(base+'/settings');check(await page.locator('#strava-connection').textContent()==='Connected','Restart lost connection');
           check(await page.locator('.performance-update').count()===0,'Streams staled Performance');
-          for(const route of ROUTES){await page.goto(base+route);await page.waitForSelector('#api-stream-samples',{state:'attached'});}
+          for(const graph of GRAPHS){
+            await page.goto(base+graph.route);await page.waitForSelector('.chart-power',{state:'attached'});
+            check(await page.locator('#native-records,.best-value').count()===0,'API graph claimed native/best20');
+            check((await page.locator('.source-caption').first().textContent()).includes('Strava API stream evidence'),'API graph source label');
+            const samples=JSON.parse(await page.locator('#api-stream-samples').textContent());
+            check(samples.length===graph.count&&samples[0].time_offset===graph.first&&samples.at(-1).time_offset===graph.last,'API graph sample count/offsets');
+            const digest=await page.evaluate(async()=>{const samples=JSON.parse(document.querySelector('#api-stream-samples').textContent);
+              const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(samples)));
+              return [...new Uint8Array(bytes)].map(b=>b.toString(16).padStart(2,'0')).join('');});
+            check(digest===graph.payload_hash,'API graph values/order');
+            check(await page.locator('.chart-power').getAttribute('data-api-points')===String(graph.power_count),'API graph power count');
+            check(await page.locator('.chart-hr').getAttribute('data-api-points')===String(graph.hr_count),'API graph HR count');
+          }
           return true;
         '''.replace('NEWEST',json.dumps(links['newest'])).replace('ELIGIBLE',str(len(baseline['points'])))
-          .replace('ROUTES',json.dumps(links['api_only'])))
+          .replace('GRAPHS',json.dumps(graph_checks)))
         with Store(data_dir) as store:
             assert performance_history(store)==baseline
             actual=next(s for s in store.strava_stream_evidence(links['newest'].split('/')[-1]) if s['is_current'])
             assert actual==current
         return dict(status='passed',mode='live' if live else 'synthetic',api_only_charts=len(links['api_only']),
+                    complete_browser_payloads_verified=len(graph_checks),
                     source_labels_metadata=True,returned_offsets_and_samples_retained=True,power_hr_points_retained=True,
                     inspection_keyboard=True,no_native_or_trusted_best20_claim=True,fit_precedence_and_best20_unchanged=True,
                     overlap_streams_inspectable=True,los_angeles_tokyo_dates=True,desktop_phone_no_overflow=True,
