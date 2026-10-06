@@ -1,9 +1,9 @@
-# P2-05 verification — HARD — Owner review
+# P2-05 verification — accepted
 
 **Date:** 2026-10-05. **Branch / PR:** `task/p2-05-strava-sync` / [#17](https://github.com/k14krug/my_strava/pull/17).
 **Runtime implementation:** `e4e77ffd5fa3e092038cecbba38f6d00446da084` (Settings foundation `c6c89f5`).
 **Controlling main/JIT:** `e14c8c0`; includes `61d2ac7` explicit rebuild/reminder authorization.
-P2-05 remains **in_progress**. **Gate 1 HARD — Owner is approved**; stopped at **Gate 2 HARD — Analyst / Phase 2 acceptance**. The next implementation task has not begun.
+P2-05 and **Phase 2 are accepted / complete**. Owner Gate 1 and Analyst Gate 2 are complete. PR #17 merged to `main` as `e78c8a6c2de4f4e21aaa2937ae33d1e011901947`.
 
 ## Normal workflow and action safety
 
@@ -183,3 +183,23 @@ persistent Performance-update reminder, and explicit in-app Performance rebuild.
 
 P2-05 remains `in_progress` pending final Analyst / Phase 2 acceptance.
 The next implementation task has not begun.
+
+
+## Analyst / Phase 2 acceptance
+
+On **2026-10-05**, the Analyst reviewed final P2-05 at runtime
+implementation head `e4e77ffd5fa3e092038cecbba38f6d00446da084` and final
+handoff head `a5be8108a0aa252a290767b42123c41f8a71d83e` against the
+final JIT and Phase 2 acceptance contract and **accepted P2-05 and Phase 2**.
+
+The review confirmed the in-app OAuth/sync workflow, forward-only API boundary,
+token/rate-limit behavior, conservative source association, 7 new API-only
+Activities correctly surfaced, 4 overlap enrichments with no duplicates,
+explicit Performance freshness/rebuild behavior, restart/idempotence, privacy,
+219 full / 33 focused tests, Chromium acceptance, and clean SQLite
+integrity/foreign keys.
+
+PR #17 merged to `main` as
+`e78c8a6c2de4f4e21aaa2937ae33d1e011901947`.
+
+Phase 3 implementation did not begin as part of this acceptance.
