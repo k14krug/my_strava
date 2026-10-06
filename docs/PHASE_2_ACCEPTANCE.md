@@ -1,6 +1,6 @@
 # RideWorks Phase 2 Acceptance — Historical Context and Performance History
 
-**Status:** approved planning contract for Phase 2  
+**Status:** accepted / complete  
 **Controlling source:** `docs/PRODUCT_REQUIREMENTS.md`  
 **Supporting decisions:** `docs/design/DESIGN-001.md`, `docs/design/DESIGN-002.md`  
 **Precondition:** Phase 1 accepted / complete
@@ -396,7 +396,7 @@ Detailed JIT briefs are authored one task at a time.
 
 The Phase 2 task sequence does not itself authorize implementation.
 
-P2-01 through P2-04 are accepted and complete. P2-05 is the next implementation boundary. Later JITs must use evidence learned from prior tasks rather than prematurely locking schemas or algorithms.
+P2-01 through P2-05 are accepted and complete. Phase 2 was accepted on 2026-10-05 with PR #17 merged as `e78c8a6c2de4f4e21aaa2937ae33d1e011901947`. Phase 3 implementation does not begin automatically.
 
 Each task will state:
 
