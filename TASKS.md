@@ -55,6 +55,31 @@ Only one implementation/research task should normally be `in_progress`.
 
 ---
 
+### STRAVA-004 — Strava activity-stream enrichment and FIT comparison
+
+**Status:** pending
+
+**Purpose:** Validate current Strava activity streams against preserved FIT evidence on the four accepted overlap rides, then—only if the evidence supports it—use bounded post-export Strava stream enrichment to power honest Activity Review graphs for API-only rides.
+
+**Scope summary:**
+
+* fetch only time/watts/heartrate/cadence/moving streams for the four live overlap rides first
+* compare Strava stream metadata, timing and values against preserved FIT evidence
+* experimentally compare best-20 only when API timing independently satisfies accepted complete-window semantics
+* preserve API stream provenance distinctly from FIT/native-file evidence
+* keep FIT-backed review authoritative when a supported FIT exists
+* allow API-only post-export rides to gain stream-backed power/HR charts when evidence is adequate
+* keep trusted Performance eligibility unchanged in this task
+* perform only bounded recent/post-export stream access; no historical stream harvest
+
+**Acceptance:** See `docs/tasks/STRAVA-004.md`.
+
+**Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Dependency:** Phase 2 accepted / complete.
+
+---
+
 ### STRAVA-003 — Historical data-coverage census
 
 **Status:** done
@@ -313,7 +338,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 and Phase 2 are accepted and complete. The Owner has explicitly prioritized a bounded Strava activity-stream enrichment/FIT-comparison follow-up before Phase 3 dashboard work.
+Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is the next bounded implementation/research task once invoked. Phase 3 dashboard work remains not started.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
