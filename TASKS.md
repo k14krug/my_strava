@@ -57,7 +57,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### STRAVA-004 — Strava activity-stream enrichment and FIT comparison
 
-**Status:** pending
+**Status:** in_progress — Owner-authorized final correction on PR #18: Performance policy v2 + automatic post-sync convergence.
 
 **Purpose:** Validate current Strava activity streams against preserved FIT evidence on the four accepted overlap rides, then—only if the evidence supports it—use bounded post-export Strava stream enrichment to power honest Activity Review graphs for API-only rides.
 
@@ -71,6 +71,8 @@ Only one implementation/research task should normally be `in_progress`.
 * allow API-only post-export rides to gain stream-backed power/HR charts when evidence is adequate
 * keep trusted Performance eligibility unchanged in this task
 * perform only bounded recent/post-export stream access; no historical stream harvest
+
+**Current Owner correction:** adopt `virtual-power-evidence-v2`, admit only validated API-only Virtual Ride power streams under strict evidence rules, preserve file precedence, and make Sync now automatically rebuild Performance only when current history is pending/stale. The Performance banner becomes an exception/failure state rather than a routine second step.
 
 **Acceptance:** See `docs/tasks/STRAVA-004.md`.
 
