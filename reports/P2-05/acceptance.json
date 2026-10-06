@@ -4,8 +4,8 @@
   "branch": "task/p2-05-strava-sync",
   "pr": "https://github.com/k14krug/my_strava/pull/17",
   "verification_date": "2026-10-05",
-  "task_status": "in_progress",
-  "gate": "HARD — Analyst / Phase 2 acceptance",
+  "task_status": "done",
+  "gate": "accepted",
   "full_tests": 219,
   "focused_tests": 33,
   "scope": "activity:read_all",
@@ -278,7 +278,7 @@
     "live_disconnect": "not_run_connection_retained_for_owner_review"
   },
   "owner_approval": "approved",
-  "analyst_acceptance": "pending",
+  "analyst_acceptance": "accepted",
   "phase_3_started": false,
   "credential_setup": {
     "example_blank_entries": true,
@@ -300,5 +300,7 @@
     "reminder_derived_from_freshness": true,
     "no_dismissible_flag": true,
     "failed_rebuild_preserves_history": true
-  }
+  },
+  "merge_commit": "e78c8a6c2de4f4e21aaa2937ae33d1e011901947",
+  "phase_2_acceptance": "accepted"
 }
