@@ -57,7 +57,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### STRAVA-004 — Strava activity-stream enrichment and FIT comparison
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Validate current Strava activity streams against preserved FIT evidence on the four accepted overlap rides, then—only if the evidence supports it—use bounded post-export Strava stream enrichment to power honest Activity Review graphs for API-only rides.
 
@@ -79,7 +79,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Current result:** Owner-authorized Performance-v2 and automatic sync-convergence correction implemented on PR #18 at runtime `cce020b`, from Analyst JIT `f9711f4`. All 1,022 file-backed results unchanged + five strict API results = **1,027 eligible / zero pending**; two HR-only outdoor rides current/ineligible, no overlap duplicates. 253 full / 57 focused Strava / 38 focused Performance tests and live/synthetic Chromium passed, including six-week context, automatic migration, skipped unchanged rebuild, failure/retry/restart/idempotence and real Settings Sync now. Evidence: `reports/STRAVA-004/verification.md` and `acceptance.json`. Re-presented **HARD — Owner**; explicit Owner approval precedes Analyst review. Phase 3 not started.
+**Acceptance result:** Owner and Analyst accepted PR #18; merged to `main` as `e7920493dfadbb5f15b0352315cce433f7991ecd`. `virtual-power-evidence-v2` retains all 1,022 file-backed eligible results unchanged and adds 5 validated API-only Virtual Rides for **1,027 eligible / zero pending**. Sync now automatically converges Performance when needed; eligible API rides receive six-week context; failure/retry remains explicit. 253 full / 57 focused Strava / 38 focused Performance tests plus Chromium acceptance passed. Phase 3 did not begin.
 
 **Dependency:** Phase 2 accepted / complete.
 
@@ -343,7 +343,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is in progress at its HARD — Owner review gate. Phase 3 dashboard work remains not started.
+Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is accepted and complete. Phase 3 dashboard work remains not started.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
