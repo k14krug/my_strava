@@ -79,7 +79,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Current result:** addressing the Owner-authorized Performance-v2 and automatic sync-convergence correction on PR #18 from updated Analyst JIT `f9711f4` on refreshed main `2e3ca9b`. Previous Activity Review implementation and 243/57 verification remain recorded in `reports/STRAVA-004/verification.md`. Expected live migration: 1,022 unchanged file-backed results + five API results = 1,027 eligible / zero pending; two HR-only rides current/ineligible. Re-present HARD — Owner after verification.
+**Current result:** Owner-authorized Performance-v2 and automatic sync-convergence correction implemented on PR #18 at runtime `cce020b`, from Analyst JIT `f9711f4`. All 1,022 file-backed results unchanged + five strict API results = **1,027 eligible / zero pending**; two HR-only outdoor rides current/ineligible, no overlap duplicates. 253 full / 57 focused Strava / 38 focused Performance tests and live/synthetic Chromium passed, including six-week context, automatic migration, skipped unchanged rebuild, failure/retry/restart/idempotence and real Settings Sync now. Evidence: `reports/STRAVA-004/verification.md` and `acceptance.json`. Re-presented **HARD — Owner**; explicit Owner approval precedes Analyst review. Phase 3 not started.
 
 **Dependency:** Phase 2 accepted / complete.
 
