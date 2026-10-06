@@ -343,10 +343,54 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is accepted and complete. Phase 3 dashboard work remains not started.
+Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is accepted and complete. Phase 3 is now the active planning/implementation boundary; P3-01 is ready.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
 Outdoor power remains preserved source evidence but is excluded from the trusted Phase 2 performance trend. Outdoor estimated-power reconstruction remains separate future work.
 
 Phase 3 must not begin automatically after Phase 2.
+
+
+---
+
+## Phase 3 — Useful dashboard
+
+**Status:** in_progress — Phase 3 acceptance contract approved; P3-01 JIT ready.
+
+**Acceptance contract:** `docs/PHASE_3_ACCEPTANCE.md`
+
+### P3-01 — Useful dashboard and annual mileage goal
+
+**Status:** pending
+
+**Purpose:** Make RideWorks useful before opening an individual Activity, centered on annual cycling mileage progress, recent rides and already-accepted Performance-v2 evidence.
+
+**Owner-set decisions:**
+
+* Virtual Ride mileage counts toward the annual cycling mileage goal.
+* Outdoor Ride mileage counts.
+* File-backed distance is preferred; current Strava API distance is the fallback.
+* CSV distance with unspecified units is not guessed.
+* Annual mileage is the first narrow goal; do not build a generic goal engine.
+* No Fitness Score, Training Load, Next Workout, adaptive plan or full power curve in Phase 3.
+
+**Scope summary:**
+
+* Home dashboard at `/`; Activities browser moves to `/activities`
+* current-year annual mileage goal setting in Settings
+* YTD goal progress and calendar pace
+* trailing-7-day mileage
+* recent cycling Activities
+* current 42-day best and latest eligible 20-minute result
+* compact mileage and Performance visualizations
+* deterministic explainable insights only
+* preserve STRAVA-004 Performance-v2 and sync behavior
+
+**Acceptance:** `docs/PHASE_3_ACCEPTANCE.md` and `docs/tasks/P3-01.md`.
+
+**Allowed invocation:** `/TASK P3-01` or `/AUTOTASK P3-01`.
+
+**Dependency:** Phase 2 and STRAVA-004 accepted / complete.
+
+Phase 4 must not begin automatically.
