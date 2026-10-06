@@ -57,7 +57,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### STRAVA-004 — Strava activity-stream enrichment and FIT comparison
 
-**Status:** in_progress — Owner-authorized final correction on PR #18: Performance policy v2 + automatic post-sync convergence.
+**Status:** in_progress
 
 **Purpose:** Validate current Strava activity streams against preserved FIT evidence on the four accepted overlap rides, then—only if the evidence supports it—use bounded post-export Strava stream enrichment to power honest Activity Review graphs for API-only rides.
 
@@ -69,7 +69,8 @@ Only one implementation/research task should normally be `in_progress`.
 * preserve API stream provenance distinctly from FIT/native-file evidence
 * keep FIT-backed review authoritative when a supported FIT exists
 * allow API-only post-export rides to gain stream-backed power/HR charts when evidence is adequate
-* keep trusted Performance eligibility unchanged in this task
+* apply Owner-approved `virtual-power-evidence-v2` with file-backed power precedence and strict API fallback eligibility
+* automatically converge Performance after normal Sync now; keep the banner for unresolved freshness/failure
 * perform only bounded recent/post-export stream access; no historical stream harvest
 
 **Current Owner correction:** adopt `virtual-power-evidence-v2`, admit only validated API-only Virtual Ride power streams under strict evidence rules, preserve file precedence, and make Sync now automatically rebuild Performance only when current history is pending/stale. The Performance banner becomes an exception/failure state rather than a routine second step.
@@ -77,6 +78,8 @@ Only one implementation/research task should normally be `in_progress`.
 **Acceptance:** See `docs/tasks/STRAVA-004.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Current result:** Owner-authorized Performance-v2 and automatic sync-convergence correction implemented on PR #18 at runtime `cce020b`, from Analyst JIT `f9711f4`. All 1,022 file-backed results unchanged + five strict API results = **1,027 eligible / zero pending**; two HR-only outdoor rides current/ineligible, no overlap duplicates. 253 full / 57 focused Strava / 38 focused Performance tests and live/synthetic Chromium passed, including six-week context, automatic migration, skipped unchanged rebuild, failure/retry/restart/idempotence and real Settings Sync now. Evidence: `reports/STRAVA-004/verification.md` and `acceptance.json`. Re-presented **HARD — Owner**; explicit Owner approval precedes Analyst review. Phase 3 not started.
 
 **Dependency:** Phase 2 accepted / complete.
 
@@ -340,7 +343,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is the next bounded implementation/research task once invoked. Phase 3 dashboard work remains not started.
+Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is in progress at its HARD — Owner review gate. Phase 3 dashboard work remains not started.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 

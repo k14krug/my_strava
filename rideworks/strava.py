@@ -1,10 +1,11 @@
-"""Explicit single-rider OAuth/manual sync. No polling, streams or secrets in reports."""
+"""Explicit single-rider OAuth/manual sync. No polling or secrets in reports."""
 from contextlib import contextmanager
 import base64
 import fcntl
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import json
 import os
+import re
 from pathlib import Path
 import secrets
 import sys
@@ -20,6 +21,8 @@ from .strava_api import SyncError, absolute, apply_observations, normalize, sync
 SCOPE = 'activity:read_all'
 MAX_JSON = 2*1024*1024
 PAGE_SIZE = 100
+STREAM_KEYS = ('time', 'watts', 'heartrate', 'cadence', 'moving')
+MAX_STREAM_JSON = 16*1024*1024  # Five arrays for long rides; finite, separate from summaries.
 
 
 class AuthenticationError(SyncError):
@@ -69,11 +72,14 @@ class ApiClient:
         self.client_id,self.client_secret=credentials
         self.opener=opener or build_opener(NoRedirect())
         self.rate={}
+        self.stream_requests=0
 
-    def request(self,method,url,*,form=None,token=None,basic=False,empty=False):
+    def request(self,method,url,*,form=None,token=None,basic=False,empty=False,max_json=MAX_JSON):
         allowed={'https://www.strava.com/oauth/token','https://www.strava.com/oauth/revoke',
                  'https://www.strava.com/api/v3/athlete/activities'}
-        if url.split('?',1)[0] not in allowed:
+        endpoint=url.split('?',1)[0]
+        stream_endpoint=re.fullmatch(r'https://www\.strava\.com/api/v3/activities/[1-9][0-9]*/streams',endpoint)
+        if endpoint not in allowed and not (method=='GET' and stream_endpoint):
             raise SyncError('Unsupported Strava endpoint')
         if exhausted(self.rate):
             raise ApiError('Strava rate limit exhausted; sync stopped without retry',429,self.rate)
@@ -86,13 +92,14 @@ class ApiClient:
         if data is not None:
             headers['Content-Type']='application/x-www-form-urlencoded'
         request=Request(url,data=data,headers=headers,method=method)
+        if stream_endpoint:self.stream_requests+=1
         try:
             response=self.opener.open(request,timeout=20)
             with response:
                 self.rate.update(rate_state(response.headers))
                 if response.status!=200:
                     raise ApiError('Strava returned an unexpected HTTP status',response.status,self.rate)
-                payload=response.read(MAX_JSON+1)
+                payload=response.read(max_json+1)
         except HTTPError as error:
             self.rate.update(rate_state(error.headers))
             status=error.code
@@ -103,7 +110,7 @@ class ApiClient:
             raise ApiError(message,status,self.rate) from None
         except (URLError,OSError,TimeoutError):
             raise SyncError('Strava connection failed or timed out; no sync changes committed') from None
-        if len(payload)>MAX_JSON:
+        if len(payload)>max_json:
             raise SyncError('Strava JSON response exceeds the supported size')
         if empty and not payload:
             return {}
@@ -119,6 +126,14 @@ class ApiClient:
     def activities(self,access_token,window,page):
         query=urlencode(dict(after=window['after'],before=window['before'],page=page,per_page=PAGE_SIZE))
         return self.request('GET','https://www.strava.com/api/v3/athlete/activities?'+query,token=access_token)
+
+    def streams(self,access_token,external_id):
+        identity=str(external_id)
+        if not re.fullmatch(r'[1-9][0-9]{0,19}',identity):
+            raise SyncError('Invalid Strava stream identity')
+        query=urlencode(dict(keys=','.join(STREAM_KEYS),key_by_type='true'))
+        return self.request('GET',f'https://www.strava.com/api/v3/activities/{identity}/streams?'+query,
+                            token=access_token,max_json=MAX_STREAM_JSON)
 
     def revoke(self,refresh_token):
         return self.request('POST','https://www.strava.com/oauth/revoke',
@@ -255,6 +270,24 @@ def connect(store,client,*,port=8772,timeout=180,open_browser=webbrowser.open):
     return dict(status='connected',scope=SCOPE)
 
 
+def refreshed_connection(tokens,client,*,now=None):
+    """Shared rotation path; caller holds this store's token lock."""
+    timestamp=int(time.time()) if now is None else now
+    current=tokens.read()
+    try:
+        if current['expires_at']<=timestamp+3600:
+            response=client.token(grant_type='refresh_token',refresh_token=current['refresh_token'])
+            _validate_tokens(response)
+            current.update({k:response[k] for k in ('access_token','refresh_token','expires_at')})
+            try:tokens.save(current)  # Always retain the latest rotation before further requests.
+            except OSError:
+                tokens.clear()
+                raise AuthenticationError('Cannot retain the rotated Strava token; reconnect') from None
+    except AuthenticationError:
+        tokens.clear();raise
+    return current
+
+
 def sync(store,client,*,now=None):
     timestamp=int(time.time()) if now is None else now
     tokens=TokenFile(store.data_dir)
@@ -263,14 +296,7 @@ def sync(store,client,*,now=None):
         window=sync_window(store,current['athlete_id'],timestamp)
         observations={};pages=0
         try:
-            if current['expires_at']<=timestamp+3600:
-                response=client.token(grant_type='refresh_token',refresh_token=current['refresh_token'])
-                _validate_tokens(response)
-                current.update({k:response[k] for k in ('access_token','refresh_token','expires_at')})
-                try:tokens.save(current)  # Persist rotation before any further request, even if sync fails.
-                except OSError:
-                    tokens.clear()
-                    raise AuthenticationError('Cannot retain the rotated Strava token; reconnect') from None
+            current=refreshed_connection(tokens,client,now=timestamp)
             for page in range(1,21):
                 payload=client.activities(current['access_token'],window,page);pages+=1
                 if not isinstance(payload,list) or len(payload)>PAGE_SIZE:
@@ -292,8 +318,12 @@ def sync(store,client,*,now=None):
         except AuthenticationError:
             tokens.clear();raise
         result=apply_observations(store,list(observations.values()),current['athlete_id'],timestamp)
+        from .strava_streams import enrich, recent_candidates
+        stream_result=enrich(store,client,current['access_token'],recent_candidates(store,window))
+        from .performance import converge_performance
+        performance_result=converge_performance(store)
     return dict(status='completed',scope=SCOPE,**window,pages_requested=pages,
-                api_activities_observed=len(observations),rate_limits=client.rate,**result)
+                api_activities_observed=len(observations),rate_limits=dict(client.rate),**result,**stream_result,**performance_result)
 
 
 def disconnect(store,client):

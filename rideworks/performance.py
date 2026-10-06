@@ -1,4 +1,4 @@
-"""Specific versioned Virtual Ride native-power history; no source ranking."""
+"""Versioned Virtual Ride power history with explicit file/API precedence."""
 from collections import Counter
 from datetime import datetime, timezone
 from hashlib import sha256
@@ -8,7 +8,17 @@ from .analysis import BEST_20_METHOD, WINDOW_SAMPLES, best_20_minute_power
 from .errors import IntegrityError
 from .history import presentation
 
-POLICY = 'virtual-native-power-v1'
+POLICY = 'virtual-power-evidence-v2'
+
+
+def file_power_present(snapshot):
+    # Supplied file power is evidence too, but never substitutes for sample power.
+    files=[e for e in snapshot['sources'] if e['source']['kind'] not in ('strava_export','strava_api')]
+    return any(e['extraction'].get('power_present',0)
+               or any(e['summary'].get(k) is not None for k in ('avg_power','max_power'))
+               or any(lap.get(k) is not None for lap in e.get('xml_context',{}).get('lap_summaries',[])
+                      for k in ('avg_power','max_power'))
+               for e in files)
 
 
 def _check_extractions(store):
@@ -43,7 +53,7 @@ def classification(snapshot):
                 basis='conflicting_native_classification' if len(kinds) > 1 else 'native_session')
 
 
-def input_signature(snapshot):
+def input_signature(snapshot, store=None):
     """All current candidate identities matter, including newly competing files.
 
     Metadata is small; including classification/date evidence also invalidates
@@ -54,7 +64,66 @@ def input_signature(snapshot):
                           extraction=e['extraction'], summary=e['summary'],
                           **({'is_current':e['source']['is_current']} if e['source']['kind']=='strava_api' else {}))
                      for e in snapshot['sources']), key=lambda e: e['source_id'])
+    if store is not None and not file_power_present(snapshot):
+        # Digests/identities only: freshness reads never load large stream arrays.
+        streams=[dict(row) for row in store.connection.execute('''SELECT s.source_id,s.summary_source_id,
+            s.observation_sha256,s.mapping_version FROM strava_stream_sources s
+            JOIN strava_stream_current c ON c.source_id=s.source_id WHERE s.activity_id=? ORDER BY s.source_id''',
+            (snapshot['activity']['activity_id'],))]
+        if streams:
+            inputs.append(dict(api_streams=streams))
     return sha256(json.dumps(inputs, sort_keys=True).encode()).hexdigest()
+
+
+def api_candidate(store, snapshot, result):
+    """Strict v2 fallback; columns remain native-only, API provenance is explicit."""
+    from .strava_streams import review_best20
+    summaries=[e for e in snapshot['sources'] if e['source']['kind']=='strava_api' and e['source']['is_current']]
+    if not summaries:
+        return result  # Preserve existing no-file/no-native reasons for non-API history.
+    result['reason']='api_power_stream_unavailable'
+    if len(summaries)!=1:
+        result['reason']='api_current_source_ambiguous';return result
+    summary=summaries[0]
+    observations=[s for s in store.strava_stream_evidence(result['activity_id']) if s['is_current']]
+    if len(observations)!=1:
+        if observations:result['reason']='api_current_source_ambiguous'
+        return result
+    observed=observations[0];streams=observed['streams']
+    result['api_evidence']=dict(evidence_kind='Strava API stream',stream_source_id=observed['source_id'],
+        summary_source_id=summary['source']['source_id'],related_summary_source_id=observed['summary_source_id'],
+        observation_sha256=observed['observation_sha256'],mapping_version=observed['mapping_version'],
+        device_watts=summary['summary']['values'].get('device_watts'),start_date=observed['start_date'],
+        metadata=observed['metadata'])
+    if observed['summary_source_id']!=summary['source']['source_id']:
+        result['reason']='api_stream_summary_not_current';return result
+    if 'watts' not in streams or 'time' not in streams:return result
+    time,watts=streams['time'],streams['watts']
+    if summary['summary']['values'].get('device_watts') is not True:
+        result['reason']='api_device_watts_not_confirmed';return result
+    if any(s['resolution']!='high' for s in (time,watts)):
+        result['reason']='api_stream_not_high_resolution';return result
+    if any(s['original_size']!=len(s['data']) for s in (time,watts)):
+        result['reason']='api_stream_not_full_length';return result
+    if len(time['data'])!=len(watts['data']):
+        result['reason']='api_stream_length_mismatch';return result
+    offsets=time['data']
+    if (any(type(t) is not int or t<0 for t in offsets)
+            or any(b<=a for a,b in zip(offsets,offsets[1:]))):
+        result['reason']='api_stream_invalid_timing';return result
+    # The retained stream contract permits only nonnegative exact integer watts/null.
+    if any(v is not None and (type(v) is not int or v<0) for v in watts['data']):
+        result['reason']='api_stream_invalid_power';return result
+    best=review_best20(observed)
+    if best['status']!='available':
+        result['reason']={'no_complete_one_second_window':'no_complete_timestamp_contiguous_window',
+                          'incomplete_power':'no_complete_power_window',
+                          'signal_time_pairing_ambiguous':'api_stream_pairing_ambiguous'}.get(best['reason'],best['reason'])
+        return result
+    result.update({k:best[k] for k in ('average_watts','rounded_watts','start_offset','end_exclusive_offset',
+                                      'sample_count','eligible_window_count')})
+    result.update(eligible=True,status='eligible',reason=None,content_format='Strava API stream')
+    return result
 
 
 def evaluate(store, snapshot):
@@ -113,6 +182,8 @@ def evaluate(store, snapshot):
         reasons = {c['reason'] for c in result['candidates']}
         result['reason'] = (next(iter(reasons)) if len(reasons) == 1 else
                             'no_eligible_native_source' if reasons else 'no_native_file_source')
+        if not file_power_present(snapshot):
+            result=api_candidate(store,snapshot,result)
     return result
 
 
@@ -132,7 +203,7 @@ def rebuild_performance(store):
             if result['eligible']:
                 formats[result['content_format']] += 1
             rows.append((result['activity_id'], WINDOW_SAMPLES, POLICY, BEST_20_METHOD,
-                         result['source_id'], result['extraction_id'], input_signature(snapshot),
+                         result['source_id'], result['extraction_id'], input_signature(snapshot,store),
                          calculated_at, json.dumps(result, sort_keys=True)))
         store.connection.execute('DELETE FROM performance_history WHERE duration_seconds = ? AND policy = ?',
                                  (WINDOW_SAMPLES, POLICY))
@@ -155,7 +226,7 @@ def performance_history(store):
         stale = 0
         for record in saved:
             snapshot = snapshots[record['activity_id']]
-            if input_signature(snapshot) != record['input_signature']:
+            if input_signature(snapshot,store) != record['input_signature']:
                 stale += 1
                 continue
             result = json.loads(record['result_json'])
@@ -169,9 +240,24 @@ def performance_history(store):
                                    average_watts=result['average_watts'], rounded_watts=result['rounded_watts'],
                                    source_id=result['source_id'], extraction_id=result['extraction_id'],
                                    content_format=result['content_format'], classification=result['classification'],
-                                   start_timestamp=result['start_timestamp'], end_exclusive_timestamp=result['end_exclusive_timestamp']))
+                                   start_timestamp=result.get('start_timestamp'), end_exclusive_timestamp=result.get('end_exclusive_timestamp'),
+                                   **({k:result[k] for k in ('api_evidence','start_offset','end_exclusive_offset')} if 'api_evidence' in result else {})))
         points.sort(key=lambda p: (p['date_key'], p['activity_id']))
         return dict(points=points, results=results, evaluated=len(snapshots), current=len(results),
                     pending=len(snapshots) - len(results), stale=stale,
                     missing_dates=sum(r['eligible'] and not r['date_available'] for r in results),
                     policy=POLICY, method=BEST_20_METHOD)
+
+
+def converge_performance(store):
+    """Post-sync convergence; failure cannot undo committed source/checkpoint writes."""
+    import sqlite3
+    from .errors import RideWorksError
+    try:
+        history=performance_history(store)
+        if history['pending']==0:
+            return dict(performance_update='current',performance_pending=0,performance_eligible=len(history['points']))
+        rebuilt=rebuild_performance(store)
+        return dict(performance_update='updated',performance_pending=0,performance_eligible=rebuilt['eligible'])
+    except (RideWorksError,OSError,sqlite3.Error):
+        return dict(performance_update='incomplete')  # Fixed safe state; no private exception text.

@@ -124,7 +124,7 @@ class PersistedContextTests(unittest.TestCase):
         self.assertIn('href="/activities/'+self.prior['activity_id']+'"',html)
         self.assertIn('id="recent-performance" href="/performance"',html)
         self.assertIn('The current Activity is excluded',html);self.assertIn('Prior window start (exclusive)',html)
-        self.assertIn('virtual-native-power-v1',html);self.assertIn('best-average-power-v1',html)
+        self.assertIn(POLICY,html);self.assertIn('best-average-power-v1',html)
 
     def test_earliest_ride_shows_unavailable_without_zero_or_fallback(self):
         html=self.app.get('/activities/'+self.prior['activity_id'])[2].decode()
@@ -138,7 +138,7 @@ class PersistedContextTests(unittest.TestCase):
         self.assertIsNone(recent_context(self.store,self.current['activity_id'])['prior'])
         self.store.connection.execute('UPDATE sessions SET avg_power=119 WHERE extraction_id=?',(self.current['extraction_id'],))
         html=self.app.get('/activities/'+self.current['activity_id'])[2].decode()
-        self.assertIn('requires a Performance rebuild',html);self.assertIn('Best 20-minute power',html)
+        self.assertIn('Performance update incomplete',html);self.assertIn('Best 20-minute power',html)
         self.assertNotIn('id="recent-current-watts"',html)
 
     def test_outdoor_rich_review_retains_own_best_but_trusted_context_is_unavailable(self):

@@ -405,28 +405,28 @@ port 8765 may point to the separate one-activity store; that is not the P2-02
 full-history review instance. Use the port and counts above to identify the
 correct store before reviewing the browser.
 
-## Phase 2 trusted performance history
+## Performance history
 
-Build the current analytical history explicitly, then open `/performance`:
+Normal Sync now automatically brings Performance current when evidence or policy is pending. The explicit rebuild remains a maintenance/recovery command; open `/performance` for the current history:
 
 ```bash
 .venv/bin/python -m rideworks --data-dir '<data-dir>' rebuild-performance
 .venv/bin/python -m rideworks --data-dir '<data-dir>' serve --port 8768
 ```
 
-The rebuild emits aggregate counts only. Policy `virtual-native-power-v1` uses
+The rebuild emits aggregate counts only. Current policy `virtual-power-evidence-v2` uses
 the latest non-empty Strava activity-type observation, or unambiguous native
 virtual-session evidence when that observation is absent. Outdoor Ride and
 non-virtual Activities are excluded before reading native streams. Each FIT,
 TCX or GPX candidate is evaluated with unchanged `best-average-power-v1` rules.
 Exactly one eligible native Source is required; multiple eligible Sources are
 excluded rather than ranked. Native Virtual Ride power is accepted for this
-history, without claiming measured provenance. CSV/session/lap summaries do not
-substitute for native power. Naive native timestamps are not guessed into UTC.
+history, without claiming measured provenance. The earlier file-only policy `virtual-native-power-v1` remains historical evidence. CSV/session/lap summaries do not
+substitute for native power. Naive native timestamps are not guessed into UTC. File-backed power controls even when ineligible; API streams cannot rescue its result. With no retained file-backed power, a current API summary/stream pair may qualify for Virtual Ride when device watts are confirmed, time/watts are high resolution and full length, integer offsets increase strictly, and a complete one-second window exists.
 
 Schema 4 adds a specific `performance_history` table keyed by Activity, duration
 and policy, retaining method, source/extraction identities, classification context,
-raw/display watts, window context and rebuild time. Native records are not copied.
+raw/display watts, window context and rebuild time. API results keep native source/extraction columns null and retain stream/summary IDs, digest/mapping, device watts, returned offsets, and method/policy in result JSON and freshness signatures. API samples never enter native records. Historical v1 rows remain available while current pages select v2 only.
 The entire rebuild uses one transaction; fatal corruption leaves the previously
 committed history intact. Re-extraction removes affected eligible results through
 their foreign key, and metadata/input identity checks hide changed classifications
@@ -511,13 +511,12 @@ Selection reads current persisted P2-03 results and metadata. For absolute
 Activity start `t`, the interval is exactly `(t - 42 days, t)`; both endpoints
 are excluded. Highest raw watts win, with earliest Activity start then stable
 Activity ID resolving exact ties. Unknown-zone prior dates do not enter the
-exact timed window. Missing/stale/untrusted current results show an explicit
+exact timed window. Missing/stale/ineligible current results show an explicit
 unavailable reason; an empty prior window stays unavailable. No summary watts,
 older period bests or zeros substitute. Ordinary FIT analysis remains separate.
 Thin reviews retain their evidence-appropriate behavior.
 
-There is no comparison table, automatic Performance rebuild, archive import or
-source re-extraction. Baseline selection scans no native records; the existing
+There is no comparison table, archive import or source re-extraction. Normal Sync now handles pending Performance through the shared automatic convergence step; viewing a page never rebuilds it. Baseline selection scans no native records; the existing
 current-ride chart/calculation still reads that ride's native evidence normally.
 
 Verification uses a disposable copy of accepted P2-03 history, preserving the
@@ -629,21 +628,16 @@ provide it. Title alone never associates. Ambiguous/conflicting local matches
 create a new API-backed Activity; conflicting established identities stop.
 
 Current API title/type evidence is visible and attributable; export titles remain
-inspectable. API-only review stays thin. FIT summaries/native streams remain
-unchanged. API summary watts never become native Performance evidence. Changed
-source context may suppress stale Performance results until an explicit rebuild;
-sync never runs `rebuild-performance` or reparses original files.
+inspectable. API-only review uses stream evidence when available; summary-only Activities stay thin. FIT summaries/native streams remain unchanged. API summary watts never become sample power. Sync now runs metadata → bounded stream enrichment → Performance freshness → atomic rebuild only if pending. The web and CLI share this orchestration; source files are never reparsed or reimported.
 
-When Performance has pending/stale Activities, a neutral **Performance update needed**
-reminder appears on Settings, Activities, Performance and Activity Review. It shows
-the affected count and explains that affected results are temporarily hidden while
-ride data is retained. The reminder derives from current freshness on every page;
-it survives restart and cannot be dismissed while work remains. Choose **Rebuild
-Performance** explicitly from the reminder. This uses the accepted CLI algorithm and
-atomic transaction, protected by the same POST/nonce/origin checks. A successful
-rebuild shows evaluated/eligible counts and clears the reminder when pending reaches
-zero. Failure retains prior results and the reminder. The CLI rebuild command is
-secondary maintenance/recovery; Sync now does not invoke it.
+Successful ordinary sync leaves Performance current with no second rebuild click.
+A policy migration also requires convergence, even when Strava returns unchanged
+metadata. If recalculation fails, synchronized evidence/checkpoint and prior
+Performance rows remain intact. **Performance update incomplete** appears only
+while unresolved missing/stale/policy-outdated results remain, with **Retry
+Performance update** as recovery. A later Sync now retries while pending remains;
+current ineligible rows (including HR-only rides) do not keep the banner visible.
+The action uses the same POST/nonce/origin checks and atomic rebuild as the CLI.
 
 Restart the server, confirm Settings still shows Connected, and choose Sync now again
 to verify overlap idempotence. Manual
@@ -678,3 +672,47 @@ success is separate from real authorization/sync acceptance.
 Screenshots and this file stay local/ignored. The verifier emits aggregate JSON
 and independently checks every eligible prior baseline without a production
 selector oracle or native stream reads, then verifies persisted history/restart.
+
+## Strava stream review (STRAVA-004)
+
+Normal **Sync now** also fetches `time,watts,heartrate,cadence,moving` sequentially
+for recent API-only cycling Activities that lack usable stream evidence. It
+reuses usable cached observations. Optional missing signals stay missing;
+stream failures leave successful metadata/checkpoint changes intact and are
+shown separately, with retry on a later manual sync. Rate/auth failures stop
+further stream requests without busy retry. The existing private token state
+and atomic refresh logic serve both metadata and streams.
+
+Stream Sources retain exact returned order/values, resolution, series type,
+original size, retrieval time, requested keys, mapping version and related API
+summary Source. Identical observations are reused; changed observations remain
+inspectable. These are separate from FIT/native records and Performance inputs.
+The stream JSON limit is 16 MiB (five arrays for long rides), while metadata/token
+responses retain their 2 MiB limit. Both use fixed HTTPS endpoints, redirect
+rejection and a 20-second timeout. No location streams are requested or retained.
+
+API-only review charts use returned offsets directly, with power/HR where
+available. Missing values and gaps over one second break paths; no intermediate
+samples are invented. Absolute inspection time explicitly maps the related
+summary start_date plus an original offset. Array length/sampling metadata must
+support pairing with time; ambiguous or duplicate/backward timing remains thin
+with an explanation. Summary average watts never substitute for a series.
+Source details distinguish stream observations from summary metadata. Supported
+FIT-backed review keeps its existing native graph and best-20; API streams are
+additional provenance only when file-backed power exists. Performance v2 uses API fallback only under the Owner-approved quality/precedence rules; automatic post-sync convergence makes eligible results current.
+
+Stream-backed API-only rides use the normal Activity Review hierarchy: four
+summary cards, power/HR chart, ride-local Best 20-minute power, and Ride summary.
+Cards and Ride summary retain current Strava API summary evidence; supplied
+averages are not recalculated from the stream. The local best-20 is explicitly
+RideWorks-calculated from Strava API stream evidence. It requires 1,200 complete
+power samples at exact consecutive one-second returned offsets, counts zeros,
+and rejects windows crossing gaps or missing power. Raw maximum wins, exact ties
+choose the earliest window, and displayed watts round half up. No qualifying
+window (including HR-only streams) shows Unavailable with a reason. Returned-offset
+bounds and calculation/source details stay inspectable. The same candidate result may enter Performance and exact prior-six-week context when v2 eligibility passes. Otherwise the local panel gives its exclusion reason. Rendering the review is read-only; only rebuild/convergence persists Performance.
+
+The task's bounded initial catch-up covered the seven known P2-05 API-only rides;
+it did not fetch streams across the historical archive. Stage A independently
+compared four overlap rides with FIT first. See
+`reports/STRAVA-004/verification.md` for the evidence and limits.

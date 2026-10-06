@@ -15,7 +15,7 @@ from .history import SORTS, browse, presentation
 from .recent_context import recent_context
 from .store import Store, resolve_data_dir
 from .settings import Settings
-from .performance import performance_history
+from .performance import POLICY, performance_history
 
 STATIC = Path(__file__).with_name('static')
 ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml', 'settings.js': 'text/javascript'}
@@ -178,14 +178,14 @@ def recent_context_panel(context):
         difference = f'<p class="recent-difference" id="recent-difference">{comparison}</p>'
         contribution = f'''<p class="recent-contribution">{browser_time(prior, compact=True)} · {escape(prior['title'])}</p><a id="recent-prior-activity" class="recent-open" href="/activities/{escape(prior['activity_id'], quote=True)}">Open prior ride</a>'''
     messages = {
-        'performance_rebuild_required': 'Trusted recent context requires a Performance rebuild.',
-        'outdoor_ride_excluded': 'Outdoor Ride power is excluded from trusted Performance history.',
-        'non_virtual_activity': 'Only Virtual Ride native power contributes to trusted recent context.',
+        'performance_rebuild_required': 'Performance update incomplete; retry the update or Sync now.',
+        'outdoor_ride_excluded': 'Outdoor Ride power is excluded from Performance history.',
+        'non_virtual_activity': 'Only eligible Virtual Ride power contributes to Performance history.',
         'activity_date_unavailable': 'Activity start is unavailable; the exact prior window cannot be established.',
         'activity_timezone_unknown': 'Activity timezone is unknown; the exact prior window cannot be established.',
         'no_qualifying_prior_result': 'No qualifying prior result in the preceding six weeks.',
     }
-    note = 'Trusted Performance results · Virtual Ride native power' if prior else messages.get(context['reason'], 'This ride has no eligible current trusted Performance result.')
+    note = 'Performance history · Virtual Ride power evidence' if prior else messages.get(context['reason'], 'This ride has no eligible current Performance result.')
     rows = [('Policy', context['policy']), ('Method', context['method']),
             ('Duration (seconds)', context['duration_seconds']), ('Current Activity ID', context['activity_id']),
             ('Prior window start (exclusive)', context['window_start']),
@@ -193,12 +193,21 @@ def recent_context_panel(context):
             ('Unavailable reason', context['reason']), ('Pending Performance Activities', context['pending_history'])]
     for name, point in [('Current', current), ('Prior', prior)]:
         if point:
-            rows += [(f'{name} Activity ID', point['activity_id']), (f'{name} Source ID', point['source_id']),
-                     (f'{name} extraction ID', point['extraction_id']), (f'{name} raw average (W)', point['average_watts'])]
-    return f'''<section class="recent-context" aria-labelledby="recent-context-title" data-recent-status="{'available' if prior else 'unavailable'}"><div class="recent-heading"><h3 id="recent-context-title">Compared with previous 6 weeks</h3><a id="recent-performance" href="/performance">View Performance</a></div>{values}{difference}{contribution}<p class="recent-note">{escape(note)}</p><details id="recent-context-details"><summary>Comparison details</summary>{detail_rows(rows)}<p>The prior window is (Activity start − 42 days, Activity start), with both endpoints excluded. The current Activity is excluded from its own baseline. Only current trusted results with absolute Activity times participate. Highest raw watts win; exact ties use earliest Activity start, then Activity ID. The displayed watt difference subtracts the two displayed whole-watt values; raw averages remain above for inspection and baseline selection. No source summaries or older period bests substitute.</p></details></section>'''
+            rows += [(f'{name} Activity ID', point['activity_id']), (f'{name} raw average (W)', point['average_watts'])]
+            if point.get('api_evidence'):
+                api=point['api_evidence']
+                rows += [(f'{name} evidence kind',api['evidence_kind']),
+                         (f'{name} API stream Source ID',api['stream_source_id']),
+                         (f'{name} API summary Source ID',api['summary_source_id']),
+                         (f'{name} API stream mapping',api['mapping_version']),
+                         (f'{name} API stream digest',api['observation_sha256'])]
+            else:
+                rows += [(f'{name} evidence kind','File-backed power'),(f'{name} Source ID',point['source_id']),
+                         (f'{name} extraction ID',point['extraction_id'])]
+    return f'''<section class="recent-context" aria-labelledby="recent-context-title" data-recent-status="{'available' if prior else 'unavailable'}"><div class="recent-heading"><h3 id="recent-context-title">Compared with previous 6 weeks</h3><a id="recent-performance" href="/performance">View Performance</a></div>{values}{difference}{contribution}<p class="recent-note">{escape(note)}</p><details id="recent-context-details"><summary>Comparison details</summary>{detail_rows(rows)}<p>The prior window is (Activity start − 42 days, Activity start), with both endpoints excluded. The current Activity is excluded from its own baseline. Only current Performance-eligible results with absolute Activity times participate. Highest raw watts win; exact ties use earliest Activity start, then Activity ID. The displayed watt difference subtracts the two displayed whole-watt values; raw averages remain above for inspection and baseline selection. No source summaries or older period bests substitute.</p></details></section>'''
 
 
-def review_page(analysis, metadata=None, recent=None):
+def review_page(analysis, metadata=None, recent=None, streams=None):
     summary = analysis['source_summary']['values']
     source, extraction = analysis['source'], analysis['extraction']
     best = analysis['best_20_minute_power']
@@ -292,10 +301,116 @@ def review_page(analysis, metadata=None, recent=None):
 <details><summary>Calculation details</summary>{detail_rows(best_rows)}<p>Complete 1,200-sample windows with one-second timestamps and no missing power. Earliest window wins a tie; whole watts round half up. No repaired or estimated samples.</p></details>{recent_context_panel(recent)}</section>
 <details class="panel provenance"><summary>Source &amp; provenance</summary><p>Ride summary values are FIT session source evidence. Sensor origins remain unknown; presence does not establish measurement origin.</p>{detail_rows(source_rows)}</details></div>
 <aside class="panel ride-summary"><h2>{icon('summary')}Ride summary</h2><p class="source-caption">FIT session source evidence</p>{detail_rows(summary_rows)}</aside></div>
-<script id="native-records" type="application/json">{payload}</script>''')
+<script id="native-records" type="application/json">{payload}</script>{stream_details(streams or [])}''')
 
 
-def thin_review_page(row):
+def stream_details(observations):
+    parts=[]
+    for observation in observations:
+        rows=[('Source ID',observation['source_id']),('Related API summary Source',observation['summary_source_id']),
+              ('Retrieved at (UTC)',observation['retrieved_at']),('Mapping',observation['mapping_version']),
+              ('Current stream observation',bool(observation['is_current'])),
+              ('Requested types',', '.join(observation['requested'])),('Summary start_date',observation['start_date'])]
+        for key,metadata in observation['metadata'].items():
+            rows += [(key+' '+field,value) for field,value in metadata.items()]
+        parts.append('<details class="panel provenance stream-provenance"><summary>Strava API stream evidence</summary>'
+                     '<p>Additional API source evidence; not a native-file extraction. Signal presence does not establish measured origin.</p>'
+                     +detail_rows(rows)+'</details>')
+    return ''.join(parts)
+
+
+def stream_chart(observation):
+    streams=observation['streams'];offsets=streams['time']['data']
+    power=streams.get('watts',{}).get('data',[None]*len(offsets))
+    hr=streams.get('heartrate',{}).get('data',[None]*len(offsets))
+    samples=[dict(sample_index=i,time_offset=t,power=power[i],heart_rate=hr[i]) for i,t in enumerate(offsets)]
+    payload=json.dumps(samples,allow_nan=False).replace("<", "\\u003c").replace("&", "\\u0026")
+    return f'''<section class="panel chart-panel" aria-labelledby="chart-title">
+<h2 id="chart-title">Ride power &amp; heart rate</h2><p class="source-caption">Strava API stream evidence</p>
+<div class="legend"><span><i class="power-swatch"></i>Power · W</span><span><i class="hr-swatch"></i>Heart rate · bpm</span></div>
+<div id="ride-chart" data-api-sample-count="{len(samples)}" data-start-time="{escape(observation['start_date'],quote=True)}"><svg id="chart-svg" role="img" aria-label="Strava API power and heart rate at returned elapsed time offsets" aria-describedby="chart-help"></svg></div>
+<div id="sample-readout" role="status" aria-live="polite">Move over the chart to inspect returned Strava samples.</div>
+<div class="chart-footer"><span>{len(samples):,} returned samples · elapsed time</span><span id="chart-help">Focus chart + arrow keys to inspect</span></div>
+<p class="source-caption">Returned time offsets are used directly. Missing values and gaps longer than one second break the lines; no intermediate samples are invented. Performance eligibility follows the versioned evidence policy.</p>
+<details><summary>Time mapping</summary><p>For local date/time inspection, the related Strava summary start_date plus the returned time offset supplies a presentation timestamp. Original offsets and source metadata are retained separately.</p></details>
+<noscript>Enable JavaScript to review the Strava stream chart.</noscript></section>
+<script id="api-stream-samples" type="application/json">{payload}</script>'''
+
+
+def api_review_page(row, observation, observations, source_details, recent=None):
+    from .strava_streams import review_best20
+    summary_source = next(e for e in row['sources'] if e['source']['kind']=='strava_api' and e['source']['is_current'])
+    summary = summary_source['summary']['values']
+    cards = ''.join(metric(name, value, symbol) for name, value, symbol in [
+        ('Elapsed duration', duration(summary.get('elapsed_time')), 'duration'),
+        ('Distance', distance(summary.get('distance')), 'distance'),
+        ('Average power', sensor(summary.get('average_watts'), 'W'), 'power'),
+        ('Average heart rate', sensor(summary.get('average_heartrate'), 'bpm'), 'heart'),
+    ])
+    summary_rows = [
+        ('Elapsed duration', duration(summary.get('elapsed_time'))),
+        ('Moving duration', duration(summary.get('moving_time'))),
+        ('Distance', distance(summary.get('distance'))),
+        ('Ascent', ascent(summary.get('total_elevation_gain'))),
+        ('Average power', sensor(summary.get('average_watts'), 'W')),
+        ('Maximum power', sensor(summary.get('max_watts'), 'W')),
+        ('Average heart rate', sensor(summary.get('average_heartrate'), 'bpm')),
+        ('Maximum heart rate', sensor(summary.get('max_heartrate'), 'bpm')),
+        ('Average cadence', sensor(summary.get('average_cadence'), 'rpm')),
+        ('Energy', sensor(summary.get('kilojoules'), 'kJ')),
+    ]
+    best = review_best20(observation)
+    reasons = {
+        'watts_stream_missing': 'No Strava watts stream is available.',
+        'time_missing': 'No Strava time stream is available.',
+        'signal_time_pairing_ambiguous': 'Watts and time cannot be paired without assumptions.',
+        'activity_shorter_than_required': 'Fewer than 1,200 returned samples; a complete 20-minute window is unavailable.',
+        'no_complete_one_second_window': 'No complete window of 1,200 consecutive one-second offsets.',
+        'incomplete_power': 'Every complete one-second window contains missing power.',
+    }
+    window_text = reasons.get(best['reason'], '')
+    if best['status']=='available':
+        window_text = f"{duration(best['start_offset'])}–{duration(best['end_exclusive_offset'])} elapsed · {best['sample_count']:,} returned samples"
+    best_rows = [('Origin', 'RideWorks-calculated from Strava API stream evidence'),
+                 ('Method/version', best['method']), ('Stream Source ID', best['source_id']),
+                 ('Related API summary Source ID', best['summary_source_id']),
+                 ('Retrieved at (UTC)', observation['retrieved_at']), ('Stream mapping', observation['mapping_version']),
+                 ('Status', best['status']), ('Unavailable reason', best['reason']),
+                 ('Samples in window', best['sample_count']),
+                 ('Returned-offset start (inclusive, seconds)', best['start_offset']),
+                 ('Returned-offset end (exclusive, seconds)', best['end_exclusive_offset']),
+                 ('Unrounded average', sensor(best['average_watts'], 'W')),
+                 ('Eligible windows', best['eligible_window_count'])]
+    eligible=bool(recent and recent.get('current') and recent['current'].get('eligible',True))
+    reason=(recent or {}).get('reason')
+    eligibility_note='Performance-eligible evidence · '+POLICY if eligible else 'Excluded from Performance history.'
+    if not eligible and reason:
+        eligibility_note += ' '+{
+            'api_device_watts_not_confirmed':'Strava does not confirm device power.',
+            'api_power_stream_unavailable':'No eligible API watts/time stream.',
+            'api_stream_not_high_resolution':'API sampling resolution is not high.',
+            'api_stream_not_full_length':'The API stream is not full length.',
+            'api_stream_summary_not_current':'The stream does not match the current summary observation.',
+            'outdoor_ride_excluded':'Outdoor Ride power is excluded.',
+            'non_virtual_activity':'Only Virtual Rides qualify.',
+            'performance_rebuild_required':'Performance update incomplete; retry the update or Sync now.',
+        }.get(reason,'The returned evidence does not meet the Performance policy.')
+    best_rows += [('Performance policy',POLICY),('Performance eligibility reason',None if eligible else reason)]
+    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(row['title'])}</h1><span class="title-origin">{escape(row['title_origin'])}</span></div><p class="ride-meta">{browser_time(row,compact=True)}<span class="meta-separator">·</span>Type: {escape(row['activity_type'])}<span class="meta-separator">·</span>Subtype: {escape(row['subtype'] or 'Unavailable')}<span class="meta-separator">·</span>Strava API source</p></header>
+<section aria-label="Strava API summary evidence"><p class="source-caption">Strava API summary evidence · supplied averages</p><div class="metrics">{cards}</div></section>
+<div class="review-layout"><div class="review-main">{stream_chart(observation)}
+<section class="panel best-panel api-best20" data-best20-status="{best['status']}"><div><h2>{icon('power')}Best 20-minute power</h2><p>RideWorks-calculated from Strava API stream evidence</p></div><strong class="best-value">{sensor(best['rounded_watts'],'W')}</strong><p class="window-context">{escape(window_text)}</p>
+<p class="source-caption">{escape(eligibility_note)}</p>
+<details><summary>Calculation details</summary>{detail_rows(best_rows)}<p>Exactly 1,200 complete power samples at consecutive one-second returned offsets. Zero watts count. Highest raw average wins; exact ties choose the earliest window; displayed watts round half up. No interpolation or repaired samples.</p></details>{recent_context_panel(recent) if eligible else ''}</section>
+{stream_details(observations)}<section class="thin-sources" aria-label="Associated source evidence">{source_details}</section></div>
+<aside class="panel ride-summary"><h2>{icon('summary')}Ride summary</h2><p class="source-caption">Strava API summary evidence</p>{detail_rows(summary_rows)}<details><summary>Summary source</summary>{detail_rows([('Source ID',summary_source['source']['source_id']),('Retrieved at (UTC)',summary_source['source']['imported_at']),('Mapping',summary_source['extraction']['mapping_version'])])}<p>Values are supplied by Strava; averages are not calculated from the retained API stream. Stream observations retain their own related summary Source.</p></details></aside></div>''')
+
+
+def thin_review_page(row, streams=None, stream_reason=None, recent=None):
+    observations=streams or []
+    current=next((s for s in reversed(observations) if s['is_current']),None)
+    api_only=all(e['source']['kind']=='strava_api' for e in row['sources'])
+    rich_api=bool(api_only and current and current['chart_unavailable_reason'] is None)
     sources = []
     for evidence in row['sources']:
         source, summary = evidence['source'], evidence['summary']
@@ -310,8 +425,8 @@ def thin_review_page(row):
                    'average_watts':'W','weighted_average_watts':'W','max_watts':'W','kilojoules':'kJ',
                    'average_heartrate':'bpm','max_heartrate':'bpm','average_cadence':'rpm','utc_offset':'s'}
             values += [(key.replace('_',' ').capitalize()+(f' ({units[key]})' if key in units else ''),value)
-                       for key,value in summary['values'].items()]
-            note = 'Strava API summaries are source evidence. Native streams and trusted best-20 results are unavailable from this source.'
+                       for key,value in summary['values'].items() if key!='id']
+            note = 'Strava API summaries are supplied source evidence, retained separately from stream evidence and RideWorks calculations.'
         elif csv:
             values += [('Title', summary.get('title')), ('Activity type', summary.get('activity_type')),
                        ('Sport type', summary.get('sport_type')), ('Source date text', summary.get('date_text'))]
@@ -337,9 +452,16 @@ def thin_review_page(row):
                            (f'Lap {i} average heart rate', sensor(lap.get('avg_heart_rate'), 'bpm')),
                            (f'Lap {i} maximum heart rate', sensor(lap.get('max_heart_rate'), 'bpm'))]
             note = 'Native source evidence is preserved. Detailed RideWorks review is not yet supported for this evidence. Signal presence does not establish measurement origin.'
-        sources.append(f'<details class="panel provenance" open><summary>{escape(name)}</summary><p>{escape(note)}</p>{detail_rows(values)}</details>')
-    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Activity details</div><h1>{escape(row['title'])}</h1><p class="title-origin">{escape(row['title_origin'])}</p><p class="ride-meta">{browser_time(row)} · Type: {escape(row['activity_type'])} · Subtype: {escape(row['subtype'] or 'Unavailable')}</p></header>
-<section class="panel review-unavailable"><h2>Detailed RideWorks review unavailable</h2><p>This activity does not currently have a single supported FIT analysis source. Available source evidence is shown below; no charts or best-20 result are substituted.</p></section>
+        sources.append(f'<details class="panel provenance"{"" if rich_api else " open"}><summary>{escape(name)}</summary><p>{escape(note)}</p>{detail_rows(values)}</details>')
+    if rich_api:
+        return api_review_page(row,current,observations,''.join(sources),recent)
+    else:
+        from .strava_streams import REASONS
+        explanation=REASONS.get((current or {}).get('chart_unavailable_reason') or stream_reason or 'not_fetched','Stream review is unavailable.')
+        reason_note=f'<p>{escape(explanation)}</p>' if all(e['source']['kind']=='strava_api' for e in row['sources']) else ''
+        intro=f'<section class="panel review-unavailable"><h2>Detailed RideWorks review unavailable</h2><p>This activity does not currently have a single supported FIT analysis source. Available source evidence is shown below; no charts or best-20 result are substituted.</p>{reason_note}</section>'
+    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Activity details</div><h1>{escape(row['title'])}</h1><p class="title-origin">{escape(row['title_origin'])}</p><p class="ride-meta">{browser_time(row,compact=bool(api_only and current and current['chart_unavailable_reason'] is None))} · Type: {escape(row['activity_type'])} · Subtype: {escape(row['subtype'] or 'Unavailable')}</p></header>
+{intro}{stream_details(observations)}
 <section class="thin-sources" aria-label="Associated source evidence">{''.join(sources)}</section>''')
 
 
@@ -365,7 +487,7 @@ def performance_page(store):
         cards = ''.join(summary_card(key, label) for key, label in [('current','Current 42-day best'),
                         ('latest','Latest eligible ride'),('year','Best in last 12 months'),('lifetime','Lifetime best')])
         chart = f'''<div class="performance-workspace">
-<section class="performance-summary" aria-label="Trusted power summaries">{cards}</section>
+<section class="performance-summary" aria-label="Performance power summaries">{cards}</section>
 <section class="panel performance-chart-panel">
 <div class="performance-controls">
 <div class="performance-control-group"><span>Range</span><div class="performance-ranges" role="group" aria-label="Range"><button type="button" data-range="3mo">3 mo</button><button type="button" data-range="6mo">6 mo</button><button type="button" data-range="1yr" aria-pressed="true">1 yr</button><button type="button" data-range="3yr">3 yr</button><button type="button" data-range="all">All</button></div></div>
@@ -384,7 +506,7 @@ def performance_page(store):
 <div class="performance-evidence-pages"><button type="button" id="performance-rides-prev">Previous</button><span id="performance-rides-page"></span><button type="button" id="performance-rides-next">Next</button></div></details></div>'''
     else:
         message = ('Performance history has not been rebuilt yet.' if history['current'] == 0 else
-                   'No current ride result qualifies for the trusted 20-minute history.')
+                   'No current ride result qualifies for the 20-minute Performance history.')
         chart = f'<section class="panel empty"><h2>20-minute power history</h2><p>{message}</p></section>'
     notices = []
     if history['pending']:
@@ -393,13 +515,13 @@ def performance_page(store):
         notices.append(f"{history['missing_dates']:,} eligible results lack a supported Activity date and are not plotted.")
     if view['unknown_timezones']:
         notices.append(f"{view['unknown_timezones']:,} results have source dates with unknown timezones: available in period views, unavailable for exact timed-window summaries.")
-    return shell('Performance', f'''<header><h1>Performance</h1><p class="performance-count">20-minute power · {len(points):,} eligible ride results · Virtual Ride native power</p></header>{chart}
+    return shell('Performance', f'''<header><h1>Performance</h1><p class="performance-count">20-minute power · {len(points):,} eligible ride results · Virtual Ride power evidence</p></header>{chart}
 <p class="performance-notice">{escape(' '.join(notices))}</p>
 <details class="panel performance-policy"><summary>Eligibility &amp; method</summary>
-<p>Virtual Ride native source power is eligible for this Phase 2 history. Native power presence does not establish that it was measured. Outdoor Ride power is excluded because its evidence quality is suspect.</p>
-<p>RideWorks calculates the highest average over exactly 1,200 consecutive records with one-second timestamps and complete power. Zero watts count; missing power, gaps and duplicate or backward timestamps invalidate affected windows. No interpolation, resampling or repair occurs. Exact ties choose the earliest window; display rounds whole watts half up.</p>
+<p>Virtual Ride file-backed power has precedence. When no file-backed power evidence exists, current Strava API time/watts streams may qualify if device watts are confirmed, both streams are high resolution and full length, and valid timing/power supports a complete window. Power presence alone does not establish measured origin. Outdoor Ride power remains excluded.</p>
+<p>RideWorks calculates the highest average over exactly 1,200 samples with consecutive one-second timestamps or returned offsets and complete power. Zero watts count; missing power, gaps and duplicate or backward timing invalidate affected windows. No interpolation, resampling or repair occurs. Exact ties choose the earliest window; display rounds whole watts half up.</p>
 <p>The trend retains the strongest qualifying result in the trailing 42 days, changing when a ride enters or leaves the window. A result expires exactly 42 days after its Activity start. Gaps mean there is no qualifying result; the line is demonstrated evidence rather than an estimated daily performance series. Time ranges end at the page's current time; monthly and yearly bests use displayed calendar periods and only rides within the selected range. Period-best lines connect consecutive calendar periods at the contributing ride dates, with point markers. Missing periods have no mark and break the line. Raw values choose the best; exact ties retain the earliest Activity.</p>
-<p>Method: best-average-power-v1 · Policy: virtual-native-power-v1. One eligible native file Source must support each Activity result. Multiple eligible Sources are ambiguous and excluded. CSV and source summaries never substitute for native power. Ineligible or missing results are not plotted as zero.</p>
+<p>Method: best-average-power-v1 · Policy: {POLICY}. One eligible file Source controls each file-backed Activity result; multiple eligible file Sources are ambiguous and excluded. API evidence cannot bypass ineligible file-backed power. API results retain stream/summary provenance and returned-offset window bounds. CSV and summary averages never substitute for sample power. Ineligible or missing results are not plotted as zero.</p>
 </details>
 <details class="panel performance-future"><summary>Future Performance candidates</summary><p>Possible future direction includes additional performance durations and broader power history, FTP and historical athlete context, richer recent-versus-historical comparisons, and explainable performance or training-state signals. These are candidates, not implemented features or delivery commitments.</p></details>
 <script id="performance-points" type="application/json">{safe_json(points)}</script><script id="performance-view" type="application/json">{safe_json(view)}</script><script src="/static/performance.js" defer></script>''', active='performance')
@@ -440,15 +562,18 @@ class Application:
                     if not snapshots:
                         return self.not_found()
                     metadata = presentation(snapshots[0])
+                    streams=store.strava_stream_evidence(activity_id)
+                    failure=store.connection.execute('''SELECT reason FROM strava_stream_attempts t JOIN strava_api_activities a ON a.external_id=t.external_id WHERE a.activity_id=?''',(activity_id,)).fetchone()
+                    stream_reason=failure[0] if failure else None
                     fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
                     if len(fit_sources) != 1:
-                        return 200, 'text/html', self.page(store, thin_review_page(metadata))
+                        return 200, 'text/html', self.page(store, thin_review_page(metadata,streams,stream_reason,recent_context(store,activity_id)))
                     try:
                         analysis = analyze_activity(store, activity_id)
                     except RideWorksError:
-                        html = thin_review_page(metadata)
+                        html = thin_review_page(metadata,streams,stream_reason)
                     else:
-                        html = review_page(analysis, metadata, recent_context(store, activity_id))
+                        html = review_page(analysis, metadata, recent_context(store, activity_id),streams)
                     return 200, 'text/html', self.page(store, html)
         return self.not_found()
 
@@ -456,9 +581,9 @@ class Application:
         pending = performance_history(store)['pending']
         if pending:
             noun = 'Activity needs' if pending == 1 else 'Activities need'
-            banner = f'''<section class="performance-update" role="status" aria-label="Performance update needed">
-<div><strong>Performance update needed</strong><p>{pending:,} {noun} an update. Affected Performance and recent-context results are temporarily hidden until rebuilt. Your ride data is retained.</p></div>
-<form method="post" data-settings-action action="/settings/performance/rebuild"><input type="hidden" name="nonce" value="{self.settings.nonce}"><button type="submit">Rebuild Performance</button></form></section>'''
+            banner = f'''<section class="performance-update" role="status" aria-label="Performance update incomplete">
+<div><strong>Performance update incomplete</strong><p>{pending:,} {noun} an update. New or changed evidence is not yet reflected in Performance. Your ride data is retained.</p></div>
+<form method="post" data-settings-action action="/settings/performance/rebuild"><input type="hidden" name="nonce" value="{self.settings.nonce}"><button type="submit">Retry Performance update</button></form></section>'''
             html = html.replace('<main>', '<main>'+banner, 1)
         return html.encode()
 

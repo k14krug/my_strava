@@ -78,7 +78,9 @@ class StravaTests(unittest.TestCase):
                     start_latlng=[1,2],description='unnecessary',**changes)
 
     def client(self,*responses):
-        http=FakeHTTP(*responses);return ApiClient(CREDS,opener=http),http
+        http=FakeHTTP(*responses);client=ApiClient(CREDS,opener=http)
+        client.streams=lambda access,identity:{}  # These tests isolate metadata; stream HTTP is covered separately.
+        return client,http
 
     def count(self,table):return self.store.connection.execute('SELECT COUNT(*) FROM '+table).fetchone()[0]
 
@@ -201,19 +203,20 @@ class StravaTests(unittest.TestCase):
         from rideworks.strava import NoRedirect
         self.assertIsNone(NoRedirect().redirect_request(None,None,302,'redirect',{},'https://untrusted.invalid'))
 
-    def test_established_identity_enrichment_preserves_fit_and_makes_history_explicitly_stale(self):
+    def test_established_identity_enrichment_preserves_fit_and_converges_history(self):
         before=self.store.get_source(self.native['source_id']);rows=list(self.store.connection.execute('SELECT * FROM performance_history'))
         client,_=self.client(Response([self.observation()]))
-        with patch.object(Store,'get_activity',side_effect=AssertionError('native')),patch.object(Store,'get_source',side_effect=AssertionError('native')),patch('rideworks.performance.rebuild_performance',side_effect=AssertionError('rebuild')):
+        with patch.object(Store,'import_strava_export',side_effect=AssertionError('archive')),patch.object(Store,'reextract',side_effect=AssertionError('reparse')),patch('rideworks.performance.rebuild_performance',wraps=rebuild_performance) as rebuilt:
             report=sync(self.store,client,now=self.now)
         self.assertEqual(report['new_activities'],0);self.assertEqual(report['existing_activities_enriched'],1)
         self.assertEqual(self.store.get_source(self.native['source_id']),before)
-        self.assertEqual(list(self.store.connection.execute('SELECT * FROM performance_history')),rows)
-        self.assertEqual(performance_history(self.store)['pending'],1)
+        self.assertEqual(rebuilt.call_count,1);self.assertEqual(report['performance_update'],'updated')
+        self.assertEqual(performance_history(self.store)['pending'],0)
+        self.assertEqual(performance_history(self.store)['points'][0]['rounded_watts'],120)
         row=presentation(self.store.activity_history()[0]);self.assertEqual(row['title'],'API title')
         html=Application(self.store.data_dir).get('/activities/'+self.native['activity_id'])[2].decode()
         self.assertIn('API title',html);self.assertIn('Export title',html);self.assertIn('FIT session source evidence',html)
-        self.assertIn('class="best-value">120 W',html);self.assertIn('requires a Performance rebuild',html)
+        self.assertIn('class="best-value">120 W',html);self.assertNotIn('class="performance-update"',html)
 
     def test_api_only_thin_native_excluded_and_local_dates_filters_work(self):
         client,_=self.client(Response([self.observation(identity=2,seconds=3600)]));sync(self.store,client,now=self.now)
@@ -226,7 +229,7 @@ class StravaTests(unittest.TestCase):
         self.assertEqual(browse(self.store,'q=API&type=cycling&tz=America%2FLos_Angeles')['count'],1)
         rebuild_performance(self.store)
         result=next(r for r in performance_history(self.store)['results'] if r['activity_id']==row['activity_id'])
-        self.assertFalse(result['eligible']);self.assertEqual(result['reason'],'no_native_file_source')
+        self.assertFalse(result['eligible']);self.assertEqual(result['reason'],'api_power_stream_unavailable')
 
     def test_identical_rerun_changed_title_type_and_reverting_observation_are_idempotent(self):
         item=self.observation();client,_=self.client(Response([item]));sync(self.store,client,now=self.now)
@@ -313,7 +316,7 @@ class StravaTests(unittest.TestCase):
             self.assertEqual(db.execute("SELECT COUNT(*) FROM sqlite_master WHERE name='strava_api_sources'").fetchone()[0],0)
         with Store(root) as migrated:
             self.assertEqual(migrated.get_source(native['source_id']),before)
-            self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],5)
+            self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],6)
 
 
 if __name__=='__main__':unittest.main()

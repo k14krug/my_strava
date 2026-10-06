@@ -86,6 +86,8 @@ def verify(root, session):
             elif path == '/api/v3/athlete/activities':
                 time.sleep(.75)  # Allows the real browser to verify disabled action controls.
                 result = observations
+            elif path.startswith('/api/v3/activities/') and path.endswith('/streams'):
+                result = {}  # P2-05 regression fixture intentionally has no optional streams.
             elif path == '/oauth/revoke':
                 result = {}
             else:
@@ -143,7 +145,8 @@ def verify(root, session):
           await page.waitForFunction(()=>[...document.querySelectorAll('.strava-actions button')].every(b=>b.disabled));
           await navigation;await page.waitForSelector('#strava-outcome');
           check(await page.locator('#strava-outcome').textContent()==='1 new · 1 enriched · 0 unchanged','Initial counts');
-          check((await page.locator('body').textContent()).includes('Performance update needed'),'Rebuild notice');
+          check(await page.locator('.performance-update').count()===0,'Routine sync must converge Performance');
+          check((await page.locator('#performance-sync-outcome').textContent()).includes('Performance updated'),'Automatic update outcome');
           check(await page.locator('#strava-last-sync time').count()===1,'Sync time');
           check(!(await page.locator('#strava-last-sync').textContent()).includes('(GMT'),'Date suffix');
           const markup=await page.content();check(!/synthetic-only-(access|refresh|client-secret|code)/.test(markup),'Secret markup');
@@ -180,7 +183,7 @@ def verify(root, session):
             '''.replace('ZONE', json.dumps(zone)).replace('EXPECTED', json.dumps(expected)).replace('DAY', json.dumps(local.date().isoformat())))
         run('''
           for(const path of ['/settings','/','/performance',RICH]){
-            await page.goto(base+path);check(await page.locator('.performance-update').count()===1,'App-wide reminder');
+            await page.goto(base+path);check(await page.locator('.performance-update').count()===0,'Routine banner');
           }return true;
         '''.replace('RICH', json.dumps(links['rich'])))
         stop(server, thread)
@@ -193,22 +196,31 @@ def verify(root, session):
           await page.getByRole('button',{name:'Sync now',exact:true}).click();await page.waitForSelector('#strava-outcome');
           check(await page.locator('#strava-outcome').textContent()==='0 new · 0 enriched · 2 unchanged','Restart rerun');
           await page.screenshot({path:'output/playwright/p2-05-settings-rerun.png',fullPage:true});
-          check(await page.locator('.performance-update').count()===1,'Reminder missing after restart');return true;
+          check(await page.locator('.performance-update').count()===0,'Restart left routine banner');
+          check((await page.locator('#performance-sync-outcome').textContent()).includes('Performance is current'),'Unnecessary rebuild');return true;
         """)
         with Store(root) as store:
             assert before == [tuple(row) for row in store.connection.execute('SELECT * FROM performance_history ORDER BY activity_id')]
+        observations[1]['name']='Synthetic changed API-only ride'
         with patch('rideworks.performance.evaluate', side_effect=RideWorksError('Synthetic rebuild failure')):
             run("""
-              await page.getByRole('button',{name:'Rebuild Performance',exact:true}).click();
-              check((await page.locator('#strava-notice').textContent()).includes('rebuild failed'),'Rebuild failure notice');
-              check(await page.locator('.performance-update').count()===1,'Failed rebuild dismissed reminder');return true;
+              await page.getByRole('button',{name:'Sync now',exact:true}).click();
+              check((await page.locator('#performance-sync-outcome').textContent()).includes('Performance update incomplete'),'Sync rebuild failure outcome');
+              check(await page.locator('.performance-update').count()===1,'Failed rebuild dismissed exception');
+              await page.getByRole('button',{name:'Retry Performance update',exact:true}).click();
+              check((await page.locator('#strava-notice').textContent()).includes('Performance update incomplete'),'Manual retry failure');return true;
             """)
         with Store(root) as store:
             assert before == [tuple(row) for row in store.connection.execute('SELECT * FROM performance_history ORDER BY activity_id')]
+            assert store.connection.execute('SELECT COUNT(*) FROM strava_api_sources').fetchone()[0]==3
+            assert store.connection.execute('SELECT successful_at FROM strava_sync_state').fetchone()[0]>0
+            assert performance_history(store)['pending']>0
+        stop(server,thread);server,thread=start(port)
         run("""
-          await page.getByRole('button',{name:'Rebuild Performance',exact:true}).click();
-          check(await page.locator('.performance-update').count()===0,'Successful rebuild reminder stays');
-          check((await page.locator('#strava-notice').textContent()).includes('3 Activities evaluated'),'Rebuild result');
+          await page.goto(base+'/settings');check(await page.locator('.performance-update').count()===1,'Restart lost exception banner');
+          await page.getByRole('button',{name:'Sync now',exact:true}).click();
+          check(await page.locator('.performance-update').count()===0,'Later sync did not retry Performance');
+          check((await page.locator('#performance-sync-outcome').textContent()).includes('Performance updated'),'Retry sync result');
           await page.getByRole('button',{name:'Disconnect',exact:true}).click();
           check(await page.locator('#strava-connection').textContent()==='Not connected','Disconnect state');
           await page.getByRole('link',{name:'Activities',exact:true}).click();await page.waitForSelector('.activity-row');
@@ -221,7 +233,7 @@ def verify(root, session):
         assert forms[-1]['refresh_token'] == ['synthetic-only-refresh']
         with Store(root) as store:
             assert store.connection.execute('SELECT COUNT(*) FROM activities').fetchone()[0] == 3
-            assert store.connection.execute('SELECT COUNT(*) FROM strava_api_sources').fetchone()[0] == 2
+            assert store.connection.execute('SELECT COUNT(*) FROM strava_api_sources').fetchone()[0] == 3
             assert performance_history(store)['pending'] == 0
             assert store.get_source(current['source_id']) == original
             assert store.connection.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
@@ -233,10 +245,10 @@ def verify(root, session):
                     no_browser_secrets=True, desktop_phone_no_overflow=True,
                     server_restart_connected_and_outcome_persist=True, near_expiry_refresh=True,
                     rerun_new_activities=0, rerun_new_observations=0, rerun_unchanged=2,
-                    disconnect_retains_history=True, native_evidence_unchanged=True,no_automatic_rebuild=True,
-                    persistent_reminder_after_restart=True,failed_rebuild_preserves_history=True,
-                    explicit_rebuild_clears_reminder=True,new_api_first_in_newest=True,
-                    los_angeles_tokyo_api_date_and_newest_oldest=True,app_wide_reminder=True,
+                    disconnect_retains_history=True, native_evidence_unchanged=True,automatic_performance_convergence=True,
+                    exception_persists_after_restart=True,failed_sync_rebuild_preserves_history_and_sources=True,
+                    later_unchanged_sync_retries=True,manual_retry_action=True,new_api_first_in_newest=True,
+                    los_angeles_tokyo_api_date_and_newest_oldest=True,exception_only_banner=True,
                     activity_review_regression=reviews)
     finally:
         stop(server, thread)

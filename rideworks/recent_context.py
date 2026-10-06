@@ -1,4 +1,4 @@
-"""Read-time recent comparison from current trusted Performance evidence only."""
+"""Read-time recent comparison from current versioned Performance evidence."""
 from datetime import datetime, timedelta
 
 from .analysis import BEST_20_METHOD, WINDOW_SAMPLES

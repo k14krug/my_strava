@@ -70,6 +70,7 @@ def prepare(data_dir,synthetic_dir):
             status=200;headers={}
         class FakeHTTP:
             def open(self,request,timeout):
+                if '/streams?' in request.full_url:return FakeResponse(b'{}')
                 assert request.full_url.startswith('https://www.strava.com/api/v3/athlete/activities?')
                 return FakeResponse(json.dumps(observations).encode())
         client=ApiClient(('123','synthetic-only-client-secret'),opener=FakeHTTP())
@@ -94,7 +95,7 @@ def prepare(data_dir,synthetic_dir):
         assert not restarted.connection.execute('PRAGMA foreign_key_check').fetchall()
     private=ROOT/'output/playwright/p2-05-synthetic-links.json';private.parent.mkdir(parents=True,exist_ok=True)
     private.write_text(json.dumps(dict(rich='/activities/'+current['activity_id'],thin='/activities/'+api_only)))
-    return dict(status='passed',live_sync='not_run_by_this_synthetic_verifier',schema_version=5,historical_activities=1434,
+    return dict(status='passed',live_sync='not_run_by_this_synthetic_verifier',schema_version=6,historical_activities=1434,
                 eligible_history=1022,historical_tables_unchanged=True,originals_unchanged=True,integrity=True,foreign_keys=True,
                 synthetic=dict(initial=first,restart_rerun=second,activity_count=3,unchanged_native_fit=True,
                                unchanged_persisted_performance=True,no_native_reads_during_sync=True,no_archive_reprocessing=True))
