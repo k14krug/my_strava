@@ -56,11 +56,16 @@
     $('performance-date').dateTime = p.start_time; $('performance-date').textContent = localDate(p);
     $('performance-activity').textContent = p.title; $('performance-activity').href = '/activities/' + p.activity_id;
     $('performance-watts').textContent = p.rounded_watts + ' W';
-    const values = [['Source format', p.content_format], ['Native Source ID', p.source_id],
-      ['Extraction ID', p.extraction_id], ['Classification basis', p.classification.basis],
+    const sourceValues = p.api_evidence
+      ? [['Evidence kind',p.api_evidence.evidence_kind],['API stream Source ID',p.api_evidence.stream_source_id],
+         ['API summary Source ID',p.api_evidence.summary_source_id],['Stream mapping',p.api_evidence.mapping_version],
+         ['Stream digest',p.api_evidence.observation_sha256],['Device watts',p.api_evidence.device_watts],
+         ['Returned-offset start (seconds)',p.start_offset],['Returned-offset end, exclusive (seconds)',p.end_exclusive_offset]]
+      : [['File Source ID',p.source_id],['Extraction ID',p.extraction_id],
+         ['Window start',p.start_timestamp],['Window end (exclusive)',p.end_exclusive_timestamp]];
+    const values = [['Source format', p.content_format],...sourceValues,['Classification basis', p.classification.basis],
       ['Classification Sources', p.classification.source_ids.join(', ')],
-      ['Raw best-20 average (W)', p.average_watts], ['Window start', p.start_timestamp],
-      ['Window end (exclusive)', p.end_exclusive_timestamp]];
+      ['Raw best-20 average (W)', p.average_watts]];
     values.forEach(([label, value]) => {
       const div = document.createElement('div'), dt = document.createElement('dt'), dd = document.createElement('dd');
       dt.textContent = label; dd.textContent = value; div.append(dt, dd); $('performance-point-context').append(div);

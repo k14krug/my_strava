@@ -254,7 +254,7 @@ class PersistenceTests(unittest.TestCase):
         apply_observations(self.store,[normalize(summary)],321,self.now+1)
         before=comparison.fingerprint(self.store.connection);history=performance_history(self.store)
         app=Application(self.store.data_dir)
-        with patch('rideworks.web.recent_context',side_effect=AssertionError('API result entered trusted context')):
+        with patch('rideworks.performance.rebuild_performance',side_effect=AssertionError('Read-only review rebuilt history')):
             html=app.get('/activities/'+self.only)[2].decode()
         self.assertIn('data-best20-status="available"',html);self.assertIn('>121 W</strong>',html)
         self.assertIn('RideWorks-calculated from Strava API stream evidence',html)

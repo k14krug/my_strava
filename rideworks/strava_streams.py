@@ -214,11 +214,11 @@ def enrich(store,client,access_token,external_ids):
                 stream_unavailable=0,stream_failed=0,stream_deferred=0,stream_authorization_attention=False,stream_rate_limited=False)
     before=client.stream_requests
     for index,identity in enumerate(external_ids):
-        row=store.connection.execute('SELECT activity_id FROM strava_api_activities WHERE external_id=?',(str(identity),)).fetchone()
+        row=store.connection.execute('SELECT activity_id,current_source_id FROM strava_api_activities WHERE external_id=?',(str(identity),)).fetchone()
         if row is None:
             raise SyncError('Stream enrichment requires an established identity')
         current=next((s for s in reversed(evidence(store,row[0])) if s['is_current']),None)
-        if current and current['chart_unavailable_reason'] is None:
+        if current and current['chart_unavailable_reason'] is None and current['summary_source_id']==row['current_source_id']:
             result['stream_reused']+=1;continue
         try:
             payload=client.streams(access_token,identity)

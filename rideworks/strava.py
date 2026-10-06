@@ -320,8 +320,10 @@ def sync(store,client,*,now=None):
         result=apply_observations(store,list(observations.values()),current['athlete_id'],timestamp)
         from .strava_streams import enrich, recent_candidates
         stream_result=enrich(store,client,current['access_token'],recent_candidates(store,window))
+        from .performance import converge_performance
+        performance_result=converge_performance(store)
     return dict(status='completed',scope=SCOPE,**window,pages_requested=pages,
-                api_activities_observed=len(observations),rate_limits=client.rate,**result,**stream_result)
+                api_activities_observed=len(observations),rate_limits=dict(client.rate),**result,**stream_result,**performance_result)
 
 
 def disconnect(store,client):

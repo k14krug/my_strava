@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from rideworks.analysis import analyze_activity
 from rideworks.performance import performance_history
+from datetime import timedelta
 from rideworks.store import Store
 from rideworks.web import create_server, duration, distance, sensor
 from rideworks.strava import TokenFile
@@ -45,9 +46,17 @@ def verify(data_dir,links,session,port=8774,*,live=False):
             graph_checks.append(dict(route=route,count=len(times),first=times[0],last=times[-1],
                 power_count=sum(v is not None for v in watts),hr_count=sum(v is not None for v in hearts),
                 best20=independent_best(times,watts),
+                performance_eligible=any(p['activity_id']==route.split('/')[-1] for p in baseline['points']),
                 cards=[duration(summary.get('elapsed_time')),distance(summary.get('distance')),
                        sensor(summary.get('average_watts'),'W'),sensor(summary.get('average_heartrate'),'bpm')],
                 payload_hash=sha256(json.dumps(samples,separators=(',',':')).encode()).hexdigest()))
+            if graph_checks[-1]['performance_eligible']:
+                current_point=next(p for p in baseline['points'] if p['activity_id']==route.split('/')[-1])
+                end=datetime.fromisoformat(current_point['start_time']);start=end-timedelta(days=42)
+                previous=[p for p in baseline['points'] if p['activity_id']!=current_point['activity_id'] and p['absolute_time'] and start<datetime.fromisoformat(p['start_time'])<end]
+                winner=min(previous,key=lambda p:(-p['average_watts'],datetime.fromisoformat(p['start_time']),p['activity_id']),default=None)
+                graph_checks[-1]['prior_route']='/activities/'+winner['activity_id'] if winner else None
+                graph_checks[-1]['current_watts']=current_point['rounded_watts']
     expected_hash=sha256(json.dumps(expected,separators=(',',':')).encode()).hexdigest()
     base=f'http://127.0.0.1:{port}'
     def run(code):
@@ -59,7 +68,7 @@ def verify(data_dir,links,session,port=8774,*,live=False):
     try:
         run('''
           await page.goto(base+NEWEST);await page.waitForSelector('.chart-power',{state:'attached'});
-          check(await page.locator('#native-records,.recent-context').count()===0,'API evidence became native/trusted context');
+          check(await page.locator('#native-records').count()===0,'API evidence became native');
           const text=await page.locator('.chart-panel .source-caption').first().textContent();check(text.includes('Strava API stream evidence'),'Chart label');
           const samples=JSON.parse(await page.locator('#api-stream-samples').textContent());
           check(samples.length===COUNT,'Returned samples dropped/invented');
@@ -109,11 +118,33 @@ def verify(data_dir,links,session,port=8774,*,live=False):
           check(await page.locator('#api-stream-samples').count()===1,'Restart lost API chart');
           await page.goto(base+'/performance');
           check(JSON.parse(await page.locator('#performance-points').textContent()).length===ELIGIBLE,'Trusted cohort changed');
+          if(LIVE){
+            await page.getByRole('button',{name:'Trend + rides',exact:true}).click();
+            const data=JSON.parse(await page.locator('#performance-points').textContent());
+            const index=data.findIndex(p=>'/activities/'+p.activity_id===NEWEST);check(index>=0,'API Performance point absent');
+            const dot=page.locator('.performance-point[data-point-index="'+index+'"]');await dot.hover();
+            check((await page.locator('#performance-point-context').textContent()).includes('API stream Source ID'),'Performance API source provenance');
+            check(!(await page.locator('#performance-point-context').textContent()).includes('Extraction ID'),'Fake API extraction context');
+            check((await page.locator('#performance-point-context').textContent()).includes('Returned-offset start'),'Performance API offset provenance');
+            await page.getByRole('button',{name:'Monthly best',exact:true}).click();
+            check(await page.locator('.performance-period-best').count()>0,'Monthly view');
+            await page.getByRole('button',{name:'Yearly best',exact:true}).click();
+            check(await page.locator('.performance-period-best').count()>0,'Yearly view');
+            await page.getByRole('button',{name:'Rolling 42-day',exact:true}).click();
+          }
           await page.goto(base+'/settings');check(await page.locator('#strava-connection').textContent()==='Connected','Restart lost connection');
           check(await page.locator('.performance-update').count()===0,'Streams staled Performance');
           for(const graph of GRAPHS){
             await page.goto(base+graph.route);await page.waitForSelector('.chart-power',{state:'attached'});
-            check(await page.locator('#native-records,.recent-context').count()===0,'API graph claimed native/trusted context');
+            check(await page.locator('#native-records').count()===0,'API graph claimed native');
+            check(!(await page.locator('body').textContent()).includes('Trusted Performance'),'Absolute quality label');
+            check(await page.locator('.performance-update').count()===0,'Current ineligible ride left a banner');
+            check(await page.locator('.recent-context').count()===(graph.performance_eligible?1:0),'V2 six-week context eligibility');
+            if(graph.performance_eligible){
+              check(await page.locator('#recent-current-watts').textContent()===graph.current_watts+' W','Six-week current result');
+              if(graph.prior_route)check(await page.locator('#recent-prior-activity').getAttribute('href')===graph.prior_route,'Independent six-week prior winner');
+              check((await page.locator('#recent-context-details').textContent()).includes('Strava API stream'),'Six-week API provenance');
+            }
             check((await page.locator('.chart-panel .source-caption').first().textContent()).includes('Strava API stream evidence'),'API graph source label');
             check(JSON.stringify(await page.locator('.metrics .metric strong').allTextContents())===JSON.stringify(graph.cards),'Summary card evidence');
             check(await page.locator('.metrics').evaluate(el=>!!(el.compareDocumentPosition(document.querySelector('.chart-panel'))&Node.DOCUMENT_POSITION_FOLLOWING)),'Cards must precede chart');
@@ -149,6 +180,7 @@ def verify(data_dir,links,session,port=8774,*,live=False):
           }
           return true;
         '''.replace('NEWEST',json.dumps(links['newest'])).replace('ELIGIBLE',str(len(baseline['points'])))
+          .replace('LIVE',str(live).lower())
           .replace('GRAPHS',json.dumps(graph_checks)))
         with Store(data_dir) as store:
             assert performance_history(store)==baseline
@@ -168,15 +200,18 @@ def verify(data_dir,links,session,port=8774,*,live=False):
         return dict(status='passed',mode='live' if live else 'synthetic',api_only_charts=len(links['api_only']),
                     complete_browser_payloads_verified=len(graph_checks),
                     source_labels_metadata=True,returned_offsets_and_samples_retained=True,power_hr_points_retained=True,
-                    inspection_keyboard=True,no_native_or_trusted_performance_claim=True,fit_precedence_and_best20_unchanged=True,
+                    inspection_keyboard=True,no_native_or_absolute_trust_claim=True,fit_precedence_and_best20_unchanged=True,
                     normal_api_review_hierarchy=True,current_summary_cards_and_ride_summary=True,
                     local_best20_independently_verified=True,
                     qualifying_local_best20=sum(g['best20'] is not None for g in graph_checks),
                     unavailable_local_best20=sum(g['best20'] is None for g in graph_checks),
+                    performance_eligible_api_reviews=sum(g['performance_eligible'] for g in graph_checks),
+                    api_six_week_context_verified=True,exception_only_banner=True,
+                    performance_api_provenance_and_views_verified=live,
                     restart_stream_requests=0,restart_reused=len(graph_checks),all_persisted_tables_unchanged=True,
                     originals_unchanged=True,integrity=True,foreign_keys=True,
                     overlap_streams_inspectable=True,los_angeles_tokyo_dates=True,desktop_phone_no_overflow=True,
-                    restart_retains_graphs_and_connection=True,trusted_performance_unchanged=True,
+                    restart_retains_graphs_and_connection=True,performance_unchanged_by_review=True,
                     performance_eligible=len(baseline['points']),performance_pending=baseline['pending'])
     finally:stop(server,thread)
 

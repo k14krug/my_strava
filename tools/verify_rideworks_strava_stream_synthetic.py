@@ -54,8 +54,9 @@ def verify(root,session):
               check((power.match(/M/g)||[]).length===2,'Power line bridged a missing value/gap');
               check(await page.locator('.chart-power').getAttribute('data-api-points')==='4','Zero watts dropped');
               check(await page.locator('.chart-hr').getAttribute('data-api-points')==='3','HR missing/zero changed');
-              await page.goto(base+'/settings');await page.getByRole('button',{name:'Rebuild Performance',exact:true}).click();
-              check(await page.locator('.performance-update').count()===0,'Explicit fixture rebuild');return true;
+              await page.goto(base+'/settings');
+              check(await page.locator('.performance-update').count()===0,'Automatic Performance convergence');
+              check((await page.locator('#performance-sync-outcome').textContent()).includes('Performance updated'),'Sync outcome');return true;
             }''',session)
         finally:server.shutdown();thread.join()
     with Store(root) as store:

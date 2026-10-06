@@ -142,7 +142,7 @@ class SettingsTests(unittest.TestCase):
             self.assertEqual(self.post('sync')[0], 303)
         self.assertEqual(shared.call_count, 1)
         html = self.html(); self.assertIn('1 new · 1 enriched · 0 unchanged', html)
-        self.assertIn('Rebuild Performance', html); self.assert_private(html)
+        self.assertIn('Performance updated', html); self.assertNotIn('class="performance-update"',html); self.assert_private(html)
         checkpoint = tuple(self.store.connection.execute('SELECT * FROM strava_sync_state').fetchone())
         old_count = self.count('strava_api_sources')
         state = self.tokens.read(); state['expires_at'] = self.now; self.tokens.save(state)
@@ -227,17 +227,17 @@ class SettingsTests(unittest.TestCase):
         self.assertIn('View Activities', self.html())
         self.assertEqual(self.app.get('/activities/'+api_row['activity_id'])[0], 200)
 
-    def test_persistent_app_wide_reminder_explicit_shared_rebuild_and_atomic_failure(self):
+    def test_sync_rebuild_failure_app_wide_exception_manual_retry_and_atomic_failure(self):
         self.http.responses.append(Response([self.observation(), self.observation(identity=2, seconds=1)]))
-        with patch('rideworks.settings.rebuild_performance', side_effect=AssertionError('Hidden rebuild')):
+        with patch('rideworks.performance.evaluate', side_effect=RideWorksError('Synthetic automatic update failure')):
             self.post('sync')
         before = [tuple(r) for r in self.store.connection.execute('SELECT * FROM performance_history')]
         routes = ['/settings', '/', '/performance', '/activities/'+self.native['activity_id']]
         for route in routes:
-            self.assertIn('Performance update needed', self.app.get(route)[2].decode())
+            self.assertIn('Performance update incomplete', self.app.get(route)[2].decode())
         self.assertEqual(performance_history(self.store)['pending'], 2)
         restart = Application(self.store.data_dir)
-        self.assertIn('Performance update needed', restart.get('/settings')[2].decode())
+        self.assertIn('Performance update incomplete', restart.get('/settings')[2].decode())
         path = '/settings/performance/rebuild'
         self.assertEqual(self.settings.post(path, b'nonce=invalid', 'http://127.0.0.1:8765')[0], 403)
         original_evaluate = __import__('rideworks.performance', fromlist=['evaluate']).evaluate
@@ -249,16 +249,16 @@ class SettingsTests(unittest.TestCase):
             return original_evaluate(store, snapshot)
         with patch('rideworks.performance.evaluate', side_effect=fail_after_first):
             result = self.settings.post(path, urlencode(dict(nonce=self.settings.nonce)).encode(), 'http://127.0.0.1:8765')
-        self.assertEqual(result[0], 303); self.assertIn('rebuild failed', self.html()); self.assert_private(self.html())
+        self.assertEqual(result[0], 303); self.assertIn('Performance update incomplete', self.html()); self.assert_private(self.html())
         self.assertEqual(before, [tuple(r) for r in self.store.connection.execute('SELECT * FROM performance_history')])
-        self.assertIn('Performance update needed', self.html())
+        self.assertIn('Performance update incomplete', self.html())
         with patch('rideworks.settings.rebuild_performance', wraps=rebuild_performance) as shared:
             self.settings.post(path, urlencode(dict(nonce=self.settings.nonce)).encode(), 'http://127.0.0.1:8765')
         self.assertEqual(shared.call_count, 1); self.assertEqual(performance_history(self.store)['pending'], 0)
         for route in routes:
-            self.assertNotIn('Performance update needed', self.app.get(route)[2].decode())
-        self.assertIn('Performance rebuilt: 2 Activities evaluated', self.html())
-        self.assertNotIn('Performance update needed', Application(self.store.data_dir).get('/settings')[2].decode())
+            self.assertNotIn('Performance update incomplete', self.app.get(route)[2].decode())
+        self.assertIn('Performance updated: 2 Activities evaluated', self.html())
+        self.assertNotIn('Performance update incomplete', Application(self.store.data_dir).get('/settings')[2].decode())
 
     def test_http_second_operation_rejected_while_first_sync_waits(self):
         entered, release = threading.Event(), threading.Event()
