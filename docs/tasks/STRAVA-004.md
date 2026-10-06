@@ -263,9 +263,54 @@ If a supported FIT source exists:
 ### 8.2 API-only Activity with usable streams
 
 Replace the current blanket "Detailed RideWorks review unavailable" behavior
-with an evidence-appropriate stream-backed review.
+with an evidence-appropriate stream-backed review that follows the **same overall
+Activity Review hierarchy as a normal supported FIT ride** wherever Strava
+evidence genuinely supports the section. The Owner should not see a chart
+floating above raw provenance while the normal summary/review structure is
+missing.
 
-At minimum:
+Required rider-facing structure:
+
+1. **summary metric cards** above the chart;
+2. the existing **Ride power & heart rate** chart;
+3. an activity-local **Best 20-minute power** panel when the API watts/time
+   stream qualifies under the accepted complete-window semantics;
+4. the normal right-side **Ride summary** panel;
+5. provenance/details below/secondary.
+
+#### Summary metric cards
+
+Use current Strava API **summary evidence**, not inferred stream statistics, for
+the normal four cards:
+
+- Elapsed duration;
+- Distance;
+- Average power;
+- Average heart rate.
+
+Missing values show Unavailable. The section must be labeled/inspectable as
+Strava API summary evidence and must not imply that summary averages were
+calculated from the retained API stream.
+
+#### Ride summary
+
+Provide the normal Ride summary treatment from current Strava API summary
+evidence, using available fields such as:
+
+- elapsed duration;
+- moving duration;
+- distance;
+- total elevation gain;
+- average / maximum power;
+- average / maximum heart rate;
+- average cadence;
+- kilojoules where supplied and useful.
+
+Do not manufacture FIT-only fields such as timer duration when Strava does not
+supply an equivalent. Missing fields remain Unavailable or may be omitted when
+that is clearer. Label the panel **Strava API summary evidence**.
+
+#### Chart
 
 - render the existing RideWorks time-series chart treatment for available
   **power and heart rate**;
@@ -274,11 +319,52 @@ At minimum:
 - label the chart/source as **Strava API stream evidence**;
 - expose `resolution`, `series_type`, `original_size` and retrieved-at
   provenance in details;
-- retain Strava summary metrics separately from stream evidence;
 - do not claim a FIT/native file exists.
 
 Cadence may be retained for later display even if the current chart remains
 power + HR.
+
+#### Activity-local Best 20-minute power
+
+For an API-only Activity with `time` + `watts`, RideWorks may calculate and
+show a **ride-local review result** using the accepted
+`best-average-power-v1` complete-window semantics:
+
+- exactly 1,200 samples;
+- exactly one-second consecutive returned time offsets;
+- complete power values;
+- zero watts count;
+- gaps, duplicate/backward offsets or missing power invalidate affected windows;
+- no interpolation, resampling, smoothing or repair;
+- maximum raw average wins; exact tie chooses earliest window;
+- rider-facing whole watts use the accepted half-up display rule.
+
+This result is calculated from **Strava API stream evidence**, not native FIT
+evidence. The panel must say so prominently enough that the provenance is not
+ambiguous.
+
+The API-stream ride-local result:
+
+- is allowed for this Activity Review only;
+- must **not** be persisted into the accepted trusted `performance_history`
+  cohort;
+- must **not** enter rolling/monthly/yearly/lifetime Performance;
+- must **not** receive prior-six-week trusted comparison;
+- must not cause the API Activity to be labeled eligible under
+  `virtual-native-power-v1`.
+
+Where no qualifying API watts/time window exists, show **Unavailable** with an
+honest reason such as no watts stream, activity too short, incomplete power, or
+no complete one-second window.
+
+The calculation details should expose returned-offset window bounds, raw
+average, sample count, eligible-window count and the API-stream source/method
+without pretending to have native FIT record indices/timestamps.
+
+This is intentionally a narrower decision than trusted Performance eligibility:
+the four exact FIT/API overlap comparisons support using the API stream for an
+individual ride review, while longitudinal eligibility remains a separate
+future policy decision.
 
 ### 8.3 API-only Activity without usable streams
 
@@ -288,7 +374,9 @@ Do not substitute summary average watts for a time series.
 
 ## 9. Performance boundary
 
-STRAVA-004 is primarily an Activity Review task.
+STRAVA-004 is primarily an Activity Review task. The Owner has explicitly
+requested normal Activity Review structural parity where current API evidence
+supports it, including a ride-local best-20 result as defined in §8.2.
 
 Regardless of Stage A similarity:
 
@@ -383,7 +471,13 @@ Cover at minimum:
 
 ### UI
 
+- API-only summary metric cards use Strava summary evidence and match the normal RideWorks hierarchy;
+- API-only Ride summary panel uses available Strava summary fields without FIT-only invention;
 - post-export API-only power/HR chart;
+- qualifying API-only watts/time stream shows activity-local best-20 with exact accepted complete-window semantics;
+- API-only local best-20 is labeled Strava API stream evidence and has no trusted six-week context;
+- HR-only / no-watts stream shows Best 20-minute power as Unavailable rather than using summary watts;
+- API-stream local best-20 does not create/update `performance_history` and leaves the 1,022 accepted cohort unchanged;
 - source label/provenance;
 - LA/Tokyo absolute date behavior;
 - desktop/phone no overflow;
@@ -457,7 +551,8 @@ After stream-backed Activity Review is available:
 - point the Owner to at least the newest API-only ride and one FIT-backed
   overlap;
 - show source/provenance details;
-- stop for Owner review of whether the API-only graph is useful and honest.
+- show the API-only ride with normal summary cards, chart, ride-local best-20 (when qualified) and Ride summary;
+- stop for Owner review of whether the API-only Activity Review as a whole is useful, structurally complete enough, and honest about source/eligibility.
 
 ### Gate 2 — HARD — Analyst
 
@@ -514,6 +609,8 @@ At Owner Gate provide:
 - trusted-Performance conclusion;
 - number of recent API-only Activities stream-enriched;
 - number with usable power/HR graphs;
+- number with qualifying API-stream ride-local best-20 results and number unavailable;
+- proof trusted Performance remains unchanged;
 - bounded live API request count;
 - review URL;
 - verification report path;
