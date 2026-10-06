@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 from html import escape
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 from time import perf_counter
@@ -14,9 +14,11 @@ from .errors import RideWorksError
 from .history import SORTS, browse, presentation
 from .recent_context import recent_context
 from .store import Store, resolve_data_dir
+from .settings import Settings
+from .performance import performance_history
 
 STATIC = Path(__file__).with_name('static')
-ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml'}
+ASSETS = {'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml', 'settings.js': 'text/javascript'}
 
 
 def duration(seconds):
@@ -88,9 +90,9 @@ def shell(title, content, *, active='activities'):
     return f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)} · RideWorks</title><link rel="icon" href="/static/mark.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script></head>
+<link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script><script src="/static/settings.js" defer></script></head>
 <body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Activities"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
-<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a></nav></aside>
+<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a><a href="/settings"{nav_state('settings')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M2 8h6m1 8h6m1-7h6"/></svg>Settings</a></nav></aside>
 <main>{content}</main></body></html>'''
 
 
@@ -234,12 +236,23 @@ def review_page(analysis, metadata=None, recent=None):
                    ('Source start time (UTC)', summary.get('start_time'))]
     if metadata and metadata['title_source']:
         title_source = metadata['title_source']['source']
-        source_rows[2:4] = [('Title origin', 'Source-supplied Strava-export evidence'),
+        api_title = title_source['kind']=='strava_api'
+        source_rows[2:4] = [('Title origin', 'Source-supplied Strava API evidence' if api_title else 'Source-supplied Strava-export evidence'),
                             ('Title Source ID', title_source['source_id']),
-                            ('Title display policy', 'Latest non-empty imported Strava-export title; observations retained')]
-    if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] == 'strava_export':
-        source_rows += [('Displayed type origin', 'Strava-export source evidence'),
+                            ('Title display policy', 'Current non-empty API title preferred over export title; observations retained' if api_title else 'Latest non-empty imported Strava-export title; observations retained')]
+    if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] in ('strava_export','strava_api'):
+        source_rows += [('Displayed type origin', 'Strava API source evidence' if metadata['type_source']['source']['kind']=='strava_api' else 'Strava-export source evidence'),
                         ('Type Source ID', metadata['type_source']['source']['source_id'])]
+    if metadata:
+        for e in metadata['sources']:
+            if e['source']['kind'] in ('strava_export','strava_api'):
+                origin = 'Strava API' if e['source']['kind']=='strava_api' else 'Strava export'
+                source_rows += [(origin+' title observation', e['summary'].get('title')),
+                                (origin+' observation Source ID', e['source']['source_id'])]
+                if e['source']['kind']=='strava_api':
+                    source_rows += [('API retrieved at (UTC)',e['source']['imported_at']),
+                                    ('Current API observation',bool(e['source']['is_current'])),
+                                    ('API mapping',e['extraction']['mapping_version'])]
     for signal, name in [('power', 'Power'), ('heart_rate', 'Heart rate')]:
         a = analysis['availability'][signal]
         source_rows.extend([(f'{name} availability', a['status']),
@@ -264,7 +277,7 @@ def review_page(analysis, metadata=None, recent=None):
     # Avoid closing the JSON script element with any source text. Never embed
     # private file/store paths, coordinates, or a raw application snapshot.
     payload = json.dumps(records, ensure_ascii=True, allow_nan=False).replace('<', '\\u003c').replace('&', '\\u0026')
-    type_text = metadata['activity_type'] if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] == 'strava_export' else (summary.get('sport') or 'Unavailable').replace('_', ' ').title()
+    type_text = metadata['activity_type'] if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] in ('strava_export','strava_api') else (summary.get('sport') or 'Unavailable').replace('_', ' ').title()
     if metadata and metadata['subtype']:
         subtype = metadata['subtype']
     return shell(title, f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(title)}</h1><span class="title-origin">{escape(title_origin)}</span></div><p class="ride-meta">{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>Type: {escape(type_text)}<span class="meta-separator">·</span>Subtype: {escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
@@ -287,9 +300,19 @@ def thin_review_page(row):
     for evidence in row['sources']:
         source, summary = evidence['source'], evidence['summary']
         csv = source['kind'] == 'strava_export'
-        name = 'Strava-export metadata' if csv else f"{source['content_format']} source evidence"
+        api = source['kind']=='strava_api'
+        name = 'Strava API metadata' if api else 'Strava-export metadata' if csv else f"{source['content_format']} source evidence"
         values = [('Source ID', source['source_id'])]
-        if csv:
+        if api:
+            values += [('Retrieved at (UTC)',source['imported_at']),('Current observation',bool(source['is_current'])),
+                       ('Mapping',evidence['extraction']['mapping_version']),('Association basis',source['association_basis'])]
+            units={'distance':'m','elapsed_time':'s','moving_time':'s','total_elevation_gain':'m',
+                   'average_watts':'W','weighted_average_watts':'W','max_watts':'W','kilojoules':'kJ',
+                   'average_heartrate':'bpm','max_heartrate':'bpm','average_cadence':'rpm','utc_offset':'s'}
+            values += [(key.replace('_',' ').capitalize()+(f' ({units[key]})' if key in units else ''),value)
+                       for key,value in summary['values'].items()]
+            note = 'Strava API summaries are source evidence. Native streams and trusted best-20 results are unavailable from this source.'
+        elif csv:
             values += [('Title', summary.get('title')), ('Activity type', summary.get('activity_type')),
                        ('Sport type', summary.get('sport_type')), ('Source date text', summary.get('date_text'))]
             values += [(f"{f['column']} (column {f['column_index'] + 1}; {f['unit'].replace('source_unspecified', 'units unspecified')})", f['raw_value'] or None)
@@ -383,9 +406,10 @@ def performance_page(store):
 
 
 class Application:
-    """Read-only routes; each request gets its own short-lived Store snapshot."""
-    def __init__(self, data_dir=None):
+    """Local routes; each evidence request gets a short-lived Store snapshot."""
+    def __init__(self, data_dir=None, *, settings_factory=Settings):
         self.data_dir = resolve_data_dir(data_dir)
+        self.settings = settings_factory(self.data_dir)
         with Store(self.data_dir):
             pass
 
@@ -397,10 +421,12 @@ class Application:
             if name in ASSETS:
                 return 200, ASSETS[name], (STATIC / name).read_bytes()
         with Store(self.data_dir) as store:
+            if path == '/settings':
+                return 200, 'text/html', self.page(store, shell('Settings', self.settings.content(local_time), active='settings'))
             if path == '/':
-                return 200, 'text/html', activities_page(store, url.query).encode()
+                return 200, 'text/html', self.page(store, activities_page(store, url.query))
             if path == '/performance':
-                return 200, 'text/html', performance_page(store).encode()
+                return 200, 'text/html', self.page(store, performance_page(store))
             if path.startswith('/activities/'):
                 activity_id = path.removeprefix('/activities/')
                 try:
@@ -416,49 +442,91 @@ class Application:
                     metadata = presentation(snapshots[0])
                     fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
                     if len(fit_sources) != 1:
-                        return 200, 'text/html', thin_review_page(metadata).encode()
+                        return 200, 'text/html', self.page(store, thin_review_page(metadata))
                     try:
                         analysis = analyze_activity(store, activity_id)
                     except RideWorksError:
                         html = thin_review_page(metadata)
                     else:
                         html = review_page(analysis, metadata, recent_context(store, activity_id))
-                    return 200, 'text/html', html.encode()
+                    return 200, 'text/html', self.page(store, html)
         return self.not_found()
+
+    def page(self, store, html):
+        pending = performance_history(store)['pending']
+        if pending:
+            noun = 'Activity needs' if pending == 1 else 'Activities need'
+            banner = f'''<section class="performance-update" role="status" aria-label="Performance update needed">
+<div><strong>Performance update needed</strong><p>{pending:,} {noun} an update. Affected Performance and recent-context results are temporarily hidden until rebuilt. Your ride data is retained.</p></div>
+<form method="post" data-settings-action action="/settings/performance/rebuild"><input type="hidden" name="nonce" value="{self.settings.nonce}"><button type="submit">Rebuild Performance</button></form></section>'''
+            html = html.replace('<main>', '<main>'+banner, 1)
+        return html.encode()
 
     @staticmethod
     def not_found():
         return 404, 'text/html', shell('Activity not found', '<header><h1>Activity not found</h1><p>Return to <a href="/">Activities</a> to open an imported ride.</p></header>').encode()
 
 
-def create_server(data_dir=None, port=8765, *, debug=False):
-    app = Application(data_dir)
+def create_server(data_dir=None, port=8765, *, debug=False, settings_factory=Settings):
+    app = Application(data_dir, settings_factory=settings_factory)
 
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
+            self.respond('GET')
+
+        def do_POST(self):
+            self.respond('POST')
+
+        def respond(self, method):
             started = perf_counter()
+            headers = {}
             try:
-                status, content_type, body = app.get(self.path)
+                allowed_hosts = {f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
+                if self.headers.get('Host') not in allowed_hosts:
+                    status, content_type, body = 403, 'text/plain', b'Invalid local host.'
+                elif method == 'POST':
+                    size = self.headers.get('Content-Length', '')
+                    if not size.isascii() or not size.isdecimal() or not 0 < int(size) <= 1024:
+                        status, content_type, body = 413, 'text/plain', b'Invalid Settings action size.'
+                    elif self.headers.get_content_type() != 'application/x-www-form-urlencoded':
+                        status, content_type, body = 415, 'text/plain', b'Use the Settings form.'
+                    else:
+                        status, headers, body = app.settings.post(urlsplit(self.path).path, self.rfile.read(int(size)), self.headers.get('Origin'))
+                        content_type = 'text/plain'
+                elif urlsplit(self.path).path == '/strava/callback':
+                    status, headers, body = app.settings.callback(urlsplit(self.path).query)
+                    content_type = 'text/plain'
+                else:
+                    status, content_type, body = app.get(self.path)
             except Exception as exc:
-                # HTTP errors must not leak private paths, SQL or tracebacks.
-                # Let KeyboardInterrupt/SystemExit propagate (not Exception).
+                # Never log URLs, bodies, private paths, SQL or exception text.
                 print(f'RideWorks request failed ({type(exc).__name__})', flush=True)
-                status, content_type, body = 500, 'text/html', shell('Unable to load activity', '<h1>Unable to load activity</h1><p>RideWorks could not read the current evidence.</p>').encode()
+                if urlsplit(self.path).path == '/strava/callback':
+                    app.settings.notice = 'Authorization could not complete. Reconnect from Settings.'
+                    status, headers, body = app.settings.redirect()
+                    content_type = 'text/plain'
+                else:
+                    status, content_type, body = 500, 'text/html', shell('Unable to complete request', '<h1>Unable to complete request</h1><p>Reload RideWorks and try again.</p>').encode()
             self.send_response(status)
             self.send_header('Content-Type', content_type + ('; charset=utf-8' if content_type.startswith('text/') else ''))
             self.send_header('Content-Length', str(len(body)))
             self.send_header('Cache-Control', 'no-store')
             self.send_header('X-Content-Type-Options', 'nosniff')
-            self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'")
+            self.send_header('Referrer-Policy', 'no-referrer' if urlsplit(self.path).path == '/strava/callback' else 'same-origin')
+            self.send_header('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self' https://www.strava.com; frame-ancestors 'none'")
+            for name, value in headers.items():
+                self.send_header(name, value)
             self.end_headers()
             self.wfile.write(body)
             if debug:
-                print(f'RideWorks request: GET {status} ({(perf_counter() - started) * 1000:.1f} ms)', flush=True)
+                print(f'RideWorks request: {method} {status} ({(perf_counter() - started) * 1000:.1f} ms)', flush=True)
 
         def log_message(self, *_):
             pass
 
-    return HTTPServer(('127.0.0.1', port), Handler)
+    server = ThreadingHTTPServer(('127.0.0.1', port), Handler)
+    app.settings.port = server.server_port
+    return server
 
 
 def serve(data_dir=None, port=8765, *, debug=False):

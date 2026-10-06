@@ -21,6 +21,10 @@ def main(argv=None):
     commands.add_parser("analyze", help="Source summary and best 20-minute result; no raw streams").add_argument("activity_id")
     commands.add_parser("reextract", help="Rebuild from the preserved original").add_argument("source_id")
     commands.add_parser("rebuild-performance", help="Rebuild durable trusted Virtual Ride best-20 history")
+    connect = commands.add_parser('strava-connect', help='Authorize private manual Strava synchronization')
+    connect.add_argument('--callback-port', type=int, default=8772, help='Temporary loopback OAuth callback port (default: 8772)')
+    commands.add_parser('sync-strava', help='Manually sync recent/new Strava activity metadata')
+    commands.add_parser('strava-disconnect', help='Revoke/remove local Strava authorization; retain history')
     serve = commands.add_parser("serve", help="Open the local RideWorks browser application")
     serve.add_argument("--port", type=int, help="Loopback port (overrides FLASK_RUN_PORT; default: 8765)")
     args = parser.parse_args(argv)
@@ -30,6 +34,27 @@ def main(argv=None):
             from .web import serve as serve_web
             serve_web(config.data_dir, config.port, debug=config.debug)
             return 0
+        if args.command in ('strava-connect','sync-strava','strava-disconnect'):
+            from .config import ConfigurationError, strava_credentials
+            from .strava import ApiClient, connect, disconnect, sync
+            from .strava_api import SyncError
+            try:
+                if args.command=='strava-connect' and not 1<=args.callback_port<=65535:
+                    raise SyncError('--callback-port must be an integer from 1 to 65535')
+                with Store(config.data_dir) as store:
+                    try:client=ApiClient(strava_credentials())
+                    except ConfigurationError:
+                        if args.command!='strava-disconnect':raise
+                        client=None
+                    operation={'strava-connect':connect,'sync-strava':sync,'strava-disconnect':disconnect}[args.command]
+                    result=operation(store,client,**({'port':args.callback_port} if args.command=='strava-connect' else {}))
+                print(json.dumps(result,indent=2))
+                return 0
+            except (RideWorksError,OSError,sqlite3.Error) as error:
+                report=dict(status='failed',error=str(error) if isinstance(error,RideWorksError) else 'Local Strava operation failed',
+                            rate_limits=getattr(error,'rate',{}))
+                print(json.dumps(report,indent=2))
+                return 1
         with Store(config.data_dir) as store:
             if args.command == "import-fit":
                 result = store.import_fit(args.path)

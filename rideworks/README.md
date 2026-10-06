@@ -542,6 +542,139 @@ Chromium session. Review copy startup:
 
 Private Activity URLs are in `output/playwright/p2-04-review-links.json`;
 `representative`, `no_prior` and `outdoor` select useful Owner review cases.
+
+## Manual Strava synchronization (P2-05)
+
+From the repository root, create your local configuration from the safe example:
+
+```bash
+cp -n .env.example .env
+```
+
+Open the ignored `.env` and fill in `STRAVA_CLIENT_ID` and `STRAVA_CLIENT_SECRET`
+using your application's Client ID and Client Secret from
+[Strava API settings](https://www.strava.com/settings/api). If `.env` already
+exists, the command preserves it; add/update the two entries there while keeping
+your other settings. Exported environment variables still override `.env`.
+Keep credential values and tokens local.
+
+In Strava's **Authorization Callback Domain** field, enter exactly **`127.0.0.1`**
+(host only, without a scheme, port or path). RideWorks supplies the full redirect
+URI **`http://127.0.0.1:8771/strava/callback`** for the review app below. The web
+callback always uses the running app's port; no second callback server is needed.
+Strava's [authentication documentation](https://developers.strava.com/docs/authentication/)
+allows this loopback redirect; its [setup guide](https://developers.strava.com/docs/getting-started/)
+describes the host-only callback-domain field.
+
+Start the disposable accepted-history review copy:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review serve --port 8771
+```
+
+Open **http://127.0.0.1:8771/settings**. Settings shows only Configured / Missing
+for credentials. Choose **Connect Strava**, authorize the Owner's account and
+grant `activity:read_all`, then choose **Sync now**. The callback returns to a clean
+Settings URL. New/enriched/unchanged counts, material exceptions, rebuild needs
+and last successful sync time are shown compactly. Open Activities to see updates
+immediately, with valid API UTC `Z` dates sorted and displayed under the accepted
+browser-local date policy. A successful sync that creates Activities offers
+**View Activities** back to the normal newest-first browser. Sync is manual; it does not run continuously. **Disconnect** removes
+local authorization while retaining activity history and attempts remote revocation.
+
+Settings actions use POST, a random one-use action nonce and same-origin checks;
+controls disable during submission and the store lock rejects overlapping operations.
+OAuth state expires after three minutes and is one-use. After restart, token/checkpoint
+state and the aggregate display result persist; an interrupted authorization requires
+Connect again. The private 0600 `.strava-settings.json` contains derived display counts
+and an attention flag only. The checkpoint is authoritative; stale display counts are
+omitted if a CLI sync advances it.
+
+The web and CLI use the same code exchange, scope/athlete checks, token files and
+sync/disconnect functions. Tokens are private (0600), excluded from Store inspection
+and browser output. Refresh within an hour of expiry atomically retains the newest
+refresh token before further requests, including when a later sync page fails.
+Invalid/revoked authorization clears unusable local tokens and Settings offers Reconnect.
+
+Secondary CLI maintenance/recovery commands remain supported:
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-connect
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review sync-strava
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-disconnect
+```
+
+The CLI connect command opens a temporary loopback callback on port 8772 by default
+(`--callback-port` changes it), waits up to three minutes, and emits aggregate JSON.
+The Strava callback-domain setting remains `127.0.0.1` for both workflows.
+
+Sync is explicit and sequential. The initial `after` is midnight UTC on the
+latest stored export calendar day, minus **three days**. This is a conservative
+calendar overlap for offset-unknown export dates. Later `after` values use the
+last successful request cutoff minus three days. `before` is the current sync's
+start time; that cutoff becomes the checkpoint only after observations commit.
+Missing/invalid boundaries stop without a historical fallback. The only activity
+endpoint is `GET /api/v3/athlete/activities`, with 100 items per page and a
+20-page safety bound. Empty/short pages finish; size/shape/rate/auth/network
+failures leave observations and checkpoint unchanged. Tokens may legitimately
+rotate before a failed sync. Reports contain aggregate counts and rate headers.
+
+API observations retain only the documented allowlist, retrieval timestamp,
+mapping version and source association. Identical observations reuse the Source;
+changed observations retain previous evidence with an explicit current pointer.
+Established Strava IDs enrich the same Activity. Otherwise, a unique local
+candidate must agree on absolute start exactly, compatible classification,
+elapsed duration within one second and distance within one metre when both
+provide it. Title alone never associates. Ambiguous/conflicting local matches
+create a new API-backed Activity; conflicting established identities stop.
+
+Current API title/type evidence is visible and attributable; export titles remain
+inspectable. API-only review stays thin. FIT summaries/native streams remain
+unchanged. API summary watts never become native Performance evidence. Changed
+source context may suppress stale Performance results until an explicit rebuild;
+sync never runs `rebuild-performance` or reparses original files.
+
+When Performance has pending/stale Activities, a neutral **Performance update needed**
+reminder appears on Settings, Activities, Performance and Activity Review. It shows
+the affected count and explains that affected results are temporarily hidden while
+ride data is retained. The reminder derives from current freshness on every page;
+it survives restart and cannot be dismissed while work remains. Choose **Rebuild
+Performance** explicitly from the reminder. This uses the accepted CLI algorithm and
+atomic transaction, protected by the same POST/nonce/origin checks. A successful
+rebuild shows evaluated/eligible counts and clears the reminder when pending reaches
+zero. Failure retains prior results and the reminder. The CLI rebuild command is
+secondary maintenance/recovery; Sync now does not invoke it.
+
+Restart the server, confirm Settings still shows Connected, and choose Sync now again
+to verify overlap idempotence. Manual
+overlap cannot promise detection of arbitrary old edits, deletes or back-dated
+uploads. Absence from a list never implies deletion. Webhooks must be revisited
+before unattended/public integration; this implementation has no polling loop.
+
+```bash
+.venv/bin/python -m rideworks --data-dir local_data/p2-05-review strava-disconnect
+```
+
+Disconnect attempts `POST /oauth/revoke` with client Basic authentication and
+then removes local tokens even if remote revocation/credentials are unavailable.
+It retains durable activity history. Current Strava retention/deletion policy
+conflicts with the Owner's accepted durable-history decision; see the documented
+policy boundary and acceptance limits in `reports/P2-05/verification.md`.
+
+Reproducible synthetic acceptance (fake HTTP only; use a fresh synthetic directory):
+
+```bash
+.venv/bin/python -m unittest discover -s tests -p 'test_rideworks_strava.py'
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python tools/prepare_rideworks_strava_review.py \
+  --data-dir '<accepted-history-copy>' --synthetic-dir '<new-synthetic-directory>'
+.venv/bin/python -m rideworks --data-dir '<synthetic-directory>' serve --port 8773
+.venv/bin/python tools/verify_rideworks_strava_ui.py --port 8773 --session rideworks-p2-05
+```
+
+Open the managed Chromium session before the last command. Private synthetic
+routes and screenshots remain under ignored `output/playwright/`. Synthetic
+success is separate from real authorization/sync acceptance.
 Screenshots and this file stay local/ignored. The verifier emits aggregate JSON
 and independently checks every eligible prior baseline without a production
 selector oracle or native stream reads, then verifies persisted history/restart.

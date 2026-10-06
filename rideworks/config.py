@@ -8,6 +8,7 @@ import shlex
 from .errors import RideWorksError
 
 KEYS = frozenset({'FLASK_DEBUG', 'FLASK_RUN_PORT', 'RIDEWORKS_DATA_DIR'})
+STRAVA_KEYS = frozenset({'STRAVA_CLIENT_ID', 'STRAVA_CLIENT_SECRET'})
 
 
 class ConfigurationError(RideWorksError):
@@ -27,7 +28,7 @@ def repository_root():
     return candidate if (candidate / 'pyproject.toml').is_file() else None
 
 
-def _dotenv(root, selected):
+def _dotenv(root, selected, keys=KEYS):
     if root is None:
         return
     path = Path(root) / '.env'
@@ -48,7 +49,7 @@ def _dotenv(root, selected):
         key = key.strip()
         # Unrelated legacy settings/secrets are neither parsed nor exported.
         # Higher-priority values also bypass lower-priority file parsing.
-        if key not in KEYS or key in protected:
+        if key not in keys or key in protected:
             continue
         try:
             tokens = shlex.split(raw, comments=True, posix=True)
@@ -83,3 +84,15 @@ def startup_config(data_dir=None, port=None, *, repo_root=None, environ=None):
     if chosen_data is not None and not str(chosen_data).strip():
         raise ConfigurationError('RIDEWORKS_DATA_DIR / --data-dir must not be empty')
     return StartupConfig(chosen_data, int(raw_port), raw_debug in ('1', 'true', 'yes', 'on'))
+
+
+def strava_credentials(*, repo_root=None, environ=None):
+    """Read credentials only for explicit Strava commands; never expose in config repr."""
+    environment = os.environ if environ is None else environ
+    selected = {key: environment[key] for key in STRAVA_KEYS if key in environment}
+    _dotenv(repository_root() if repo_root is None else repo_root, selected, STRAVA_KEYS)
+    identity = selected.get('STRAVA_CLIENT_ID', '').strip()
+    secret = selected.get('STRAVA_CLIENT_SECRET', '').strip()
+    if not identity.isascii() or not identity.isdecimal() or int(identity) < 1 or not secret:
+        raise ConfigurationError('Configure STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET locally before connecting to Strava')
+    return identity, secret

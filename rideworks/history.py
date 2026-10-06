@@ -1,7 +1,7 @@
 """Narrow, read-only browser presentation; no canonical Activity values.
 
 Title/type use latest applicable Strava observations. Date prefers a directly
-supplied file session start, then parsed CSV date. Summary uses the first file
+supplied file session start, then current API absolute start, then parsed CSV date. Summary uses the first file
 with an understood session value (or a single TCX lap); unspecified CSV units
 are never guessed. Ties are stable by Source ID. All alternatives stay in Store.
 """
@@ -20,7 +20,8 @@ def _date(value):
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value)
+        # Strava supplies RFC 3339 UTC 'Z'; Python 3.10 needs an explicit offset.
+        return datetime.fromisoformat(value.replace('Z', '+00:00'))
     except ValueError:
         return None
 
@@ -38,9 +39,11 @@ def presentation(snapshot):
     """Metadata only, with each selected value's source and semantic context."""
     evidence = sorted(snapshot['sources'], key=lambda e: (e['source']['imported_at'], e['source']['source_id']))
     csv = [e for e in evidence if e['source']['kind'] == 'strava_export']
-    files = [e for e in evidence if e['source']['kind'] != 'strava_export']
-    title_evidence = next((e for e in reversed(csv) if (e['summary'].get('title') or '').strip()), None)
-    type_evidence = next((e for e in reversed(csv) if e['summary'].get('activity_type')), None)
+    api = [e for e in evidence if e['source']['kind']=='strava_api' and e['source']['is_current']]
+    observations = list(reversed(api)) + list(reversed(csv))
+    files = [e for e in evidence if e['source']['kind'] not in ('strava_export','strava_api')]
+    title_evidence = next((e for e in observations if (e['summary'].get('title') or '').strip()), None)
+    type_evidence = next((e for e in observations if e['summary'].get('activity_type')), None)
     type_summary = type_evidence['summary'] if type_evidence else (files[0]['summary'] if files else {})
     activity_type = type_summary.get('activity_type') or _file_type(type_summary)
     subtype = type_summary.get('sport_type') or type_summary.get('sub_sport')
@@ -48,11 +51,12 @@ def presentation(snapshot):
     row = dict(activity_id=snapshot['activity']['activity_id'], sources=evidence,
                activity_type=activity_type, subtype=subtype, title_source=title_evidence,
                type_source=type_evidence or (files[0] if files else None),
-               search_titles=[e['summary']['title'].casefold() for e in csv if e['summary'].get('title')],
+               search_titles=[e['summary']['title'].casefold() for e in csv + [e for e in evidence if e['source']['kind']=='strava_api'] if e['summary'].get('title')],
                start_time=None, date_text=None, date_key=None, date_day=None, date_source=None,
                absolute_time=False, duration=None, distance=None, duration_source=None, distance_source=None)
     # Session start is directly supported, unlike an inferred first record time.
     candidates = [(e, e['summary'].get('start_time')) for e in files]
+    candidates += [(e, e['summary'].get('date_parsed')) for e in reversed(api)]
     candidates += [(e, e['summary'].get('date_parsed')) for e in reversed(csv)]
     for source, value in candidates:
         stamp = _date(value)
@@ -67,8 +71,10 @@ def presentation(snapshot):
     if row['start_time'] is None:
         row['date_text'] = next((e['summary']['date_text'] for e in reversed(csv) if e['summary'].get('date_text')), None)
     for output, field in [('duration', 'total_elapsed_time'), ('distance', 'total_distance')]:
-        for source in files:
+        for source in files + list(reversed(api)):
             value, context = source['summary'].get(field), f"{source['source']['content_format']} session"
+            if source['source']['kind']=='strava_api':
+                context = 'Strava API summary'
             if value is None and source['source']['content_format'] == 'TCX':
                 laps = source.get('xml_context', {}).get('lap_summaries', [])
                 if len(laps) == 1:
@@ -80,7 +86,7 @@ def presentation(snapshot):
                 break
     if title_evidence:
         row['title'] = title_evidence['summary']['title']
-        row['title_origin'] = 'Strava-export source title'
+        row['title_origin'] = 'Strava API source title' if title_evidence['source']['kind']=='strava_api' else 'Strava-export source title'
     else:
         stamp = _date(row['start_time'])
         if stamp:

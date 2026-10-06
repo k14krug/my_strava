@@ -287,7 +287,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ### P2-05 — Incremental Strava synchronization
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Bring post-export activities and useful Strava metadata into RideWorks through a normal forward-looking sync path.
 
@@ -304,6 +304,8 @@ Only one implementation/research task should normally be `in_progress`.
 **Acceptance:** `docs/PHASE_2_ACCEPTANCE.md` and `docs/tasks/P2-05.md`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
+
+**Execution state:** implemented in draft PR #17 under Analyst JIT on main `e14c8c0`; in-app Settings/OAuth/sync/status/disconnect, API UTC-date sorting fix, persistent freshness reminder and explicit atomic Performance rebuild complete. 219 full / 33 focused tests and actual synthetic/live Chromium pass. Live: 7 new + 4 enrichments; all seven API-only Activities appear newest and are individually reachable; 1,441 total / 1,417 cycling. Restart reruns add no Activities/observations (3 unchanged); explicit rebuild clears 11 pending and restores 1,022 eligible results. Stopped at HARD — Owner for review; approval/Analyst acceptance pending. No Phase 3 work.
 
 **Dependency:** P2-04 complete.
 
