@@ -1,27 +1,19 @@
 # STATUS.md
 
-**Product:** RideWorks. Phase 1 accepted; Phase 2 in progress.
+**Product:** RideWorks.
 
-**Accepted:** P2-01/P2-02/P2-03/P2-04 done; PR #16 merged.
+**Phase 1:** accepted / complete.
 
-**Current task:** P2-05 — in_progress.
+**Phase 2 — Historical context and performance history:** accepted / complete.
 
-**Branch / PR:** `task/p2-05-strava-sync` / [#17](https://github.com/k14krug/my_strava/pull/17) (draft).
+**P2-01 through P2-05:** done.
 
-**Implementation head:** `e4e77ffd5fa3e092038cecbba38f6d00446da084`; subsequent publication updates verification tooling/evidence/status.
+**P2-05 / PR #17:** Owner and Analyst accepted; merged to `main` as `e78c8a6c2de4f4e21aaa2937ae33d1e011901947`.
 
-**Implementation state:** ready_for_review — Gate 1 HARD — Owner approved. Stopped at Gate 2 HARD — Analyst / Phase 2 acceptance.
+**Final Phase 2 live evidence:** 1,441 Activities / 1,417 cycling after forward Strava sync; 7 post-export API-only Activities surfaced in correct chronology; 4 overlap rides enriched without duplication; restart reruns created no duplicate Activities/observations; explicit Performance rebuild evaluated 1,441 Activities, retained 1,022 eligible results and cleared 11 pending to zero. 219 full / 33 focused tests and Chromium acceptance passed.
 
-**Implemented:** normal in-app Settings Connect / Sync now / status / Disconnect; CLI secondary, shared OAuth/token/sync functions. API UTC `Z` dates now parse on Python 3.10 and participate in local display/sorting; View Activities links to the normal browser. Persistent app-wide Performance freshness reminder and explicit POST/nonce-protected Rebuild Performance use accepted atomic logic. Sync never rebuilds automatically.
+**Current planning boundary:** Owner has explicitly prioritized a bounded Strava activity-stream enrichment and FIT-comparison follow-up before Phase 3 dashboard implementation.
 
-**Verification:** 219 full / 33 focused tests pass. Actual Chromium synthetic OAuth, private state, refresh, restart, nonce/concurrency, LA/Tokyo dates/order, thin/rich provenance, phone/desktop, reminder persistence, failed rebuild rollback and successful explicit rebuild pass. Untouched accepted-copy HTTP/restart regression preserves 1,434 Activities / 1,022 eligible results. Live review: all 7 new API-only Activities have absolute chronological dates, are the newest seven and individually reachable; 4 overlaps enrich established identities without duplication. Guarded live restart reruns: 0 new Activities/observations, 3 unchanged per rerun; no native reads, archive reprocessing or hidden rebuild. Original sources/native evidence retained; integrity/foreign keys pass.
+**Phase 3:** not started.
 
-**Live review state:** 1,441 total / 1,417 cycling / 11 API observations. Initial web result: 7 new / 4 enriched / 0 unchanged. Explicit in-app rebuild evaluated 1,441 Activities, restored 1,022 eligible results and cleared 11 pending to zero. Reminder disappears across pages/restart; unchanged sync does not stale rebuilt history. Credentials/tokens remain private and locally configured.
-
-**Review:** http://127.0.0.1:8771/settings and http://127.0.0.1:8771/ (Newest first). Server running; restart command: `.venv/bin/python -m rideworks --data-dir local_data/p2-05-review serve --port 8771`. Web callback uses this running port; Strava Callback Domain is host-only `127.0.0.1`. CLI connect/sync/disconnect/rebuild remain maintenance/recovery options in README.
-
-**Evidence:** `reports/P2-05/verification.md`, `reports/P2-05/acceptance.json`, `rideworks/README.md`.
-
-**Policy boundary:** the documented Strava durable-history/caching/deletion tension remains under JIT §4.6's Owner decision. Manual overlap does not guarantee old-edit/delete detection; public/unattended integration requires revisiting webhooks.
-
-**Next action:** Analyst reviews PR #17 against the final P2-05 JIT and Phase 2 acceptance contract. Keep P2-05 `in_progress`; do not begin the next implementation task automatically.
+**Next action:** Analyst authors the stream-enrichment/FIT-comparison JIT from current authoritative Strava stream documentation and accepted RideWorks source/provenance rules. Implementation requires the task's normal invocation.
