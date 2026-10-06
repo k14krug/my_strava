@@ -102,3 +102,15 @@ Original one-time Stage A/catch-up commands and exact historical fingerprints re
 Branch `task/strava-004-streams`; draft [PR #18](https://github.com/k14krug/my_strava/pull/18); runtime head `cce020be55dfbe2d5162089e49f667980b2ca7a5`. Review app: `http://127.0.0.1:8771/`. Private `output/playwright/strava-004-review-links.json` identifies the newest eligible API ride, both HR-only rides and a FIT overlap; targeted links are supplied directly to Ken. Inspect Calculation details, Comparison details, Summary source and Strava API stream evidence for provenance. Settings shows the completed normal sync with Performance already current.
 
 Required Owner review: does the normal API-only Activity Review (summary cards, chart, Performance-eligible best-20, six-week context and Ride summary) together with one-step Sync now form a useful, coherent and honest workflow? **Stopped at Gate 1 — HARD — Owner**, as required by the Analyst-authored JIT §15. Explicit Owner approval precedes Gate 2 — HARD — Analyst. Substantive task acceptance and Phase 3 remain pending; no next task begins automatically.
+
+
+## Owner approval and Gate 2 handoff
+
+On **2026-10-06**, the Owner explicitly approved the final STRAVA-004
+Activity Review and one-step Sync now workflow, including
+`virtual-power-evidence-v2`, six-week context for eligible API-only rides,
+file-backed precedence, honest HR-only/ineligible handling, and
+exception-only Performance freshness banners.
+
+STRAVA-004 remains `in_progress` pending final Analyst review.
+Phase 3 has not begun.
