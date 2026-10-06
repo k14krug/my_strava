@@ -1,6 +1,6 @@
 # STRAVA-004 verification
 
-The October 6, 2026 Owner-approved Performance and sync correction is implemented from Analyst JIT `f9711f4`, refreshed from `main` at `2e3ca9b`. Invocation: `/TASK PR18`. Runtime implementation: `cce020be55dfbe2d5162089e49f667980b2ca7a5`. Stopped at **Gate 1 — HARD — Owner**; task remains `in_progress`, ready for review. Phase 3 has not begun.
+The October 6, 2026 Owner-approved Performance and sync correction is implemented from Analyst JIT `f9711f4`, refreshed from `main` at `2e3ca9b`. Invocation: `/TASK PR18`. Runtime implementation: `cce020be55dfbe2d5162089e49f667980b2ca7a5`. **Accepted / complete.** Owner Gate 1 and Analyst Gate 2 are complete. PR #18 merged to `main` as `e7920493dfadbb5f15b0352315cce433f7991ecd`. Phase 3 has not begun.
 
 ## Current result
 
@@ -114,3 +114,22 @@ exception-only Performance freshness banners.
 
 STRAVA-004 remains `in_progress` pending final Analyst review.
 Phase 3 has not begun.
+
+
+## Analyst acceptance
+
+On **2026-10-06**, after explicit Owner approval, the Analyst reviewed the
+final STRAVA-004 implementation at runtime head
+`cce020be55dfbe2d5162089e49f667980b2ca7a5` and final handoff head
+`48e5c82e3dc321dfa9fa1a80bee3622a73448987` against the final JIT.
+
+The Analyst accepted the Stage A overlap evidence, `virtual-power-evidence-v2`
+eligibility/preference rules, five API-only Performance results, exact six-week
+context, automatic post-sync convergence, exception-only freshness banner,
+failure/retry semantics, bounded API access, provenance, restart/idempotence,
+and preservation of all 1,022 prior file-backed eligible results.
+
+PR #18 was merged to `main` as
+`e7920493dfadbb5f15b0352315cce433f7991ecd`.
+
+STRAVA-004 is complete. Phase 3 did not begin as part of this acceptance.
