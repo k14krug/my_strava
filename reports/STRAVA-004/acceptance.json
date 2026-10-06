@@ -1,7 +1,7 @@
 {
   "invocation": "/TASK PR18",
-  "gate": "HARD — Analyst",
-  "task_status": "in_progress",
+  "gate": "accepted",
+  "task_status": "done",
   "branch": "task/strava-004-streams",
   "pr": 18,
   "implementation_head": "cce020be55dfbe2d5162089e49f667980b2ca7a5",
@@ -1220,5 +1220,6 @@
     "no_exception_banner": true
   },
   "owner_approval": "approved",
-  "analyst_acceptance": "pending"
+  "analyst_acceptance": "accepted",
+  "merge_commit": "e7920493dfadbb5f15b0352315cce433f7991ecd"
 }
