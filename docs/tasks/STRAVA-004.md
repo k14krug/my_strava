@@ -1,9 +1,10 @@
 # STRAVA-004 — Strava activity-stream enrichment and FIT comparison
 
-**Status:** Analyst-authored JIT; implementation not started  
+**Status:** accepted / complete  
 **Follow-up type:** Owner-prioritized post-Phase-2 activity-review improvement  
 **Phase 3:** not started  
-**Authoritative Strava documentation review:** 2026-10-05
+**Authoritative Strava documentation review:** 2026-10-05  
+**Acceptance:** Owner and Analyst accepted PR #18; merged to `main` as `e7920493dfadbb5f15b0352315cce433f7991ecd` on 2026-10-06.
 
 ## 1. Purpose
 
