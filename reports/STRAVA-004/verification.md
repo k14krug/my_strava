@@ -1,6 +1,6 @@
 # STRAVA-004 verification
 
-Implementation and local verification completed on October 5, 2026 (America/Los_Angeles), from Analyst JIT on refreshed `main` at `719db85`. Invocation: `/TASK`. Stage A supported proceeding to Stage B under the JIT's evidence gate. Stopped at **Gate 1 — HARD — Owner**; task remains `in_progress`. Phase 3 has not begun.
+Initial Stage A/B verification completed October 5, 2026 (America/Los_Angeles), from Analyst JIT on refreshed `main` at `719db85`. The October 6 Owner Activity Review correction is implemented from updated JIT `d88033b`, merged into the existing PR branch. Invocation: `/TASK PR18`. Stage A supported proceeding to Stage B under the JIT's evidence gate. Stopped at **Gate 1 — HARD — Owner**; task remains `in_progress`. Phase 3 has not begun.
 
 ## Result and limits
 
@@ -9,6 +9,8 @@ All four accepted Strava/FIT overlap rides supported power/heart-rate Activity R
 The bounded catch-up added usable charts for all **7 known post-export API-only cycling Activities**: **5 have power and HR; 2 have HR only**. Absent power stays unavailable, including a sparse 22-sample HR observation. Four additional stream observations came from the existing Stage A cache, with no repeat overlap requests. Supported FIT review remains authoritative; its additional API stream provenance is inspectable separately.
 
 This evidence supports visual review of the tested power/heart-rate streams. It does not establish measured origin, fidelity across all Activities/signals, or trusted analytical eligibility. Cadence could not be compared because the accepted FIT extraction has no sample cadence; FIT average cadence is not a sample series. Moving values were retained as API evidence, without inventing equivalent FIT flags. Similarity warrants a separate future eligibility investigation; **no trusted Performance policy changed**. Accepted Performance remains **1,022 eligible / 0 pending**, and all accepted database tables, including existing results/signatures, remained unchanged.
+
+The [Owner correction](https://github.com/k14krug/my_strava/pull/18#issuecomment-6008558160) authorizes normal Activity Review structure and ride-local API-stream best-20. All seven API-only rides now have summary cards and a Ride summary panel. **Five qualifying rides have a calculated local best-20; two HR-only rides show Unavailable.** These results are for individual Activity Review and are never persisted into trusted Performance. The correction reused retained observations and made **zero additional live API requests**.
 
 ## Authoritative API check
 
@@ -52,19 +54,25 @@ The accepted schema-5 database was backed up locally before stream persistence, 
 
 The existing P2-05 accepted retention decision still governs local API history. This task introduced no new retention-policy decision. Raw responses, token state, databases, private routes/titles/identifiers, and live screenshots remain ignored local artifacts; no raw personal arrays are committed.
 
+API-only reviews now follow the normal summary-cards → chart → local best-20 hierarchy with Ride summary beside it and collapsed provenance below. The four cards and Ride summary use the **current Strava API summary Source**, including elapsed/moving duration, distance/ascent, supplied power/HR averages/maxima, cadence, and energy where present. Missing fields show Unavailable; no FIT timer duration is invented and supplied averages are not calculated from streams.
+
+The local calculation is labeled **RideWorks-calculated from Strava API stream evidence** and uses `best-average-power-v1` semantics directly on returned offsets. It searches exact one-second, complete 1,200-sample windows; zero watts count, gaps/duplicate/backward edges or missing power invalidate affected windows. Raw maximum wins, exact ties choose the earliest window, and display rounding is integer half-up. Details expose offset bounds, raw mean, sample/window counts, stream Source, related summary Source, retrieval and mapping. It creates no native record indices/timestamps, no result rows, no trusted enrollment, and no prior-six-week context.
+
+After the correction, all 16 accepted schema-5 table fingerprints again matched the original backup. The Chromium verifier also checks that **all current schema-6 tables** are unchanged across review/calculation and restart/idempotent reuse. Originals, integrity/FKs, 1,441 Activities, 11 stream observations, and 1,022 eligible / zero pending remain intact.
+
 ## Verification and reproduction
 
-**236 full tests / 50 focused Strava tests passed** on final runtime code. Tests cover strict endpoint/key/type/size validation, non-finite and malformed values, absent/zero signals, timing gaps/duplicates, independent complete windows, shared token rotation, atomic schema migration, changed/identical observations, restart, FIT precedence, failed/rate-limited/unauthorized optional enrichment, and successful metadata retention. Existing metadata-only fixtures remain focused on metadata; integration tests exercise the stream HTTP endpoint and Settings path.
+**243 full tests / 57 focused Strava tests passed** on final runtime code. Tests cover strict endpoint/key/type/size validation, non-finite and malformed values, absent/zero signals, timing gaps/duplicates, independent complete windows, shared token rotation, atomic schema migration, changed/identical observations, restart, FIT precedence, failed/rate-limited/unauthorized optional enrichment, and successful metadata retention. Seven correction tests add exact local-window boundaries, legitimate zeros, raw selection/ties, half-up rounding, missing/short/downsampled/ambiguous input, affected timing edges, comparison with the independent prefix-sum verifier, current-summary versus stream values, HR-only unavailability despite summary watts, and unchanged persisted tables. Existing metadata-only fixtures remain focused on metadata; integration tests exercise the stream HTTP endpoint and Settings path.
 
 Actual Chromium checks passed against both the live local store and synthetic fake-HTTP fixtures:
 
-- All 7 live API-only charts: exact complete browser payload hashes, returned counts/offsets, power/HR points, source metadata, keyboard inspection, and no native/trusted best-20 claims.
+- All 7 live API-only charts: exact complete browser payload hashes, returned counts/offsets, power/HR points, source metadata, keyboard inspection, and no native/trusted Performance claims. All seven have normal summary cards and Ride summary; five local best-20 means, rounded values, returned-offset bounds and eligible-window counts match the independent prefix-sum verifier; two HR-only results are unavailable with explicit reasons.
 - FIT overlap: unchanged native chart points and best-20, with additional stream provenance inspectable.
 - Synthetic normal Settings Sync now: a newly discovered API-only Activity gains its graph in one explicit workflow; zeros, missing values, and gap path breaks verified.
-- Desktop/phone layouts and Los Angeles/Tokyo browser-local dates; graph and connection survive server restart.
+- Desktop/phone layouts and Los Angeles/Tokyo browser-local dates; graph, local review result, summaries, and connection survive server restart. Idempotent rerun reuses all seven observations with zero stream GETs, zero new observations, and all persisted tables unchanged.
 - Full P2-05 Settings/OAuth/reconnect/refresh/disconnect and explicit Performance rebuild regression, including persistent reminder and failed rebuild preservation.
 
-Executed commands (paths are ignored local data, not repository inputs):
+Executed commands (paths are ignored local data, not repository inputs). The Stage A fetch and catch-up lines below ran once during initial implementation; the correction reran the focused/full suites and browser verifiers using retained streams only:
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_rideworks_strava*.py'
@@ -72,14 +80,30 @@ Executed commands (paths are ignored local data, not repository inputs):
 .venv/bin/python tools/compare_rideworks_strava_streams.py --data-dir local_data/p2-05-review --cache-dir local_data/strava-004-stage-a --fetch
 .venv/bin/python tools/verify_rideworks_strava_enrichment.py --data-dir local_data/p2-05-review --baseline local_data/strava-004-baseline --stage-a-cache local_data/strava-004-stage-a
 .venv/bin/python tools/verify_rideworks_strava_stream_ui.py --data-dir local_data/p2-05-review --session rideworks-strava-004 --live
-.venv/bin/python tools/verify_rideworks_strava_stream_synthetic.py --synthetic-dir local_data/strava-004-synthetic --session rideworks-strava-004
-.venv/bin/python tools/verify_rideworks_strava_settings_ui.py --synthetic-dir local_data/strava-004-p2-05-regression --session rideworks-p2-05
+.venv/bin/python tools/verify_rideworks_strava_stream_synthetic.py --synthetic-dir local_data/strava-004-correction-synthetic --session rideworks-strava-004
+.venv/bin/python tools/verify_rideworks_strava_settings_ui.py --synthetic-dir local_data/strava-004-correction-settings --session rideworks-p2-05
 ```
 
 The fetch command requires a fresh private cache and performs the four explicitly bounded live requests. Omit `--fetch` to recompute comparisons from the retained cache without network access. The one-time enrichment verifier requires a fresh accepted baseline/store and asserts unchanged accepted tables before starting; do not use it to repeat the completed live catch-up. Its built-in restart rerun proves reuse without fetching. Browser verifiers make no external API requests; they require an open Playwright CLI Chromium session. Synthetic fixtures use fake HTTP and disposable local stores.
 
+The final 16-table baseline check uses the same `fingerprint` helper, with read-only connections. Reproduce it without opening token state or calling the API:
+
+```bash
+.venv/bin/python - <<'PY'
+import sqlite3, sys
+sys.path.insert(0, 'tools')
+from compare_rideworks_strava_streams import fingerprint
+with sqlite3.connect('file:local_data/strava-004-baseline/rideworks.sqlite3?mode=ro', uri=True) as db:
+    accepted = fingerprint(db)
+with sqlite3.connect('file:local_data/p2-05-review/rideworks.sqlite3?mode=ro', uri=True) as db:
+    current = fingerprint(db)
+assert all(current[table] == digest for table, digest in accepted.items())
+print(len(accepted), 'accepted tables unchanged')
+PY
+```
+
 ## Owner handoff
 
-Branch: `task/strava-004-streams`; draft [PR #18](https://github.com/k14krug/my_strava/pull/18); verified implementation head `584de0a0e0dd3511a30c0097cdd72d14bc7cf29c`. Existing review app: `http://127.0.0.1:8771/`. Private local `output/playwright/strava-004-review-links.json` identifies the newest API-only ride and a FIT-backed overlap; targeted links are supplied directly to the Owner, rather than published here. Expand **Strava API stream evidence** to inspect provenance. The newest ride shows the API graph; the overlap keeps native review.
+Branch: `task/strava-004-streams`; draft [PR #18](https://github.com/k14krug/my_strava/pull/18); verified correction implementation head `c84b74dd16edb64dd22dc54e6181277f18698163`. Existing review app: `http://127.0.0.1:8771/`. Private local `output/playwright/strava-004-review-links.json` identifies the newest API-only ride and a FIT-backed overlap; targeted links are supplied directly to the Owner, rather than published here. Expand **Strava API stream evidence** to inspect provenance. The newest ride shows the four summary cards, API graph, qualifying local best-20, and Ride summary; the overlap keeps native review. The private route file also includes both HR-only rides for unavailable-result review.
 
-The required decision is whether the API-only graph is **useful and honest** about its source, timing, gaps, and limitations. The JIT explicitly requires stopping here for Owner review. After explicit Owner approval, Gate 2 is Analyst review of evidence and implementation; there is no automatic acceptance or next task.
+The required decision is whether the API-only Activity Review as a whole is **useful, structurally complete enough, and honest** about its source, timing, gaps, and eligibility. The JIT explicitly requires stopping here for Owner review. After explicit Owner approval, Gate 2 is Analyst review of evidence and implementation; there is no automatic acceptance or next task.

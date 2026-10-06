@@ -76,7 +76,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 **Allowed invocation:** `/TASK` or `/AUTOTASK`.
 
-**Current result:** Stage A comparison and Stage B implementation verified on draft [PR #18](https://github.com/k14krug/my_strava/pull/18); stopped at Gate 1 — HARD — Owner. Four exact power/HR overlaps; seven API-only charts (five power+HR, two HR-only); 236 full / 50 focused tests and Chromium/restart/idempotence/integrity checks passed. Trusted Performance remains 1,022 eligible / 0 pending. See `reports/STRAVA-004/verification.md`. Awaiting Owner review; Analyst acceptance remains pending.
+**Current result:** Owner Activity Review correction implemented from Analyst JIT `d88033b` on draft [PR #18](https://github.com/k14krug/my_strava/pull/18); re-presented Gate 1 — HARD — Owner. Four exact power/HR overlaps; seven API-only reviews with summary cards and Ride summary (five qualifying local best-20 results, two HR-only unavailable). 243 full / 57 focused tests and Chromium/restart/idempotence/integrity checks passed. No additional live stream requests; trusted Performance and all 16 accepted tables unchanged, 1,022 eligible / 0 pending. See `reports/STRAVA-004/verification.md`. Awaiting Owner approval; Analyst acceptance remains pending.
 
 **Dependency:** Phase 2 accepted / complete.
 
