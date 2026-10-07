@@ -29,3 +29,6 @@
 **Allowed invocation:** `/TASK P3-01` or `/AUTOTASK P3-01`.
 
 **Phase 4:** not started.
+
+
+**Owner correction — 2026-10-07:** PR #19 remains at HARD — Owner. Remove duplicate YTD goal top card and replace it with This Week Miles. Keep annual goal information only under Mileage Progress; add miles remaining + needed average mi/week. Weekly chart: completed bars = actual, current bar = needed weekly average going forward, overlay historical/current needed-mi/week line. Replace delayed native SVG hover with immediate miles-only tooltip. Add Avg Pwr to Recent Activities using file summary first, then current API summary fallback. Re-present HARD — Owner after correction.
