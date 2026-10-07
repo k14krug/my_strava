@@ -148,13 +148,9 @@ The supplied dashboard mockup is visual direction, not a literal feature checkli
 
 The first useful dashboard should contain four prominent summary cards:
 
-1. **YTD mileage goal**
-   - actual cycling miles YTD;
-   - target when configured;
-   - percentage complete;
-   - miles remaining;
-   - ahead/behind linear calendar pace in miles.
-   - when no target is configured: actual YTD miles + Set annual goal.
+1. **This Week Miles**
+   - actual cycling distance from the current local Monday through today;
+   - no annual-goal information is duplicated in this card.
 
 2. **Last 7 Days**
    - cycling distance over the trailing seven local calendar days;
@@ -186,7 +182,18 @@ At minimum:
 - Ride / Virtual Ride classification;
 - distance;
 - duration;
+- **average power** from purpose-specific source summary evidence;
 - link to Activity Review.
+
+Recent-Activities average-power selection is:
+
+1. understood file-backed session `avg_power`;
+2. understood single-lap TCX `avg_power` when needed;
+3. otherwise current Strava API summary `average_watts`;
+4. otherwise Unavailable.
+
+Do not use unspecified Strava CSV power or recalculate this table value from
+stream samples.
 
 Use accepted presentation evidence/provenance.
 
@@ -200,18 +207,44 @@ Provide a meaningful annual-mileage visualization.
 
 Preferred first representation:
 
-- recent weekly cycling-distance bars (approximately 12 weeks);
+- completed recent-week cycling-distance bars (approximately 11 completed weeks);
+- a visually distinct current-week bar showing the **needed average miles/week going forward**, not partial actual mileage;
+- an overlaid historical **needed miles/week** line showing, after each completed week, the weekly average still required to reach the annual target by year end;
 - YTD actual/target progress below or beside it;
-- if a target is configured, include a simple goal/reference line or pace context.
+- miles remaining and current needed average miles/week below YTD progress.
 
 The exact chart geometry is implementation-level. The required meaning is:
 
-- actual weekly cycling miles;
+- completed-week actual cycling miles;
+- current-week needed-going-forward bar, clearly distinguished from actual bars;
+- historical/current needed-miles-per-week line;
 - clearly defined local calendar buckets;
 - YTD actual and target;
+- miles remaining;
+- current needed average miles/week;
 - target pace context when a target exists.
 
+Weekly required pace at a completed week is calculated from cumulative actual
+mileage through that Sunday and the remaining days after that Sunday. The
+current required pace uses actual YTD mileage through today and remaining days
+after today. If the goal is met, required pace is zero; if no calendar time
+remains while miles remain, it is Unavailable.
+
+The current week's actual mileage remains available in the This Week Miles card
+and diagnostic payload even though the chart's current bar represents needed
+pace.
+
 No smoothing or inferred missing mileage.
+
+### 5.3.1 Mileage chart interaction
+
+Weekly bars and required-pace points must use an immediate custom
+RideWorks tooltip/readout rather than relying on delayed native SVG
+`<title>` behavior.
+
+On pointer hover/focus, show **only the mileage value and unit** (for example
+`57.3 mi`), not the date/week label. Pointer response should be immediate;
+pointer leave hides it. Keyboard focus must expose the same value.
 
 ### 5.4 20-minute Performance snapshot
 
@@ -348,17 +381,19 @@ Required evidence:
 8. YTD / last-7 / prior-7 aggregates independently reproduce from source evidence.
 9. Browser timezone boundary checks in at least Los Angeles and Tokyo.
 10. Leap-year pace unit test.
-11. Goal percentage/miles remaining/ahead-behind pace independently reproduce.
-12. Recent Activities links and evidence match the Activities browser.
-13. Current 42-day best/latest eligible cards match Performance.
-14. Compact Performance visualization matches Performance-v2 source points.
-15. Insight statements reproduce from accepted deterministic evidence.
-16. Normal successful Sync now updates dashboard data without a second rebuild action.
-17. Performance update failure state remains visible on Home.
-18. Restart retains goal setting and produces the same dashboard.
-19. Desktop and phone Chromium layouts have no overflow/unusable controls.
-20. Full automated regression suite passes.
-21. Phase 4/5/6 concepts remain unimplemented.
+11. Goal percentage/miles remaining/ahead-behind pace and current needed miles/week independently reproduce.
+12. Historical needed-miles/week line and current needed-week bar independently reproduce from cumulative actual mileage and remaining calendar time.
+13. Mileage chart tooltip responds immediately and shows only miles, not dates.
+14. Recent Activities links/evidence/Avg Pwr match the accepted source-precedence rules and Activities history.
+15. Current 42-day best/latest eligible cards match Performance.
+16. Compact Performance visualization matches Performance-v2 source points.
+17. Insight statements reproduce from accepted deterministic evidence.
+18. Normal successful Sync now updates dashboard data without a second rebuild action.
+19. Performance update failure state remains visible on Home.
+20. Restart retains goal setting and produces the same dashboard.
+21. Desktop and phone Chromium layouts have no overflow/unusable controls.
+22. Full automated regression suite passes.
+23. Phase 4/5/6 concepts remain unimplemented.
 
 ## 12. Owner acceptance
 
