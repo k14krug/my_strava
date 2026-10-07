@@ -1,8 +1,12 @@
 {
   "task": "P3-01",
-  "invocation": "/TASK",
-  "implementation_commit": "d975a70b92a2d6272011f697785d77755fad415b",
-  "base_main": "b56ff3baa065f71b8426c40a189b4f8ee3f98ae8",
+  "invocation": "/TASK PR #19",
+  "implementation_commit": "d09b957957511b66ecf1c780352fea3684092bef",
+  "refreshed_main": "d18ce97",
+  "analyst_jit": "dc26463",
+  "phase3_contract": "5340e47",
+  "prior_owner_review_head": "2648db83577ace894e0ab349917a6611baca6280",
+  "pr": "https://github.com/k14krug/my_strava/pull/19",
   "state": "ready_for_review",
   "gate": "HARD \u2014 Owner",
   "owner_acceptance": false,
@@ -20,138 +24,296 @@
     "synthetic_targets_cleared": true
   },
   "tests": {
-    "full": 269,
-    "focused_dashboard": 16,
+    "full": 276,
+    "focused_dashboard": 23,
     "result": "passed"
   },
   "acceptance_checks": [
     {
       "number": 1,
-      "check": "Home and Activities routes",
+      "check": "Home at `/`; Activities at `/activities`.",
       "result": "passed",
-      "evidence": "live/synthetic Chromium; route unit test"
+      "evidence": "Live/synthetic Chromium and route unit test"
     },
     {
       "number": 2,
-      "check": "Goal set/update/clear",
+      "check": "Annual mileage target can be set/changed/cleared through Settings.",
       "result": "passed",
-      "evidence": "synthetic Settings Chromium; storage/settings unit tests"
+      "evidence": "Disposable synthetic Settings and storage/action unit tests"
     },
     {
       "number": 3,
-      "check": "No default goal",
+      "check": "No default goal is invented.",
       "result": "passed",
-      "evidence": "fresh synthetic store; unset/historical-year unit tests"
+      "evidence": "Fresh store and unset/historical-year unit tests"
     },
     {
       "number": 4,
-      "check": "Virtual and outdoor distance",
+      "check": "Virtual Ride and outdoor Ride distances both contribute.",
       "result": "passed",
-      "evidence": "live independent classification scan; controlled synthetic fixture"
+      "evidence": "Independent classification scan and synthetic fixture"
     },
     {
       "number": 5,
-      "check": "File distance precedes conflicting API",
+      "check": "File-backed distance wins over API distance on a controlled overlap example.",
       "result": "passed",
-      "evidence": "synthetic overlap; unit test; three live conflicts"
+      "evidence": "Actual FIT/API overlap unit test and synthetic conflict"
     },
     {
       "number": 6,
-      "check": "API-only distance",
+      "check": "API distance supplies an API-only recent ride.",
       "result": "passed",
-      "evidence": "live seven YTD API contributors; synthetic API-only rides"
+      "evidence": "Eight live YTD API contributors and synthetic API-only rides"
     },
     {
       "number": 7,
-      "check": "Unspecified CSV distance excluded",
+      "check": "Unspecified CSV-only distance is not guessed.",
       "result": "passed",
-      "evidence": "controlled synthetic CSV-only ride; unit test"
+      "evidence": "CSV-only synthetic ride with misleading distance/watts"
     },
     {
       "number": 8,
-      "check": "YTD/last7/prior7 independently reproduce",
+      "check": "YTD / last-7 / prior-7 aggregates independently reproduce from source evidence.",
       "result": "passed",
-      "evidence": "SQL/Decimal oracle, all 15 periods"
+      "evidence": "SQL/Decimal oracle for fifteen source-backed periods"
     },
     {
       "number": 9,
-      "check": "Los Angeles/Tokyo calendar edges",
+      "check": "Browser timezone boundary checks in at least Los Angeles and Tokyo.",
       "result": "passed",
-      "evidence": "both browser contexts; six controlled year/leap boundary checks"
+      "evidence": "Both browser zones and six controlled year/leap checks"
     },
     {
       "number": 10,
-      "check": "Leap-year pace",
+      "check": "Leap-year pace unit test.",
       "result": "passed",
-      "evidence": "unit test, 366-day denominator"
+      "evidence": "366-day calendar/needed-average unit tests"
     },
     {
       "number": 11,
-      "check": "Goal percentage/remaining/calendar pace",
+      "check": "Goal percentage/miles remaining/ahead-behind pace and current needed miles/week independently reproduce.",
       "result": "passed",
-      "evidence": "independent Decimal goal calculation; live Owner target"
+      "evidence": "Independent Decimal goal calculation"
     },
     {
       "number": 12,
-      "check": "Recent links/evidence match Activities",
+      "check": "Historical needed-miles/week line and current needed-week bar independently reproduce from cumulative actual mileage and remaining calendar time.",
       "result": "passed",
-      "evidence": "both live/synthetic browser contexts"
+      "evidence": "Twelve independently scanned cumulative YTD/current required points; SVG value/geometry checks"
     },
     {
       "number": 13,
-      "check": "Current/latest cards match Performance",
+      "check": "Mileage chart tooltip responds immediately and shows only miles, not dates.",
       "result": "passed",
-      "evidence": "live browser and independent cached-result scan"
+      "evidence": "Forty-eight synchronous pointer/focus lifecycle checks per live/synthetic run; actual hover/Tab/Escape at both widths"
     },
     {
       "number": 14,
-      "check": "Compact Performance source points",
+      "check": "Recent Activities links/evidence/Avg Pwr match the accepted source-precedence rules and Activities history.",
       "result": "passed",
-      "evidence": "independent arrival/expiry scan, 252 live event times"
+      "evidence": "Six recent links plus independently verified power values/source IDs/contexts"
     },
     {
       "number": 15,
-      "check": "Deterministic insights",
+      "check": "Current 42-day best/latest eligible cards match Performance.",
       "result": "passed",
-      "evidence": "independent pace and previous six-week best reproduction"
+      "evidence": "Performance page and independent cached-result selection"
     },
     {
       "number": 16,
-      "check": "Sync updates Home without second rebuild",
+      "check": "Compact Performance visualization matches Performance-v2 source points.",
       "result": "passed",
-      "evidence": "one real bounded sync; synthetic new/enriched sync"
+      "evidence": "Independent rolling event scan and current source references"
     },
     {
       "number": 17,
-      "check": "Failure visible on Home",
+      "check": "Insight statements reproduce from accepted deterministic evidence.",
       "result": "passed",
-      "evidence": "synthetic injected failure, restart and later-sync recovery"
+      "evidence": "Independent calendar pace and prior-six-week reproduction"
     },
     {
       "number": 18,
-      "check": "Restart preserves goal/dashboard",
+      "check": "Normal successful Sync now updates dashboard data without a second rebuild action.",
       "result": "passed",
-      "evidence": "live exact target tuple and aggregate comparison; synthetic restart"
+      "evidence": "Prior real bounded sync plus rerun synthetic new/enriched convergence"
     },
     {
       "number": 19,
-      "check": "Desktop/phone usable",
+      "check": "Performance update failure state remains visible on Home.",
       "result": "passed",
-      "evidence": "actual Chromium Home/Settings/Activity Review no-overflow checks"
+      "evidence": "Injected failure/restart/later unchanged sync"
     },
     {
       "number": 20,
-      "check": "Full regression suite",
+      "check": "Restart retains goal setting and produces the same dashboard.",
       "result": "passed",
-      "evidence": "269 tests passed; 16 focused tests; Settings and seven live reviews"
+      "evidence": "Exact live goal tuple and dashboard periods/required points after restart"
     },
     {
       "number": 21,
-      "check": "Phase 4/5/6 unimplemented",
+      "check": "Desktop and phone Chromium layouts have no overflow/unusable controls.",
       "result": "passed",
-      "evidence": "scope/diff inspection; deferred-metric unit test"
+      "evidence": "Actual Chromium Home/Settings/Activity Reviews, 1448 desktop and 390 phone"
+    },
+    {
+      "number": 22,
+      "check": "Full automated regression suite passes.",
+      "result": "passed",
+      "evidence": "276 full / 23 focused tests; Settings/OAuth and seven live reviews"
+    },
+    {
+      "number": 23,
+      "check": "Phase 4/5/6 concepts remain unimplemented.",
+      "result": "passed",
+      "evidence": "Diff inspection and no-deferred-metrics unit test"
     }
   ],
+  "owner_corrections": {
+    "this_week_actual_miles": 26.3025182931679,
+    "annual_progress_only_in_mileage_panel": true,
+    "goal": {
+      "target_miles": 2200.0,
+      "actual_miles": 1518.2113519545853,
+      "percent": 69.00960690702661,
+      "remaining_miles": 681.7886480454147,
+      "calendar_days_elapsed": 280,
+      "calendar_days_in_year": 365,
+      "target_to_date": 1687.6712328767123,
+      "pace_difference": -169.459880922127,
+      "remaining_calendar_days": 85,
+      "needed_miles_per_week": 56.14730042726945
+    },
+    "weekly_goal": [
+      {
+        "start": "2026-07-20",
+        "as_of_day": "2026-07-26",
+        "current": false,
+        "actual_miles": 30.611342261194622,
+        "ytd_miles": 846.5956936490893,
+        "needed_miles_per_week": 59.96095028136946,
+        "bar_miles": 30.611342261194622,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-07-27",
+        "as_of_day": "2026-08-02",
+        "current": false,
+        "actual_miles": 41.357466147697444,
+        "ytd_miles": 887.9531597967867,
+        "needed_miles_per_week": 60.8233634531291,
+        "bar_miles": 41.357466147697444,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-08-03",
+        "as_of_day": "2026-08-09",
+        "current": false,
+        "actual_miles": 33.13674391553328,
+        "ytd_miles": 921.08990371232,
+        "needed_miles_per_week": 62.16924079176223,
+        "bar_miles": 33.13674391553328,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-08-10",
+        "as_of_day": "2026-08-16",
+        "current": false,
+        "actual_miles": 65.89991947029348,
+        "ytd_miles": 986.9898231826135,
+        "needed_miles_per_week": 61.97862217315114,
+        "bar_miles": 65.89991947029348,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-08-17",
+        "as_of_day": "2026-08-23",
+        "current": false,
+        "actual_miles": 32.62506337986161,
+        "ytd_miles": 1019.6148865624751,
+        "needed_miles_per_week": 63.559198415866724,
+        "bar_miles": 32.62506337986161,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-08-24",
+        "as_of_day": "2026-08-30",
+        "current": false,
+        "actual_miles": 65.86939150361886,
+        "ytd_miles": 1085.484278066094,
+        "needed_miles_per_week": 63.427724012498715,
+        "bar_miles": 65.86939150361886,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-08-31",
+        "as_of_day": "2026-09-06",
+        "current": false,
+        "actual_miles": 61.99847266960948,
+        "ytd_miles": 1147.4827507357033,
+        "needed_miles_per_week": 63.51397193836273,
+        "bar_miles": 61.99847266960948,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-09-07",
+        "as_of_day": "2026-09-13",
+        "current": false,
+        "actual_miles": 75.30640434860415,
+        "ytd_miles": 1222.7891550843076,
+        "needed_miles_per_week": 62.75665976522795,
+        "bar_miles": 75.30640434860415,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-09-14",
+        "as_of_day": "2026-09-20",
+        "current": false,
+        "actual_miles": 80.92010782032926,
+        "ytd_miles": 1303.709262904637,
+        "needed_miles_per_week": 61.51014862419158,
+        "bar_miles": 80.92010782032926,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-09-21",
+        "as_of_day": "2026-09-27",
+        "current": false,
+        "actual_miles": 82.9614178199316,
+        "ytd_miles": 1386.6706807245685,
+        "needed_miles_per_week": 59.929528788716006,
+        "bar_miles": 82.9614178199316,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-09-28",
+        "as_of_day": "2026-10-04",
+        "current": false,
+        "actual_miles": 105.23815293684879,
+        "ytd_miles": 1491.9088336614172,
+        "needed_miles_per_week": 56.32543368602362,
+        "bar_miles": 105.23815293684879,
+        "bar_kind": "actual"
+      },
+      {
+        "start": "2026-10-05",
+        "as_of_day": "2026-10-07",
+        "current": true,
+        "actual_miles": 26.3025182931679,
+        "ytd_miles": 1518.2113519545853,
+        "needed_miles_per_week": 56.14730042726945,
+        "bar_miles": 56.14730042726945,
+        "bar_kind": "needed"
+      }
+    ],
+    "custom_tooltip_no_native_title": true,
+    "immediate_tooltip_lifecycle_checks_live": 48,
+    "immediate_tooltip_lifecycle_checks_synthetic": 48,
+    "pointer_keyboard_desktop_phone": true,
+    "avg_power_file_tcx_api_precedence": true,
+    "csv_watts_and_stream_averages_excluded": true,
+    "performance_policy_unchanged": true,
+    "all_bar_and_required_point_geometry_verified": true
+  },
   "live": {
     "independent_checks": [
       {
@@ -162,26 +324,26 @@
         "ytd": {
           "start": "2026-01-01",
           "end_exclusive": "2026-10-08",
-          "miles": 1504.7640094349003,
-          "contributing_activities": 111,
-          "dated_cycling_activities": 119,
+          "miles": 1518.2113519545853,
+          "contributing_activities": 112,
+          "dated_cycling_activities": 120,
           "file_count": 104,
           "file_miles": 1415.6373217907421,
-          "api_count": 7,
-          "api_miles": 89.12668764415811,
+          "api_count": 8,
+          "api_miles": 102.57403016384315,
           "distance_unavailable": 8,
           "date_unavailable_excluded": 0
         },
-        "last7_miles": 74.04992344706912,
+        "last7_miles": 87.49726596675416,
         "prior7_miles": 101.35464512248468,
         "diagnostics": {
-          "cycling_activities": 1417,
+          "cycling_activities": 1418,
           "excluded_noncycling": 24,
           "date_unavailable": 0,
           "timezone_unknown": 101,
           "future_excluded": 0,
           "included_classifications": {
-            "Virtual Ride": 1269,
+            "Virtual Ride": 1270,
             "Ride": 148
           },
           "excluded_classifications": {
@@ -192,6 +354,12 @@
         },
         "goal_math_verified": true,
         "no_default_goal": false,
+        "this_week_actual_miles": 26.3025182931679,
+        "weekly_required_points_verified": 12,
+        "needed_miles_per_week": 56.14730042726945,
+        "current_bar_is_needed_average": true,
+        "current_actual_preserved": true,
+        "recent_average_power_sources_verified": 6,
         "performance_summary_references_verified": true,
         "performance_event_times_verified": 252,
         "deterministic_latest_context_verified": true,
@@ -205,26 +373,26 @@
         "ytd": {
           "start": "2026-01-01",
           "end_exclusive": "2026-10-09",
-          "miles": 1509.865286725523,
-          "contributing_activities": 112,
-          "dated_cycling_activities": 120,
+          "miles": 1523.312629245208,
+          "contributing_activities": 113,
+          "dated_cycling_activities": 121,
           "file_count": 105,
           "file_miles": 1420.7385990813648,
-          "api_count": 7,
-          "api_miles": 89.12668764415811,
+          "api_count": 8,
+          "api_miles": 102.57403016384315,
           "distance_unavailable": 8,
           "date_unavailable_excluded": 0
         },
-        "last7_miles": 74.04992344706912,
+        "last7_miles": 87.49726596675416,
         "prior7_miles": 101.35464512248468,
         "diagnostics": {
-          "cycling_activities": 1417,
+          "cycling_activities": 1418,
           "excluded_noncycling": 24,
           "date_unavailable": 0,
           "timezone_unknown": 101,
           "future_excluded": 0,
           "included_classifications": {
-            "Virtual Ride": 1269,
+            "Virtual Ride": 1270,
             "Ride": 148
           },
           "excluded_classifications": {
@@ -235,6 +403,12 @@
         },
         "goal_math_verified": true,
         "no_default_goal": false,
+        "this_week_actual_miles": 44.08678318619263,
+        "weekly_required_points_verified": 12,
+        "needed_miles_per_week": 56.390614229566005,
+        "current_bar_is_needed_average": true,
+        "current_actual_preserved": true,
+        "recent_average_power_sources_verified": 6,
         "performance_summary_references_verified": true,
         "performance_event_times_verified": 252,
         "deterministic_latest_context_verified": true,
@@ -279,84 +453,31 @@
         "performance_event_times_verified": 206
       }
     ],
-    "sync_results": [
-      {
-        "status": "completed",
-        "scope": "activity:read_all",
-        "window_basis": "last_successful_sync_minus_3_days",
-        "overlap_days": 3,
-        "pages_requested": 1,
-        "api_activities_observed": 3,
-        "rate_limits": {
-          "X-RateLimit-Limit": [
-            200,
-            2000
-          ],
-          "X-RateLimit-Usage": [
-            1,
-            1
-          ],
-          "X-ReadRateLimit-Limit": [
-            100,
-            1000
-          ],
-          "X-ReadRateLimit-Usage": [
-            1,
-            1
-          ]
-        },
-        "new_activities": 0,
-        "existing_activities_enriched": 0,
-        "unchanged_observations": 3,
-        "changed_observations": 0,
-        "new_observations": 0,
-        "ambiguous_new_associations": 0,
-        "strong_local_matches": 0,
-        "performance_rebuild_recommended": 0,
-        "stream_candidates": 3,
-        "stream_fetches": 0,
-        "stream_enriched": 0,
-        "stream_reused": 3,
-        "stream_unavailable": 0,
-        "stream_failed": 0,
-        "stream_deferred": 0,
-        "stream_authorization_attention": false,
-        "stream_rate_limited": false,
-        "performance_update": "current",
-        "performance_pending": 0,
-        "performance_eligible": 1027
-      }
-    ],
     "schema_version": 7,
     "migration_evidence": "disposable_schema6_replay",
     "accepted_preverification_schema": 7,
     "schema6_existing_tables_replayed": 19,
     "original_artifact_hashes_verified": 1422,
     "v1_rows_unchanged": 1441,
-    "performance_eligible": 1027,
+    "performance_eligible": 1028,
     "performance_pending": 0,
     "native_export_tables_unchanged": true,
     "source_observations_retained": true,
     "integrity": true,
     "foreign_keys": true,
-    "goal_restart_and_same_dashboard": true
-  },
-  "read_only_rerun": {
-    "result": "passed",
-    "external_api_calls": 0,
-    "activities_title_sort_pagination_verified": true,
-    "preexisting_goals_preserved": true,
     "goal_restart_and_same_dashboard": true,
-    "integrity": true,
-    "foreign_keys": true
+    "preexisting_goals_preserved": true,
+    "external_api_calls": 0,
+    "read_only_live_rerun": true,
+    "activities_title_sort_pagination_verified": true
   },
   "synthetic": {
     "result": "passed",
     "goal_set_updated_cleared": true,
     "no_default_goal": true,
     "no_goal_at_handoff": true,
-    "file_api_overlap_conflicts": 1,
     "exception_failure_restart_later_sync_verified": true,
+    "normal_sync_reflected_on_home": true,
     "desktop_phone_no_overflow": true,
     "original_artifact_hashes_verified": 4,
     "external_api_calls": 0
@@ -433,9 +554,60 @@
     "desktop_phone_no_overflow": true,
     "restart_retains_graphs_and_connection": true,
     "performance_unchanged_by_review": true,
-    "performance_eligible": 1027,
+    "performance_eligible": 1028,
     "performance_pending": 0
   },
-  "phase_4_5_6_implemented": false,
-  "pr": "https://github.com/k14krug/my_strava/pull/19"
+  "earlier_live_sync": {
+    "phase": "first Home verification, before Owner correction",
+    "results": [
+      {
+        "status": "completed",
+        "scope": "activity:read_all",
+        "window_basis": "last_successful_sync_minus_3_days",
+        "overlap_days": 3,
+        "pages_requested": 1,
+        "api_activities_observed": 3,
+        "rate_limits": {
+          "X-RateLimit-Limit": [
+            200,
+            2000
+          ],
+          "X-RateLimit-Usage": [
+            1,
+            1
+          ],
+          "X-ReadRateLimit-Limit": [
+            100,
+            1000
+          ],
+          "X-ReadRateLimit-Usage": [
+            1,
+            1
+          ]
+        },
+        "new_activities": 0,
+        "existing_activities_enriched": 0,
+        "unchanged_observations": 3,
+        "changed_observations": 0,
+        "new_observations": 0,
+        "ambiguous_new_associations": 0,
+        "strong_local_matches": 0,
+        "performance_rebuild_recommended": 0,
+        "stream_candidates": 3,
+        "stream_fetches": 0,
+        "stream_enriched": 0,
+        "stream_reused": 3,
+        "stream_unavailable": 0,
+        "stream_failed": 0,
+        "stream_deferred": 0,
+        "stream_authorization_attention": false,
+        "stream_rate_limited": false,
+        "performance_update": "current",
+        "performance_pending": 0,
+        "performance_eligible": 1027
+      }
+    ],
+    "additional_live_sync_during_correction": false
+  },
+  "phase_4_5_6_implemented": false
 }
