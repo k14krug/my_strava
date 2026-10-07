@@ -2,6 +2,13 @@
 (() => {
   'use strict';
   const browserTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const calendarPage = document.querySelector('[data-calendar-timezone]');
+  if (calendarPage) {
+    const key = calendarPage.dataset.calendarTimezone, url = new URL(window.location.href);
+    if (url.searchParams.get(key) !== browserTimezone) {
+      url.searchParams.set(key,browserTimezone); window.location.replace(url); return;
+    }
+  }
   const historyForm = document.querySelector('.history-filters');
   if (historyForm) {
     historyForm.elements.tz.value = browserTimezone;

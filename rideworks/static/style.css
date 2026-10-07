@@ -245,3 +245,65 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 .performance-update button:disabled { opacity: .65; cursor: wait; }
 
 .ride-meta time[data-compact-time] { white-space: nowrap; }
+
+/* Home reuses the accepted shell, cards and source evidence typography. */
+.home-heading { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px 20px; }
+.home-heading p { font-size:12px; margin-top:5px; }
+.home-metric { min-width:0; }
+.home-metric > div { align-items:flex-start; }
+.home-metric h2 { font-size:12px; font-weight:550; }
+.home-metric strong { padding-left:0; font-size:25px; margin-top:10px; }
+.home-metric > p, .home-metric > a { font-size:11px; margin-top:7px; display:block; overflow-wrap:anywhere; }
+.home-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:14px; align-items:start; }
+.home-layout > section { min-width:0; }
+.home-panel-heading { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:12px; }
+.home-panel-heading a, .home-panel-heading span { font-size:11px; }
+.home-recent-table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.home-recent-table th { font-size:11px; font-weight:500; color:var(--muted); text-align:left; }
+.home-recent-table td, .home-recent-table th { padding:12px 6px; border-bottom:1px solid var(--border); }
+.home-recent-table th:first-child { width:25%; }
+.home-recent-table th:nth-child(2) { width:44%; }
+.home-recent-table th:nth-child(3) { width:17%; }
+.home-recent-table td { font-size:12px; vertical-align:top; overflow-wrap:anywhere; }
+.home-recent-table td:first-child { font-size:11px; }
+.home-recent-table td:nth-child(2) span { display:block; color:var(--muted); font-size:11px; margin-top:3px; }
+.home-recent-table time { white-space:nowrap; }
+.home-recent-table tr:last-child td { border-bottom:0; }
+.home-chart { display:block; width:100%; height:auto; }
+.home-chart text { font:11px system-ui,sans-serif; fill:var(--muted); }
+.home-mileage-bar { fill:var(--blue); }
+.home-power-line { stroke:var(--blue); stroke-width:1.8; fill:none; pointer-events:none; }
+.home-power-point { fill:var(--blue); }
+.home-mileage > p, .home-performance > p { font-size:11px; margin:8px 0; }
+.home-goal-progress { border-top:1px solid var(--border); margin-top:14px; padding-top:12px; }
+.home-goal-progress strong { font-size:18px; }
+.home-goal-progress p { font-size:12px; margin:6px 0; }
+.home-goal-progress progress { display:block; width:100%; height:10px; margin:12px 0; appearance:none; border:0; background:#edf2f7; border-radius:4px; }
+.home-goal-progress progress::-webkit-progress-bar { background:#edf2f7; border-radius:4px; }
+.home-goal-progress progress::-webkit-progress-value { background:var(--green); border-radius:4px; }
+.home-goal-progress progress::-moz-progress-bar { background:var(--green); border-radius:4px; }
+.home-mileage details, .home-insights details { margin-top:12px; }
+.home-insights p { margin-top:12px; font-size:12px; }
+.home-diagnostics { margin-top:14px; }
+.home-evidence-table { overflow-x:auto; }
+.home-evidence-table table { width:100%; border-collapse:collapse; font-size:11px; }
+.home-evidence-table td, .home-evidence-table th { text-align:left; padding:8px; border-bottom:1px solid var(--border); }
+.annual-goal { margin-top:14px; max-width:760px; }
+.annual-goal > p { margin-top:8px; font-size:12px; }
+.goal-actions { display:flex; flex-wrap:wrap; gap:12px; align-items:end; margin-top:14px; }
+.goal-actions form:first-child { display:flex; flex-wrap:wrap; gap:8px; align-items:end; }
+.goal-actions label { flex-basis:100%; font-size:12px; }
+.goal-actions input[type=number] { width:160px; max-width:100%; min-height:36px; border:1px solid var(--border); border-radius:4px; padding:7px 10px; font:inherit; }
+@media(max-width:1100px) { .home-layout { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:620px) {
+  .home-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .home-metric strong { font-size:22px; }
+  .home-panel-heading { flex-wrap:wrap; }
+  .home-recent-table, .home-recent-table tbody { display:block; }
+  .home-recent-table thead { display:none; }
+  .home-recent-table tr { display:grid; grid-template-columns:1fr auto auto; gap:4px 12px; padding:12px 0; border-bottom:1px solid var(--border); }
+  .home-recent-table td { border:0; padding:0; }
+  .home-recent-table td:nth-child(2) { grid-column:1/-1; grid-row:1; font-size:13px; }
+  .home-recent-table td:first-child { grid-column:1; grid-row:2; }
+  .home-recent-table td:nth-child(3), .home-recent-table td:nth-child(4) { grid-row:2; font-size:11px; }
+}

@@ -165,7 +165,7 @@ class BrowserQuery:
         return cls(page, search, kind, after, before, sort, timezone_name, ' '.join(messages))
 
     def url(self, page):
-        return '/?' + urlencode({'q': self.q, 'type': self.activity_type, 'from': self.after,
+        return '/activities?' + urlencode({'q': self.q, 'type': self.activity_type, 'from': self.after,
                                  'to': self.before, 'sort': self.sort, 'page': page, 'tz': self.timezone_name})
 
 

@@ -6,7 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
 from time import perf_counter
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 from uuid import UUID
 
 from .analysis import analyze_activity
@@ -91,8 +91,8 @@ def shell(title, content, *, active='activities'):
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{escape(title)} · RideWorks</title><link rel="icon" href="/static/mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script><script src="/static/settings.js" defer></script></head>
-<body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Activities"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
-<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a><a href="/settings"{nav_state('settings')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M2 8h6m1 8h6m1-7h6"/></svg>Settings</a></nav></aside>
+<body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Home"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
+<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('home')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 10v11h5v-7h4v7h5V10"/></svg>Home</a><a href="/activities"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a><a href="/settings"{nav_state('settings')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M2 8h6m1 8h6m1-7h6"/></svg>Settings</a></nav></aside>
 <main>{content}</main></body></html>'''
 
 
@@ -110,14 +110,14 @@ def activities_page(store, query_string=''):
     def options(choices, current):
         return ''.join(f'<option value="{escape(value, quote=True)}"{" selected" if value == current else ""}>{escape(text)}</option>'
                        for value, text in choices)
-    controls = f'''<form class="history-filters panel" action="/" method="get" aria-label="Filter activities">
+    controls = f'''<form class="history-filters panel" action="/activities" method="get" aria-label="Filter activities">
 <input type="hidden" name="tz" value="{escape(query.timezone_name, quote=True)}">
 <label class="search-filter">Title search<input type="search" name="q" value="{escape(query.q, quote=True)}" placeholder="Search activity names" maxlength="200"></label>
 <label>Activity type<select name="type">{options([('cycling', 'Cycling'), ('all', 'All activities')] + [(t, t) for t in result['type_choices']], query.activity_type)}</select></label>
 <label>From<input type="date" name="from" value="{query.after}"></label>
 <label>To<input type="date" name="to" value="{query.before}"></label>
 <label>Sort<select name="sort">{options(list(SORTS.items()), query.sort)}</select></label>
-<div class="filter-actions"><button type="submit">Apply</button><a href="/">Reset</a></div>
+<div class="filter-actions"><button type="submit">Apply</button><a href="/activities">Reset</a></div>
 </form><p class="date-filter-note">Dates and filters use your local timezone. Timezone-unknown source dates stay as supplied.</p><noscript>Enable JavaScript to use your browser's local dates for absolute timestamps.</noscript>'''
     if query.message:
         controls += f'<p class="query-message" role="status">{escape(query.message)}</p>'
@@ -125,7 +125,7 @@ def activities_page(store, query_string=''):
         body = '''<section class="panel empty"><h2>Import your first ride</h2><p>Preserve a FIT or FIT.GZ file with the RideWorks import command, then reload this page.</p>
 <pre>python -m rideworks --data-dir &lt;data-dir&gt; import-fit &lt;activity.fit.gz&gt;</pre><p>Use the same data directory when starting the server.</p></section>'''
     elif not rows:
-        body = '<section class="panel empty"><h2>No matching activities</h2><p>Try a different title, type or date range.</p><p><a href="/">Reset filters</a></p></section>'
+        body = '<section class="panel empty"><h2>No matching activities</h2><p>Try a different title, type or date range.</p><p><a href="/activities">Reset filters</a></p></section>'
     else:
         items = []
         for row in rows:
@@ -289,7 +289,7 @@ def review_page(analysis, metadata=None, recent=None, streams=None):
     type_text = metadata['activity_type'] if metadata and metadata['type_source'] and metadata['type_source']['source']['kind'] in ('strava_export','strava_api') else (summary.get('sport') or 'Unavailable').replace('_', ' ').title()
     if metadata and metadata['subtype']:
         subtype = metadata['subtype']
-    return shell(title, f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(title)}</h1><span class="title-origin">{escape(title_origin)}</span></div><p class="ride-meta">{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>Type: {escape(type_text)}<span class="meta-separator">·</span>Subtype: {escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
+    return shell(title, f'''<header><div class="breadcrumb"><a href="/activities">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(title)}</h1><span class="title-origin">{escape(title_origin)}</span></div><p class="ride-meta">{local_time(summary.get('start_time'))}<span class="meta-separator">·</span>Type: {escape(type_text)}<span class="meta-separator">·</span>Subtype: {escape(subtype)}<span class="meta-separator">·</span>FIT source</p></header>
 <section class="metrics" aria-label="FIT session source summary">{cards}</section>
 <div class="review-layout"><div class="review-main"><section class="panel chart-panel" aria-labelledby="chart-title">
 <div class="panel-heading"><h2 id="chart-title">Ride power &amp; heart rate</h2><div class="legend"><span><i class="power-swatch"></i>Power · W</span><span><i class="hr-swatch"></i>Heart rate · bpm</span></div></div>
@@ -396,7 +396,7 @@ def api_review_page(row, observation, observations, source_details, recent=None)
             'performance_rebuild_required':'Performance update incomplete; retry the update or Sync now.',
         }.get(reason,'The returned evidence does not meet the Performance policy.')
     best_rows += [('Performance policy',POLICY),('Performance eligibility reason',None if eligible else reason)]
-    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(row['title'])}</h1><span class="title-origin">{escape(row['title_origin'])}</span></div><p class="ride-meta">{browser_time(row,compact=True)}<span class="meta-separator">·</span>Type: {escape(row['activity_type'])}<span class="meta-separator">·</span>Subtype: {escape(row['subtype'] or 'Unavailable')}<span class="meta-separator">·</span>Strava API source</p></header>
+    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/activities">Activities</a><span>/</span>Ride details</div><div class="ride-heading"><h1>{escape(row['title'])}</h1><span class="title-origin">{escape(row['title_origin'])}</span></div><p class="ride-meta">{browser_time(row,compact=True)}<span class="meta-separator">·</span>Type: {escape(row['activity_type'])}<span class="meta-separator">·</span>Subtype: {escape(row['subtype'] or 'Unavailable')}<span class="meta-separator">·</span>Strava API source</p></header>
 <section aria-label="Strava API summary evidence"><p class="source-caption">Strava API summary evidence · supplied averages</p><div class="metrics">{cards}</div></section>
 <div class="review-layout"><div class="review-main">{stream_chart(observation)}
 <section class="panel best-panel api-best20" data-best20-status="{best['status']}"><div><h2>{icon('power')}Best 20-minute power</h2><p>RideWorks-calculated from Strava API stream evidence</p></div><strong class="best-value">{sensor(best['rounded_watts'],'W')}</strong><p class="window-context">{escape(window_text)}</p>
@@ -460,7 +460,7 @@ def thin_review_page(row, streams=None, stream_reason=None, recent=None):
         explanation=REASONS.get((current or {}).get('chart_unavailable_reason') or stream_reason or 'not_fetched','Stream review is unavailable.')
         reason_note=f'<p>{escape(explanation)}</p>' if all(e['source']['kind']=='strava_api' for e in row['sources']) else ''
         intro=f'<section class="panel review-unavailable"><h2>Detailed RideWorks review unavailable</h2><p>This activity does not currently have a single supported FIT analysis source. Available source evidence is shown below; no charts or best-20 result are substituted.</p>{reason_note}</section>'
-    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/">Activities</a><span>/</span>Activity details</div><h1>{escape(row['title'])}</h1><p class="title-origin">{escape(row['title_origin'])}</p><p class="ride-meta">{browser_time(row,compact=bool(api_only and current and current['chart_unavailable_reason'] is None))} · Type: {escape(row['activity_type'])} · Subtype: {escape(row['subtype'] or 'Unavailable')}</p></header>
+    return shell(row['title'], f'''<header><div class="breadcrumb"><a href="/activities">Activities</a><span>/</span>Activity details</div><h1>{escape(row['title'])}</h1><p class="title-origin">{escape(row['title_origin'])}</p><p class="ride-meta">{browser_time(row,compact=bool(api_only and current and current['chart_unavailable_reason'] is None))} · Type: {escape(row['activity_type'])} · Subtype: {escape(row['subtype'] or 'Unavailable')}</p></header>
 {intro}{stream_details(observations)}
 <section class="thin-sources" aria-label="Associated source evidence">{''.join(sources)}</section>''')
 
@@ -538,14 +538,19 @@ class Application:
     def get(self, target):
         url = urlsplit(target)
         path = url.path
+        if self.legacy_browser_target(target):
+            return 303, 'text/plain', b''
         if path.startswith('/static/'):
             name = path.removeprefix('/static/')
             if name in ASSETS:
                 return 200, ASSETS[name], (STATIC / name).read_bytes()
         with Store(self.data_dir) as store:
             if path == '/settings':
-                return 200, 'text/html', self.page(store, shell('Settings', self.settings.content(local_time), active='settings'))
+                return 200, 'text/html', self.page(store, shell('Settings', self.settings.content(local_time,url.query), active='settings'))
             if path == '/':
+                from .home import home_page
+                return 200, 'text/html', self.page(store, home_page(store,url.query))
+            if path == '/activities':
                 return 200, 'text/html', self.page(store, activities_page(store, url.query))
             if path == '/performance':
                 return 200, 'text/html', self.page(store, performance_page(store))
@@ -588,8 +593,21 @@ class Application:
         return html.encode()
 
     @staticmethod
+    def legacy_browser_target(target):
+        url = urlsplit(target)
+        if url.path != '/' or not url.query:
+            return None
+        try:
+            values = parse_qs(url.query,max_num_fields=20,keep_blank_values=True)
+        except ValueError:
+            return '/activities?'+url.query
+        if set(values) & {'q','type','from','to','sort','page','tz'}:
+            return '/activities?'+url.query
+        return None
+
+    @staticmethod
     def not_found():
-        return 404, 'text/html', shell('Activity not found', '<header><h1>Activity not found</h1><p>Return to <a href="/">Activities</a> to open an imported ride.</p></header>').encode()
+        return 404, 'text/html', shell('Activity not found', '<header><h1>Activity not found</h1><p>Return to <a href="/activities">Activities</a> to open an imported ride.</p></header>').encode()
 
 
 def create_server(data_dir=None, port=8765, *, debug=False, settings_factory=Settings):
@@ -623,6 +641,8 @@ def create_server(data_dir=None, port=8765, *, debug=False, settings_factory=Set
                     content_type = 'text/plain'
                 else:
                     status, content_type, body = app.get(self.path)
+                    if status == 303:
+                        headers['Location'] = app.legacy_browser_target(self.path)
             except Exception as exc:
                 # Never log URLs, bodies, private paths, SQL or exception text.
                 print(f'RideWorks request failed ({type(exc).__name__})', flush=True)

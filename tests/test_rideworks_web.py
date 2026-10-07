@@ -39,7 +39,7 @@ class WebTests(unittest.TestCase):
         return status, body.decode()
 
     def test_empty_list_and_real_navigation(self):
-        status, html = self.html('/')
+        status, html = self.html('/activities')
         self.assertEqual(status, 200)
         self.assertIn('Import your first ride', html)
         self.assertIn('import-fit', html)
@@ -52,7 +52,7 @@ class WebTests(unittest.TestCase):
 
     def test_list_stable_route_and_missing_route(self):
         activity_id, _ = self.import_activity()
-        status, html = self.html('/')
+        status, html = self.html('/activities')
         self.assertEqual(status, 200)
         self.assertIn(f'/activities/{activity_id}', html)
         self.assertIn('Virtual Ride', html)
@@ -155,7 +155,7 @@ class WebTests(unittest.TestCase):
         self.assertIn('source activity name unavailable', html)
         self.assertIn('FIT activity type + source start date (UTC)', html)
         self.assertIn(f'<title>{expected} · RideWorks</title>', html)
-        self.assertIn(expected, self.html('/')[1])
+        self.assertIn(expected, self.html('/activities')[1])
         self.assertIn(activity_id, html)
         self.assertIn('href="/performance"', html)
         for fake in ('Dashboard', 'Training Plan', 'AI Summary',

@@ -67,7 +67,7 @@ def verify(data_dir, representative, port):
             deadline = monotonic() + 10
             while True:
                 try:
-                    status, html = get(port, '/')
+                    status, html = get(port, '/activities')
                     break
                 except OSError:
                     require(child.poll() is None and monotonic() < deadline, 'Verification server failed to start')
@@ -83,21 +83,21 @@ def verify(data_dir, representative, port):
             _, second = get(port, next_url)
             require(not set(first) & set(links(second)), 'Second page overlaps first')
             require('Page 2 of 47' in second and 'rel="prev"' in second, 'Pagination unavailable')
-            require(links(get(port, '/')[1]) == first, 'Returning to root changes page')
+            require(links(get(port, '/activities')[1]) == first, 'Returning to root changes page')
             for kind, count in [('all',1434), ('Ride',146), ('Virtual Ride',1264), ('Run',22)]:
-                status, filtered = get(port, '/?type=' + quote(kind))
+                status, filtered = get(port, '/activities?type=' + quote(kind))
                 require(status == 200 and f'of {count:,} matching activities' in filtered, 'Type filter count incorrect')
                 if kind == 'Run':
                     require(all(metadata[url]['activity_type']=='Run' for url in links(filtered)), 'Noncycling filter incorrect')
-            search_route = '/?type=all&q=' + quote(seed['title'].swapcase())
+            search_route = '/activities?type=all&q=' + quote(seed['title'].swapcase())
             _, searched = get(port, search_route)
             seed_url = '/activities/' + seed['activity_id']
             require(seed_url in links(searched) and escape(seed['title']) in searched, 'Source-title search failed')
             day = seed['date_day']
-            _, dated = get(port, '/?type=all&from=' + day + '&to=' + day + '&tz=UTC')
+            _, dated = get(port, '/activities?type=all&from=' + day + '&to=' + day + '&tz=UTC')
             require(links(dated) and all(metadata[url]['date_day']==day for url in links(dated)), 'Date range incorrect')
             for sort, key in [('duration','duration'), ('distance','distance'), ('oldest','date_key')]:
-                route = '/?type=all&sort=' + sort
+                route = '/activities?type=all&sort=' + sort
                 _, sorted_html = get(port, route)
                 known = [metadata[url][key] for url in links(sorted_html) if metadata[url][key] is not None]
                 require(known == sorted(known, reverse=sort!='oldest'), 'Alternate sort incorrect')

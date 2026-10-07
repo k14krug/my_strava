@@ -46,7 +46,7 @@ def verify(data_dir,baseline,port,session):
                 run('''
                   const context=await page.context().browser().newContext({timezoneId:ZONE,locale:'en-US'});
                   const local=await context.newPage();try{
-                    await local.goto(base+'/?tz='+encodeURIComponent(ZONE));await local.waitForSelector('.activity-row time');
+                    await local.goto(base+'/activities?tz='+encodeURIComponent(ZONE));await local.waitForSelector('.activity-row time');
                     const links=await local.locator('.activity-row').evaluateAll(elements=>elements.map(e=>e.getAttribute('href')));
                     check(ROWS.every(r=>links.slice(0,7).includes(r.route)),'Live new Activities missing from newest top seven');
                     for(const row of ROWS){
@@ -58,7 +58,7 @@ def verify(data_dir,baseline,port,session):
                       check(await local.locator('.performance-update').count()===1,'Review reminder missing');
                       await local.goBack();await local.waitForSelector('.activity-row');
                     }
-                    await local.goto(base+'/?sort=oldest&tz='+encodeURIComponent(ZONE));await local.waitForSelector('.activity-row');
+                    await local.goto(base+'/activities?sort=oldest&tz='+encodeURIComponent(ZONE));await local.waitForSelector('.activity-row');
                     const old=await local.locator('.activity-row').evaluateAll(elements=>elements.map(e=>e.getAttribute('href')));
                     check(ROWS.every(r=>!old.includes(r.route)),'Live newest Activity appears on oldest first page');
                   }finally{await context.close();}return true;

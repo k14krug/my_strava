@@ -2,7 +2,7 @@
 async (page) => {
   const base = BASE_URL, expected = EXPECTED_COUNT;
   const check=(condition,message)=>{if(!condition)throw new Error(message);};
-  await page.goto(base+'/');
+  await page.goto(base+'/activities');
   await page.getByRole('navigation',{name:'Main',exact:true}).getByRole('link',{name:'Performance',exact:true}).click();
   await page.waitForSelector('.performance-trend');
   const points=await page.locator('#performance-points').evaluate(node=>JSON.parse(node.textContent));

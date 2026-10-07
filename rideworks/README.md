@@ -346,7 +346,7 @@ Start the same loopback-only server against your imported store:
 python -m rideworks --data-dir <data-dir> serve --port 8765
 ```
 
-Open `http://127.0.0.1:8765/`. Activities defaults to cycling, newest first,
+Open `http://127.0.0.1:8765/activities`. Activities defaults to cycling, newest first,
 with 30 rows per page. Select All activities to include non-cycling history;
 individual source type/subtype choices, partial case-insensitive title search,
 From/To dates and newest/oldest/longest-duration/longest-distance sorts use GET
@@ -716,3 +716,46 @@ The task's bounded initial catch-up covered the seven known P2-05 API-only rides
 it did not fetch streams across the historical archive. Stage A independently
 compared four overlap rides with FIT first. See
 `reports/STRAVA-004/verification.md` for the evidence and limits.
+
+
+## Home dashboard and annual mileage goal (P3-01)
+
+Home at `/` summarizes cycling mileage and current Performance. Activities lives
+at `/activities`; Activity Review URLs remain `/activities/<id>`. The brand link
+opens Home. Old root browser-filter bookmarks redirect to the matching
+`/activities` query.
+
+Set, update or clear the current browser-local year's **Annual cycling mileage
+goal** in Settings. Targets are explicitly in miles, finite and positive, at
+most 100,000 mi. There is no default target and no generic goal engine. Schema 7
+adds only year, target miles and update time; previous-year targets remain
+separate. Goal changes use the existing POST/origin/action-nonce protections and
+an atomic write. A failed write preserves the prior target.
+
+Virtual Ride and outdoor Ride mileage both count. Home uses the accepted
+presentation distance: understood file/session or single-TCX-lap distance first,
+then current API summary distance. Unspecified CSV distance units are excluded;
+known zero remains zero. Missing distance/date and source contribution counts
+are inspectable in Mileage evidence & calendar boundaries.
+
+Home's `home_tz` query is set from the browser timezone before final aggregation;
+Settings uses `tz`. Neither substitutes server-local time. YTD includes January
+1 through the current instant; last seven days are the seven local calendar days
+ending today, compared with the immediately preceding seven days. Supported
+source dates with unknown timezone keep their source date. Recent weekly bars
+use Monday–Sunday buckets, with the current week ending today. Pace is the target
+multiplied by elapsed local days including today divided by the actual days in
+that year, including leap years. Percentage, remaining mileage and pace use
+unrounded totals; only display is rounded.
+
+The dashboard reuses current `virtual-power-evidence-v2` / `best-average-power-v1`
+results, current 42-day best, latest eligible ride and exact prior-six-week
+context. It recalculates cheap mileage presentation without loading raw streams
+or materializing aggregates. Pending Performance retains the existing exception
+banner and affected stale points stay suppressed. Normal sync updates Home on
+reload through the unchanged shared automatic convergence path. Insights are
+neutral calendar pace and accepted best-20 comparisons, with inspectable rules.
+
+No FTP, Fitness/Training Load, readiness, workout planning, arbitrary-duration
+power curve or AI surfaces are added. Owner approval and Analyst acceptance of
+P3-01 remain separate from passing local verification.

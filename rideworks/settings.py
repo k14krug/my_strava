@@ -6,10 +6,11 @@ import secrets
 import sqlite3
 from threading import Lock
 import time
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlencode
 
 from .config import ConfigurationError, strava_credentials
 from .errors import RideWorksError
+from .goals import annual_goal, browser_zone, query_zone, set_annual_goal
 from .performance import rebuild_performance
 from .store import Store
 from .strava import (ApiClient, ApiError, AuthenticationError, OperationBusyError, TokenFile, authorization_url,
@@ -43,6 +44,7 @@ class Settings:
         self.display = TokenFile(data_dir)
         self.display.path = self.display.root / '.strava-settings.json'
         self.notice = None
+        self.goal_notice = None
         self.port = 8765
 
     def configured(self):
@@ -78,7 +80,25 @@ class Settings:
             # Derived display state cannot undo an already committed sync/token change.
             self.notice = 'Display details could not be saved; connection and sync checkpoint remain authoritative.'
 
-    def content(self, local_time):
+    def goal_content(self, query):
+        zone = query_zone(query)
+        if zone is None:
+            return '<section class="panel annual-goal" id="annual-goal" data-calendar-timezone="tz"><h2>Annual cycling mileage goal</h2><p>Enable JavaScript to set the goal for your browser-local calendar year.</p></section>'
+        year = datetime.now(timezone.utc).astimezone(zone).year
+        with Store(self.data_dir) as store:
+            goal = annual_goal(store, year)
+        value = goal['target_miles'] if goal else ''
+        hidden = f'<input type="hidden" name="nonce" value="{self.nonce}"><input type="hidden" name="tz" value="{escape(zone.key,quote=True)}">'
+        clear = f'<form method="post" data-settings-action action="/settings/annual-goal">{hidden}<input type="hidden" name="clear" value="1"><button type="submit" class="secondary">Clear annual goal</button></form>' if goal else ''
+        notice = f'<p role="status">{escape(self.goal_notice)}</p>' if self.goal_notice else ''
+        return f'''<section class="panel annual-goal" id="annual-goal" data-calendar-timezone="tz"><h2>Annual cycling mileage goal · {year}</h2>
+<p>Virtual Ride and outdoor Ride mileage both count. Calendar year: {escape(zone.key)}.</p>
+<p id="annual-goal-state">{'Target: '+escape(value)+' mi' if goal else 'No annual target set.'}</p>{notice}
+<div class="goal-actions"><form method="post" data-settings-action action="/settings/annual-goal">{hidden}
+<label for="target-miles">Annual target (miles)</label><input id="target-miles" name="target_miles" type="number" step="any" min="0" max="100000" required value="{escape(value,quote=True)}">
+<button type="submit">Save annual goal</button></form>{clear}</div><p>Enter a positive target up to 100,000 mi. No target is assumed.</p></section>'''
+
+    def content(self, local_time, query=''):
         credentials = self.configured()
         saved = self.state()
         token_file = TokenFile(self.data_dir)
@@ -114,7 +134,7 @@ class Settings:
                 outcome += '<p id="performance-sync-outcome">Performance is current.</p>'
             elif saved.get('performance_update')=='incomplete':
                 outcome += '<p id="performance-sync-outcome">Performance update incomplete. Synchronized rides are retained; retry the Performance update.</p>'
-            outcome += '<p><a href="/?sort=newest">View Activities</a></p>'
+            outcome += '<p><a href="/activities?sort=newest">View Activities</a></p>'
         def action(name, label, secondary=False):
             button_class = ' class="secondary"' if secondary else ''
             return (f'<form method="post" data-settings-action action="/settings/strava/{name}">'
@@ -133,7 +153,7 @@ class Settings:
 <div><dt>App credentials</dt><dd id="strava-credentials">{'Configured' if credentials else 'Missing'}</dd></div>
 <div><dt>Last successful sync</dt><dd id="strava-last-sync">{last_time}</dd></div></dl>
 {setup}{notice}{outcome}<div class="strava-actions">{actions}</div>
-<p class="strava-manual-note">Sync runs only when you choose Sync now. It does not run continuously.</p></section>'''
+<p class="strava-manual-note">Sync runs only when you choose Sync now. It does not run continuously.</p></section>{self.goal_content(query)}'''
 
     @staticmethod
     def redirect(location='/settings'):
@@ -156,23 +176,39 @@ class Settings:
 
     def post(self, path, body, origin):
         origins = {f'http://127.0.0.1:{self.port}', f'http://localhost:{self.port}'}
+        goal_action = path == '/settings/annual-goal'
         try:
-            values = parse_qs(body.decode('ascii'), max_num_fields=2, strict_parsing=True)
+            values = parse_qs(body.decode('ascii'), max_num_fields=3 if goal_action else 2,
+                              strict_parsing=True, keep_blank_values=goal_action)
             supplied = values.get('nonce', [])
             valid = len(supplied) == 1 and secrets.compare_digest(supplied[0].encode(), self.nonce.encode())
         except (ValueError, UnicodeError):
             valid = False
         if origin not in origins or not valid:
             return 403, {}, b'Invalid Settings action. Reload Settings and try again.'
-        if path not in ('/settings/strava/connect', '/settings/strava/sync', '/settings/strava/disconnect', '/settings/performance/rebuild'):
+        if goal_action and (set(values) not in ({'nonce','tz','target_miles'},{'nonce','tz','clear'}) or any(len(v)!=1 for v in values.values())):
+            return 400, {}, b'Invalid annual goal form. Reload Settings and try again.'
+        if path not in ('/settings/strava/connect', '/settings/strava/sync', '/settings/strava/disconnect', '/settings/performance/rebuild', '/settings/annual-goal'):
             return 404, {}, b'Unknown Settings action.'
         if not self.operation.acquire(blocking=False):
             return 409, {}, NOTICES['busy'].encode()
         # A second queued submission cannot reuse this action nonce.
         self.nonce = secrets.token_urlsafe(32)
         self.notice = None
+        self.goal_notice = None
         try:
             with Store(self.data_dir) as store:
+                if goal_action:
+                    try:
+                        zone = browser_zone(values['tz'][0])
+                        if 'clear' in values and values['clear'][0] != '1':
+                            raise ValueError('Invalid clear action.')
+                        year = datetime.now(timezone.utc).astimezone(zone).year
+                        set_annual_goal(store, year, values.get('target_miles',[None])[0])
+                    except ValueError as error:
+                        return 400, {}, str(error).encode()
+                    self.goal_notice = 'Annual goal saved.' if 'target_miles' in values else 'Annual goal cleared.'
+                    return self.redirect('/settings?'+urlencode({'tz':zone.key})+'#annual-goal')
                 if path == '/settings/performance/rebuild':
                     with TokenFile(self.data_dir).lock():
                         result = rebuild_performance(store)
@@ -201,6 +237,8 @@ class Settings:
                                    'performance_update':result['performance_update'],
                                    **({'performance_eligible':result['performance_eligible']} if 'performance_eligible' in result else {})})
         except (RideWorksError, OSError, sqlite3.Error) as error:
+            if goal_action:
+                return 500, {}, b'Annual goal could not be saved. Your previous target is retained; reload Settings and try again.'
             if path == '/settings/performance/rebuild':
                 self.notice = 'Performance update incomplete. Existing results were retained. Check local source availability and retry the Performance update.'
             else:
