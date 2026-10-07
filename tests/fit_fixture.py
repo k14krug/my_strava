@@ -22,7 +22,7 @@ def make_fit(*, powers=(0, None, 180), heart_rates=(100, None, 110),
              file_type=4, num_sessions=1, file_ids=1,
              lap_timestamp=1100000002, lap_start_time=1100000000,
              session_timestamp=1100000002, session_start_time=1100000000,
-             event_timestamps=(1100000000, 1100000002), conflicting_unused_speed=False, distance=None):
+             event_timestamps=(1100000000, 1100000002), conflicting_unused_speed=False, distance=None, avg_power=None):
     body = bytearray()
 
     def messages(number, fields, rows):
@@ -51,6 +51,9 @@ def make_fit(*, powers=(0, None, 180), heart_rates=(100, None, 110),
     if distance is not None:
         session_fields += [(9, 'I', 0x86)]
         session_values += (round(distance * 100),)
+    if avg_power is not None:
+        session_fields += [(20, 'H', 0x84)]
+        session_values += (avg_power,)
     if conflicting_unused_speed:
         session_fields += [(14, 'H', 0x84), (124, 'I', 0x86)]
         session_values += (1000, 2000)

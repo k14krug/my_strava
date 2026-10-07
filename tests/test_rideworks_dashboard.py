@@ -1,5 +1,5 @@
 """Synthetic calendar/evidence/goal acceptance, with explicit expected values."""
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -11,7 +11,7 @@ from urllib.parse import urlencode
 
 from fit_fixture import make_fit
 from rideworks import store as store_module
-from rideworks.dashboard import dashboard, goal_progress, mileage
+from rideworks.dashboard import average_power, dashboard, goal_progress, mileage, needed_weekly, weekly_goal
 from rideworks.goals import annual_goal, browser_zone, set_annual_goal, target_miles
 from rideworks.history import presentation
 from rideworks.performance import rebuild_performance
@@ -91,6 +91,59 @@ class CalendarTests(TestCase):
             with self.assertRaises(ValueError):browser_zone(name)
         with self.assertRaises(ValueError):mileage([],'UTC',as_of=datetime(2026,1,1))
 
+    def test_current_needed_average_and_completed_week_history(self):
+        rows=[activity(str(i),stamp,100*1609.344) for i,stamp in enumerate([
+            '2026-01-01T12:00:00+00:00','2026-09-28T12:00:00+00:00','2026-10-05T12:00:00+00:00'])]
+        data=mileage(rows,'UTC',as_of=datetime(2026,10,7,18,tzinfo=timezone.utc))
+        data['target_miles']='1000'
+        chart=weekly_goal(data)
+        self.assertEqual(data['this_week']['miles'],100)
+        self.assertEqual(chart[-2]['ytd_miles'],200)
+        self.assertAlmostEqual(chart[-2]['needed_miles_per_week'],800*7/88)
+        self.assertEqual(chart[-2]['bar_miles'],100)
+        self.assertEqual(chart[-2]['bar_kind'],'actual')
+        self.assertEqual(chart[-1]['actual_miles'],100)
+        self.assertEqual(chart[-1]['as_of_day'],'2026-10-07')
+        self.assertAlmostEqual(chart[-1]['bar_miles'],700*7/85)
+        self.assertEqual(chart[-1]['bar_kind'],'needed')
+        progress=goal_progress(2026,'2026-10-07',300,'1000')
+        self.assertEqual(progress['needed_miles_per_week'],chart[-1]['needed_miles_per_week'])
+        self.assertEqual(progress['remaining_calendar_days'],85)
+        data['target_miles']='150'
+        met=weekly_goal(data)
+        self.assertEqual(met[-2]['needed_miles_per_week'],0)
+        self.assertEqual(met[-1]['bar_miles'],0)
+        self.assertEqual(met[-1]['actual_miles'],100)
+
+    def test_needed_average_met_goal_year_end_leap_and_missing(self):
+        self.assertEqual(needed_weekly(2026,date(2026,12,31),100,'100'),0)
+        self.assertEqual(needed_weekly(2026,date(2026,12,31),101,'100'),0)
+        self.assertIsNone(needed_weekly(2026,date(2026,12,31),99,'100'))
+        self.assertAlmostEqual(needed_weekly(2024,date(2024,2,29),80,'366'),286*7/306)
+        self.assertIsNone(needed_weekly(2026,date(2026,1,1),None,'100'))
+        self.assertIsNone(needed_weekly(2026,date(2026,1,1),0,None))
+        self.assertIsNone(needed_weekly(2026,date(2025,12,28),50,'100'))
+
+    def test_weekly_goal_calendar_year_and_timezone_edges(self):
+        rows=[activity('1','2026-01-01T00:30:00+00:00',1609.344),
+              activity('2','2026-01-01T12:00:00',1609.344)]
+        for zone,expected in [('America/Los_Angeles',1),('Asia/Tokyo',2)]:
+            data=mileage(rows,zone,as_of=datetime(2026,1,1,12,tzinfo=timezone.utc));data['target_miles']='366'
+            chart=weekly_goal(data)
+            self.assertEqual(chart[-1]['ytd_miles'],expected)
+            self.assertAlmostEqual(chart[-1]['needed_miles_per_week'],(366-expected)*7/364)
+            self.assertTrue(all(w['needed_miles_per_week'] is None for w in chart[:-1]))
+            self.assertEqual(data['this_week']['miles'],2)
+
+    def test_weekly_chart_preserves_unavailable_without_default_goal(self):
+        data=mileage([activity('1','2026-10-05T12:00:00+00:00',None)],'UTC',as_of=datetime(2026,10,7,tzinfo=timezone.utc))
+        data['target_miles']='1000'
+        chart=weekly_goal(data)
+        self.assertIsNone(chart[-1]['actual_miles']);self.assertIsNone(chart[-1]['bar_miles'])
+        self.assertIsNone(chart[-1]['needed_miles_per_week'])
+        data['target_miles']=None
+        self.assertTrue(all(w['needed_miles_per_week'] is None for w in weekly_goal(data)))
+
 
 class DashboardTests(TestCase):
     def setUp(self):
@@ -164,7 +217,7 @@ class DashboardTests(TestCase):
         self.assertIn('<h1>Home</h1>',self.app.get('/')[2].decode())
         self.assertIn('browser timezone',self.app.get('/?home_tz=bad')[2].decode())
         html=self.app.get('/?home_tz=UTC')[2].decode()
-        for heading in ('YTD mileage goal','Last 7 Days','Current 42-day best','Latest eligible 20-minute ride','Mileage Progress','20-minute Performance'):
+        for heading in ('This Week Miles','Last 7 Days','Current 42-day best','Latest eligible 20-minute ride','Mileage Progress','20-minute Performance'):
             self.assertIn(heading,html)
         self.assertIn('href="/activities"',html);self.assertIn('href="/" class="active"',html)
         self.assertIn('No cycling Activities yet.',html);self.assertIn('Unavailable',html)
@@ -175,7 +228,7 @@ class DashboardTests(TestCase):
 
     def test_actual_file_distance_precedence_api_fallback_and_metadata_only(self):
         raw=int(datetime(2026,1,1,tzinfo=timezone.utc).timestamp())-631065600
-        path=self.root/'synthetic.fit';path.write_bytes(make_fit(distance=1609.344,session_start_time=raw,
+        path=self.root/'synthetic.fit';path.write_bytes(make_fit(distance=1609.344,avg_power=123,session_start_time=raw,
             session_timestamp=raw+2,timestamps=(raw,raw+1,raw+2),lap_start_time=raw,lap_timestamp=raw+2,
             event_timestamps=(raw,raw+2)))
         native=self.store.import_fit(path)
@@ -189,7 +242,7 @@ class DashboardTests(TestCase):
         self.store.import_strava_export(export)
         # Explicit established API identity for a controlled overlap, not a matching heuristic.
         for identity,stamp,metres in ((1,native_start,99999),(2,'2026-01-01T00:00:00Z',3218.688)):
-            item=normalize(dict(id=identity,name='Synthetic ride',type='Ride',sport_type='VirtualRide',start_date=stamp,distance=metres,elapsed_time=2))
+            item=normalize(dict(id=identity,name='Synthetic ride',type='Ride',sport_type='VirtualRide',start_date=stamp,distance=metres,elapsed_time=2,average_watts=999))
             apply_observations(self.store,[item],42,1790000000)
         overlap=self.store.connection.execute("SELECT activity_id FROM strava_api_activities WHERE external_id='1'").fetchone()[0]
         self.assertEqual(overlap,native['activity_id'])
@@ -204,6 +257,63 @@ class DashboardTests(TestCase):
             value=dashboard(self.store,'UTC',as_of=datetime(2026,10,6,tzinfo=timezone.utc))
         self.assertFalse(any('FROM records' in s or 'evidence_json' in s for s in statements))
         self.assertEqual(value['performance']['pending'],0)
+        powers={r['activity_id']:r for r in value['recent']}
+        self.assertEqual(powers[overlap]['average_power'],123)
+        self.assertEqual(powers[overlap]['average_power_source']['context'],'FIT session')
+        self.assertEqual(next(r for r in value['recent'] if r['activity_id']!=overlap)['average_power'],999)
+
+    def test_average_power_file_tcx_api_zero_current_and_unavailable(self):
+        def source(kind,fmt,summary,**extras):
+            return dict(source=dict(kind=kind,content_format=fmt,source_id=kind+fmt,is_current=True),summary=summary,**extras)
+        csv=source('strava_export','CSV',dict(avg_power=777,average_watts=888))
+        api=source('strava_api','JSON',dict(values=dict(average_watts=999)))
+        file=source('fit','FIT',dict(avg_power=0))
+        self.assertEqual(average_power(dict(sources=[file,csv,api])),(0,dict(source_id='fitFIT',context='FIT session')))
+        tcx=source('tcx','TCX',{},xml_context=dict(lap_summaries=[dict(avg_power=250)]))
+        self.assertEqual(average_power(dict(sources=[tcx,csv,api]))[0],250)
+        self.assertEqual(average_power(dict(sources=[tcx,csv,api]))[1]['context'],'TCX single lap')
+        tcx['xml_context']['lap_summaries'].append(dict(avg_power=350))
+        self.assertEqual(average_power(dict(sources=[tcx,csv,api]))[0],999)
+        tcx['summary']['avg_power']=200
+        self.assertEqual(average_power(dict(sources=[tcx,csv,api]))[0],200)
+        file['summary']['avg_power']=None
+        self.assertEqual(average_power(dict(sources=[file,csv,api]))[0],999)
+        api['summary']['values']['average_watts']=0
+        self.assertEqual(average_power(dict(sources=[file,csv,api]))[0],0)
+        api['source']['is_current']=False
+        self.assertEqual(average_power(dict(sources=[file,csv,api])),(None,None))
+
+    def test_goal_only_in_mileage_and_no_native_mileage_tooltips(self):
+        self.post(target_miles='2200')
+        html=self.app.get('/?home_tz=America%2FLos_Angeles')[2].decode()
+        self.assertNotIn('home-ytd',html);self.assertNotIn('YTD mileage goal',html)
+        summary=html.split('home-summary">')[1].split('<div class="home-layout">')[0]
+        self.assertNotIn('2200',summary);self.assertNotIn('2,200',summary)
+        self.assertIn('Needed average:',html)
+        chart=html.split('id="home-mileage-chart"')[1].split('</svg>')[0]
+        self.assertNotIn('<title',chart)
+        self.assertEqual(chart.count('data-bar-kind="actual"'),11)
+        self.assertEqual(chart.count('data-bar-kind="needed"'),1)
+        self.assertEqual(chart.count('data-needed-week='),12)
+        self.assertIn('tabindex="0"',chart)
+        self.assertEqual(self.app.get('/static/home.js')[0],200)
+
+    def test_independent_oracle_rejects_wrong_required_point_and_api_average(self):
+        from copy import deepcopy
+        from tools.verify_rideworks_dashboard import verify
+        item=normalize(dict(id=1,name='Synthetic API ride',type='Ride',sport_type='VirtualRide',
+                            start_date='2026-10-05T12:00:00Z',distance=1609.344,elapsed_time=1200,average_watts=88.5))
+        apply_observations(self.store,[item],42,1790000000);rebuild_performance(self.store)
+        set_annual_goal(self.store,2026,'1000')
+        data=dashboard(self.store,'UTC',as_of=datetime(2026,10,7,18,tzinfo=timezone.utc))
+        result=verify(self.store,data)
+        self.assertEqual(result['weekly_required_points_verified'],12)
+        self.assertEqual(result['recent_average_power_sources_verified'],1)
+        for field in ('needed_miles_per_week','bar_miles','ytd_miles'):
+            broken=deepcopy(data);broken['weekly_goal'][-1][field]+=1
+            with self.assertRaises(AssertionError):verify(self.store,broken)
+        broken=deepcopy(data);broken['recent'][0]['average_power']=999
+        with self.assertRaises(AssertionError):verify(self.store,broken)
 
     def test_schema6_atomic_migration_preserves_all_existing_tables(self):
         old=self.root/'schema6'

@@ -740,13 +740,28 @@ are inspectable in Mileage evidence & calendar boundaries.
 
 Home's `home_tz` query is set from the browser timezone before final aggregation;
 Settings uses `tz`. Neither substitutes server-local time. YTD includes January
-1 through the current instant; last seven days are the seven local calendar days
-ending today, compared with the immediately preceding seven days. Supported
-source dates with unknown timezone keep their source date. Recent weekly bars
-use Monday–Sunday buckets, with the current week ending today. Pace is the target
-multiplied by elapsed local days including today divided by the actual days in
-that year, including leap years. Percentage, remaining mileage and pace use
-unrounded totals; only display is rounded.
+1 through the current instant; This Week Miles is actual mileage since local
+Monday, while last seven days include today and the six preceding local dates.
+Supported source dates with unknown timezone keep their source date.
+
+Annual goal information lives only in Mileage Progress. Completed Monday–Sunday
+bars show actual miles. The distinct current bar and required-pace line show
+needed average miles/week to December 31, not partial current-week actuals.
+Each completed-week point uses cumulative actual YTD mileage through Sunday;
+the current point uses YTD through today. Needed average is remaining goal miles
+multiplied by seven, divided by remaining calendar days after that day. Goal met
+means zero; no remaining time with miles remaining means Unavailable. Points
+before the current goal year are unavailable; prior-year targets are not reused.
+The actual current-week total remains in the top card and diagnostic payload.
+Bars/points show an immediate miles-only tooltip on pointer enter/move or keyboard
+focus, with immediate leave/blur dismissal and no native delayed SVG titles.
+
+Percentage, remaining miles and linear calendar pace use unrounded totals and
+the actual year length, including leap years. Needed average is arithmetic goal
+progress, not a training recommendation. Recent Activities adds Avg Pwr from
+understood file session `avg_power`, or understood single-lap TCX avg power,
+then current API summary `average_watts`. CSV watts and raw stream averages are
+not used. Selected values retain summary-source provenance in the payload.
 
 The dashboard reuses current `virtual-power-evidence-v2` / `best-average-power-v1`
 results, current 42-day best, latest eligible ride and exact prior-six-week

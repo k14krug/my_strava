@@ -36,24 +36,24 @@ def fixture(root):
         for age,power,metres in ((3,150,1609.34),(2,180,3218.68),(1,120,1609.34)):
             raw=now-age*86400-631065600
             blob=make_fit(powers=[power]*1200,heart_rates=[100]*1200,timestamps=range(raw,raw+1200),
-                session_start_time=raw,session_timestamp=raw+1200,elapsed=1200,timer=1200,distance=metres)
+                session_start_time=raw,session_timestamp=raw+1200,elapsed=1200,timer=1200,distance=metres,avg_power=power)
             source=export/'activities'/f'synthetic-{age}.fit';source.write_bytes(blob)
             current=store.import_fit(source)
         start=store.get_source(current['source_id'])['summary']['start_time']
         with (export/'activities.csv').open('w',newline='') as stream:
             writer=csv.writer(stream)
-            writer.writerow(['Activity ID','Activity Name','Activity Type','Activity Date','Filename','Distance'])
-            writer.writerow(['1','Synthetic file overlap','Virtual Ride',start,'activities/synthetic-1.fit','99999'])
-            writer.writerow(['99','Synthetic CSV-only ride','Virtual Ride',datetime.fromtimestamp(now-4*86400,timezone.utc).isoformat(),'','99999'])
+            writer.writerow(['Activity ID','Activity Name','Activity Type','Activity Date','Filename','Distance','Average Watts'])
+            writer.writerow(['1','Synthetic file overlap','Virtual Ride',start,'activities/synthetic-1.fit','99999','999'])
+            writer.writerow(['99','Synthetic CSV-only ride','Virtual Ride',datetime.fromtimestamp(now-4*86400,timezone.utc).isoformat(),'','99999','999'])
         store.import_strava_export(export);rebuild_performance(store)
         TokenFile(root).save(dict(access_token='synthetic-access',refresh_token='synthetic-refresh',
             expires_at=now+7200,athlete_id=42,scope='activity:read_all'))
     observations=[dict(id=1,name='Synthetic API overlap title',type='Ride',sport_type='VirtualRide',start_date=start,
-                    elapsed_time=1200,distance=99999,device_watts=True),
+                    elapsed_time=1200,distance=99999,device_watts=True,average_watts=999),
         dict(id=2,name='Synthetic API Virtual Ride',type='Ride',sport_type='VirtualRide',
-             start_date=datetime.fromtimestamp(now-3600,timezone.utc).isoformat(),elapsed_time=1200,distance=1609.344,device_watts=True),
+             start_date=datetime.fromtimestamp(now-3600,timezone.utc).isoformat(),elapsed_time=1200,distance=1609.344,device_watts=True,average_watts=88.5),
         dict(id=3,name='Synthetic outdoor Ride',type='Ride',sport_type='Ride',
-             start_date=datetime.fromtimestamp(now-1800,timezone.utc).isoformat(),elapsed_time=1200,distance=3218.688,device_watts=False),
+             start_date=datetime.fromtimestamp(now-1800,timezone.utc).isoformat(),elapsed_time=1200,distance=3218.688,device_watts=False,average_watts=100),
         dict(id=4,name='Synthetic Run excluded',type='Run',sport_type='Run',
              start_date=datetime.fromtimestamp(now-1200,timezone.utc).isoformat(),elapsed_time=600,distance=99999)]
     class Response(BytesIO):
@@ -140,10 +140,14 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
                 check(data.timezone===ZONE,'Browser-local aggregation');
                 const originals=GOALS;check(data.target_miles===(originals[data.year]??null),'Hidden default or replaced goal');
                 check(await local.locator('.home-recent-row').count()===Math.min(6,data.diagnostics.cycling_activities),'Recent six cycling Activities');
-                if(data.target_miles===null)check((await local.locator('#home-ytd').textContent()).includes('Set annual goal'),'No-goal path');
+                if(data.target_miles===null)check((await local.locator('.home-goal-progress').textContent()).includes('Set annual goal'),'No-goal path');
+                check(await local.locator('#home-ytd').count()===0,'Duplicate annual card');
+                check((await local.locator('#home-this-week strong').textContent())===(data.this_week.miles===null?'Unavailable':data.this_week.miles.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+' mi'),'Actual This Week Miles');
                 check(await local.locator('#home-mileage-chart [data-week]').count()===12,'Weekly buckets');
                 for(const row of data.recent){
                   check(await local.locator('.home-recent-row[data-activity-id="'+row.activity_id+'"] a').getAttribute('href')==='/activities/'+row.activity_id,'Recent review link');
+                  const expected=row.average_power===null?'Unavailable':row.average_power.toLocaleString('en-US',{maximumSignificantDigits:6})+' W';
+                  check(await local.locator('.home-recent-row[data-activity-id="'+row.activity_id+'"] .home-avg-power').textContent()===expected,'Avg Pwr table');
                 }
                 await local.getByRole('link',{name:'View all Activities',exact:true}).click();await local.waitForSelector('.history-filters');
                 check(new URL(local.url()).pathname==='/activities','Activities route');
@@ -192,17 +196,82 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
         with Store(root) as store:answers.append(independent(store,goal_data))
         from decimal import Decimal
         display_target=format(Decimal(goal_data['target_miles']),',f')
-        run("""check((await page.locator('#home-ytd').textContent()).includes(TARGET),'Goal card target');
+        run("""check((await page.locator('.home-goal-progress').textContent()).includes(TARGET),'Goal progress target');
           check(await page.locator('#annual-mileage-progress').count()===1,'Mileage progress');
           check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Desktop overflow');
           await page.screenshot({path:DESKTOP,fullPage:true});
           await page.setViewportSize({width:390,height:844});check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Phone overflow');
           await page.screenshot({path:PHONE,fullPage:true});return true;
-        """.replace('TARGET',json.dumps('Target: '+display_target+' mi')).replace('DESKTOP',json.dumps('output/playwright/p3-01-'+('synthetic' if synthetic else 'live')+'-desktop.png'))
+        """.replace('TARGET',json.dumps('Annual target: '+display_target+' mi')).replace('DESKTOP',json.dumps('output/playwright/p3-01-'+('synthetic' if synthetic else 'live')+'-desktop.png'))
            .replace('PHONE',json.dumps('output/playwright/p3-01-'+('synthetic' if synthetic else 'live')+'-phone.png')))
+        tooltip_checks=run("""const data=JSON.parse(await page.locator('#dashboard-data').textContent());
+          const chart=page.locator('#home-mileage-chart');
+          check(await chart.locator('title,[title]').count()===0,'Delayed native mileage tooltip');
+          check(await page.locator('#home-ytd').count()===0,'Duplicate annual goal card');
+          const weekly=value=>value===null?'Unavailable':value.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+' mi';
+          const expected=data.goal?.needed_miles_per_week??null;
+          const maximum=Math.max(0,...data.weekly_goal.flatMap(w=>[w.bar_miles,w.needed_miles_per_week]).filter(v=>v!==null))||1;
+          check(await page.locator('#needed-weekly').textContent()==='Needed average: '+(expected===null?'Unavailable':weekly(expected)+'/week'),'Needed weekly display');
+          const bars=chart.locator('[data-week]');check(await bars.count()===12,'Twelve chart bars');
+          for(let i=0;i<12;i++){
+            check(await bars.nth(i).getAttribute('data-bar-kind')===(i===11?'needed':'actual'),'Mixed bar semantics');
+            check(await bars.nth(i).getAttribute('data-mileage-value')===weekly(data.weekly_goal[i].bar_miles),'Bar mileage');
+            const geometry=await bars.nth(i).locator('.home-mileage-bar').evaluate(el=>({y:Number(el.getAttribute('y')),height:Number(el.getAttribute('height'))}));
+            const height=120*(data.weekly_goal[i].bar_miles??0)/maximum;
+            check(Math.abs(geometry.height-height)<0.001&&Math.abs(geometry.y-(140-height))<0.001,'Bar source geometry');
+            const required=data.weekly_goal[i].needed_miles_per_week;
+            const marker=chart.locator('[data-needed-week="'+data.weekly_goal[i].start+'"]');
+            if(required===null)check(await marker.count()===0,'Unavailable required point');
+            else {
+              check(await marker.getAttribute('data-mileage-value')===weekly(required),'Required point value');
+              const geometry=await marker.locator('.home-needed-point').evaluate(el=>({x:Number(el.getAttribute('cx')),y:Number(el.getAttribute('cy'))}));
+              check(geometry.x===58+i*45&&Math.abs(geometry.y-(140-120*required/maximum))<0.001,'Required point source geometry');
+            }
+          }
+          check(await bars.last().getAttribute('data-mileage-value')===weekly(expected),'Current bar is needed average');
+          const point=chart.locator('[data-needed-week]').last();
+          check(await point.getAttribute('data-mileage-value')===weekly(expected),'Current line endpoint');
+          const currentBar=await bars.last().locator('.home-mileage-bar').evaluate(el=>({y:Number(el.getAttribute('y')),height:Number(el.getAttribute('height'))}));
+          const currentY=await point.locator('.home-needed-point').getAttribute('cy');
+          check(Math.abs(currentBar.y-Number(currentY))<0.001,'Current bar/endpoint geometry');
+          let checks=0;
+          for(const width of [1448,390]){
+            await page.setViewportSize({width,height:1086});
+            check(await page.evaluate(()=>document.documentElement.scrollWidth===document.documentElement.clientWidth),'Responsive width');
+            const items=chart.locator('[data-mileage-value]');
+            for(let i=0;i<await items.count();i++){
+              const immediate=await items.nth(i).evaluate(el=>{
+                const tip=document.querySelector('#mileage-tooltip');
+                el.dispatchEvent(new PointerEvent('pointerenter',{clientX:100,clientY:100}));
+                const enter=!tip.hidden&&tip.textContent===el.dataset.mileageValue;
+                el.dispatchEvent(new PointerEvent('pointermove',{clientX:130,clientY:140}));
+                const move=!tip.hidden&&tip.textContent===el.dataset.mileageValue;
+                el.dispatchEvent(new PointerEvent('pointerleave'));
+                const leave=tip.hidden;
+                el.focus();const focus=!tip.hidden&&tip.textContent===el.dataset.mileageValue;
+                el.blur();return {enter,move,leave,focus,blur:tip.hidden,text:el.dataset.mileageValue};
+              });
+              check(immediate.enter&&immediate.move&&immediate.leave&&immediate.focus&&immediate.blur,'Immediate pointer/focus lifecycle');
+              check(/^([\\d,]+\\.\\d mi|Unavailable)$/.test(immediate.text),'Mileage-only tooltip');checks++;
+            }
+            await bars.last().hover();
+            check(await page.locator('#mileage-tooltip').isVisible(),'Actual pointer hover');
+            check(await page.locator('#mileage-tooltip').textContent()===weekly(expected),'Actual hover value');
+            const tip=await page.locator('#mileage-tooltip').boundingBox();
+            check(tip.x>=0&&tip.x+tip.width<=await page.evaluate(()=>document.documentElement.clientWidth),'Tooltip clipping');
+            await page.mouse.move(0,0);check(await page.locator('#mileage-tooltip').isHidden(),'Actual leave');
+            await point.hover();check(await page.locator('#mileage-tooltip').isVisible(),'Actual required point hover');
+            check(await page.locator('#mileage-tooltip').textContent()===weekly(expected),'Actual point value');
+            await page.mouse.move(0,0);check(await page.locator('#mileage-tooltip').isHidden(),'Actual point leave');
+            await bars.first().focus();await page.keyboard.press('Tab');
+            check(await page.locator('#mileage-tooltip').textContent()===await page.evaluate(()=>document.activeElement.dataset.mileageValue),'Keyboard tab value');
+            await page.keyboard.press('Escape');check(await page.locator('#mileage-tooltip').isHidden(),'Keyboard dismissal');
+          }
+          await page.setViewportSize({width:1448,height:1086});return checks;
+        """)
         stop(server,thread);server,thread=start(port)
         restarted=run("await page.reload();await page.waitForSelector('#dashboard-data',{state:'attached'});return JSON.parse(await page.locator('#dashboard-data').textContent());")
-        for name in ('ytd','last7','prior7','weeks','goal','target_miles'):assert restarted[name]==goal_data[name]
+        for name in ('ytd','last7','prior7','weeks','this_week','weekly_goal','goal','target_miles'):assert restarted[name]==goal_data[name]
         if not preserve_goal:
             run("""await page.goto(base+'/settings');await page.waitForSelector('#target-miles');
               check(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Settings phone overflow');
@@ -276,6 +345,9 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
         preexisting_goals_preserved=preserve_goal,annual_goal_review_targets=initial_targets,
         desktop_phone_no_overflow=True,los_angeles_tokyo=True,recent_links_match_browser=True,
         performance_cards_match_page=True,normal_sync_reflected_on_home=not skip_sync,
+        immediate_miles_only_tooltip_checks=tooltip_checks,tooltip_pointer_keyboard_desktop_phone=True,
+        this_week_actual_and_current_needed_bar=True,required_line_current_endpoint_geometry=True,
+        average_power_table_matches_source_payload=True,
         read_only_live_rerun=skip_sync,activities_title_sort_pagination_verified=True,
         exception_failure_restart_later_sync_verified=failure_verified,
         sync_results=safe_sync,integrity=True,foreign_keys=True,phase_4_5_6_implemented=False)

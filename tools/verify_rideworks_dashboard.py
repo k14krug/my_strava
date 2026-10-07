@@ -22,7 +22,7 @@ def source_rows(db):
             x.context_json FROM sources f JOIN extractions e ON e.source_id=f.source_id
             JOIN sessions s ON s.extraction_id=e.extraction_id LEFT JOIN xml_context x ON x.extraction_id=e.extraction_id
             WHERE f.activity_id=? ORDER BY f.imported_at,f.source_id''',(identity,))]
-        apis=[json.loads(r[0]) for r in db.execute('''SELECT s.evidence_json FROM strava_api_sources s
+        apis=[dict(json.loads(r[1]),_source_id=r[0]) for r in db.execute('''SELECT s.source_id,s.evidence_json FROM strava_api_sources s
             JOIN strava_api_activities a ON a.current_source_id=s.source_id WHERE s.activity_id=?
             ORDER BY s.imported_at DESC,s.source_id DESC''',(identity,))]
         csvs=[dict(r) for r in db.execute('SELECT * FROM strava_export_sources WHERE activity_id=? ORDER BY imported_at DESC,source_id DESC',(identity,))]
@@ -55,7 +55,19 @@ def source_rows(db):
         if distance is None:
             for a in apis:
                 if a.get('distance') is not None:distance=Decimal(str(a['distance']));origin='api';break
+        watts=None;power_source=None
+        for f in files:
+            value=f['avg_power'];context=f['content_format']+' session'
+            if value is None and f['content_format']=='TCX' and f['context_json']:
+                laps=json.loads(f['context_json']).get('lap_summaries',[])
+                if len(laps)==1:value=laps[0].get('avg_power');context='TCX single lap'
+            if value is not None:watts=value;power_source=dict(source_id=f['source_id'],context=context);break
+        if watts is None:
+            for a in apis:
+                if a.get('average_watts') is not None:
+                    watts=a['average_watts'];power_source=dict(source_id=a['_source_id'],context='Strava API summary');break
         result.append(dict(activity_id=identity,kind=kind,stamp=stamp,metres=distance,origin=origin,
+            average_power=watts,average_power_source=power_source,
             file_api_conflict=bool(origin=='file' and any(a.get('distance') is not None and Decimal(str(a['distance']))!=distance for a in apis))))
     return result
 
@@ -94,6 +106,14 @@ def verify(store,data):
     assert data['year']==today.year and data['today']==today.isoformat()
     goal=store.connection.execute('SELECT target_miles FROM annual_mileage_goals WHERE year=?',(today.year,)).fetchone()
     assert data['target_miles']==(goal[0] if goal else None)
+    def same(actual,expected):
+        if expected is None:assert actual is None
+        else:assert actual is not None and abs(Decimal(str(actual))-expected)<Decimal('0.000000001')
+    def required(actual,day):
+        if goal is None or actual is None or day.year!=today.year:return None
+        remaining=max(Decimal(0),Decimal(goal[0])-actual)
+        days=max(0,(date(today.year+1,1,1)-day).days-1)
+        return Decimal(0) if remaining==0 else remaining*7/days if days else None
     if goal and data['goal']:
         target=Decimal(goal[0]);actual=Decimal(str(data['ytd']['miles']))
         days=(date(today.year+1,1,1)-date(today.year,1,1)).days
@@ -103,6 +123,33 @@ def verify(store,data):
             assert abs(Decimal(str(data['goal'][field]))-expected)<Decimal('0.000000001')
         assert data['goal']['calendar_days_in_year']==days
         assert data['goal']['calendar_days_elapsed']==elapsed
+        same(data['goal']['needed_miles_per_week'],required(actual,today))
+        assert data['goal']['remaining_calendar_days']==days-elapsed
+    assert data['this_week']==data['weeks'][-1]
+    assert len(data['weekly_goal'])==len(data['weeks'])==12
+    for i,(week,point) in enumerate(zip(data['weeks'],data['weekly_goal'])):
+        cutoff=date.fromisoformat(week['end_exclusive']);day=cutoff-timedelta(days=1)
+        values=[];unknown=0
+        for row in cycling:
+            stamp=row['stamp']
+            if stamp is None or (stamp.tzinfo and stamp>now):continue
+            local=stamp.astimezone(zone).date() if stamp.tzinfo else stamp.date()
+            if date(today.year,1,1)<=local<cutoff:
+                if row['metres'] is None:unknown+=1
+                else:values.append(row['metres'])
+        cumulative=(sum(values,Decimal(0))/Decimal('1609.344') if values or not unknown else None) if cutoff>date(today.year,1,1) else None
+        same(week['ytd_miles'],cumulative);same(point['ytd_miles'],cumulative)
+        needed=required(cumulative,day)
+        same(point['needed_miles_per_week'],needed)
+        current=i==11
+        assert point['current']==current and point['start']==week['start'] and point['as_of_day']==day.isoformat()
+        assert point['bar_kind']==('needed' if current else 'actual')
+        same(point['actual_miles'],Decimal(str(week['miles'])) if week['miles'] is not None else None)
+        same(point['bar_miles'],needed if current else Decimal(str(week['miles'])) if week['miles'] is not None else None)
+    for recent in data['recent']:
+        row=next(r for r in rows if r['activity_id']==recent['activity_id'])
+        assert recent['average_power']==row['average_power']
+        assert recent['average_power_source']==row['average_power_source']
     # Independent result selection; cached best-20 calculations are already accepted.
     by_id={r['activity_id']:r for r in rows}
     eligible=[]
@@ -136,6 +183,10 @@ def verify(store,data):
     return dict(status='passed',timezone=zone.key,year=today.year,periods_independently_verified=len(periods),
         ytd={k:v for k,v in data['ytd'].items()},last7_miles=data['last7']['miles'],prior7_miles=data['prior7']['miles'],
         diagnostics=data['diagnostics'],goal_math_verified=bool(data['goal']),no_default_goal=data['target_miles'] is None,
+        this_week_actual_miles=data['this_week']['miles'],weekly_required_points_verified=len(data['weekly_goal']),
+        needed_miles_per_week=data['goal']['needed_miles_per_week'] if data['goal'] else None,
+        current_bar_is_needed_average=True,current_actual_preserved=True,
+        recent_average_power_sources_verified=len(data['recent']),
         performance_summary_references_verified=True,performance_event_times_verified=len(events),
         deterministic_latest_context_verified=True,file_api_distance_conflicts=sum(r['file_api_conflict'] for r in cycling))
 

@@ -63,16 +63,62 @@ def mileage(rows, zone_name, *, as_of=None):
     monday = today - timedelta(days=today.weekday())
     weeks = [period(monday-timedelta(weeks=i), min(monday-timedelta(weeks=i-1), end))
              for i in range(11, -1, -1)]
+    for week in weeks:
+        cutoff = date.fromisoformat(week['end_exclusive'])
+        week['ytd_miles'] = (period(date(today.year,1,1), cutoff)['miles']
+                             if cutoff > date(today.year,1,1) else None)
     recent = sorted(cycling, key=lambda r:r['activity_id'])
     recent.sort(key=lambda r:(r['date_key'] is not None, r['date_key'] or ''), reverse=True)
     return dict(timezone=zone_name, as_of=as_of.isoformat(), today=today.isoformat(), year=today.year,
                 ytd=period(date(today.year,1,1), end), last7=period(today-timedelta(days=6), end),
                 prior7=period(today-timedelta(days=13), today-timedelta(days=6)), weeks=weeks,
+                this_week=dict(weeks[-1]),
                 recent=recent[:6], diagnostics=dict(cycling_activities=len(cycling),
                     excluded_noncycling=len(rows)-len(cycling), date_unavailable=missing,
                     timezone_unknown=unknown, future_excluded=future,
                     included_classifications=dict(Counter(r['activity_type'] for r in cycling)),
                     excluded_classifications=dict(Counter(r['activity_type'] for r in rows if r['activity_type'].casefold() not in CYCLING))))
+
+
+def needed_weekly(year, day, actual, target):
+    """Remaining goal over calendar time after the supplied day; no advice."""
+    if target is None or actual is None or day.year != year:
+        return None
+    remaining = max(0, float(target)-actual)
+    days = max(0, (date(year+1,1,1)-(day+timedelta(days=1))).days)
+    return 0 if remaining == 0 else remaining*7/days if days else None
+
+
+def weekly_goal(data):
+    result = []
+    for i, week in enumerate(data['weeks']):
+        current = i == len(data['weeks'])-1
+        day = date.fromisoformat(week['end_exclusive'])-timedelta(days=1)
+        needed = needed_weekly(data['year'], day, week['ytd_miles'], data['target_miles'])
+        result.append(dict(start=week['start'], as_of_day=day.isoformat(), current=current,
+                           actual_miles=week['miles'], ytd_miles=week['ytd_miles'],
+                           needed_miles_per_week=needed,
+                           bar_miles=needed if current else week['miles'],
+                           bar_kind='needed' if current else 'actual'))
+    return result
+
+
+def average_power(row):
+    """Narrow Home summary evidence, independent of Performance inputs."""
+    sources = row['sources']  # Already in accepted imported-at/Source-ID order.
+    files = [s for s in sources if s['source']['kind'] not in ('strava_api','strava_export')]
+    apis = [s for s in reversed(sources) if s['source']['kind']=='strava_api' and s['source']['is_current']]
+    for source in files+apis:
+        api = source['source']['kind']=='strava_api'
+        value = source['summary'].get('values',{}).get('average_watts') if api else source['summary'].get('avg_power')
+        context = 'Strava API summary' if api else f"{source['source']['content_format']} session"
+        if value is None and source['source']['content_format']=='TCX':
+            laps = source.get('xml_context',{}).get('lap_summaries',[])
+            if len(laps)==1:
+                value = laps[0].get('avg_power'); context = 'TCX single lap'
+        if value is not None:
+            return value,dict(source_id=source['source']['source_id'],context=context)
+    return None,None
 
 
 def goal_progress(year, today, actual, target):
@@ -85,7 +131,9 @@ def goal_progress(year, today, actual, target):
     expected = target * elapsed / days
     return dict(target_miles=target, actual_miles=actual, percent=100*actual/target,
                 remaining_miles=max(0,target-actual), calendar_days_elapsed=elapsed,
-                calendar_days_in_year=days, target_to_date=expected, pace_difference=actual-expected)
+                calendar_days_in_year=days, target_to_date=expected, pace_difference=actual-expected,
+                remaining_calendar_days=max(0,days-elapsed),
+                needed_miles_per_week=needed_weekly(year,day,actual,target))
 
 
 def dashboard(store, zone_name, *, as_of=None):
@@ -94,6 +142,9 @@ def dashboard(store, zone_name, *, as_of=None):
     goal = annual_goal(store, data['year'])
     data['target_miles'] = goal['target_miles'] if goal else None
     data['goal'] = goal_progress(data['year'], data['today'], data['ytd']['miles'], data['target_miles'])
+    data['weekly_goal'] = weekly_goal(data)
+    for row in data['recent']:
+        row['average_power'],row['average_power_source'] = average_power(row)
     history = performance_history(store)
     view = performance_view(history['points'], as_of=as_of)
     selected = {name:history['points'][index] if index is not None else None
