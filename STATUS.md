@@ -32,3 +32,6 @@
 
 
 **Owner correction — 2026-10-07:** PR #19 remains at HARD — Owner. Remove duplicate YTD goal top card and replace it with This Week Miles. Keep annual goal information only under Mileage Progress; add miles remaining + needed average mi/week. Weekly chart: completed bars = actual, current bar = needed weekly average going forward, overlay historical/current needed-mi/week line. Replace delayed native SVG hover with immediate miles-only tooltip. Add Avg Pwr to Recent Activities using file summary first, then current API summary fallback. Re-present HARD — Owner after correction.
+
+
+**Owner correction — current-week bar (2026-10-07):** Latest Owner decision supersedes the prior mixed-bar rule. All mileage bars represent actual cycling miles. Historical bars are completed-week actuals; the current bar is actual Monday-through-today mileage and must match This Week Miles. The green line alone represents needed average miles/week going forward. Re-present HARD — Owner after this minor correction.
