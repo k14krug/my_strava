@@ -343,7 +343,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is accepted and complete. Phase 3 is now the active planning/implementation boundary; P3-01 is ready.
+Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is accepted and complete. Phase 3 is the active boundary; P3-01 implementation/verification is ready for Owner review in PR #19.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
@@ -356,13 +356,13 @@ Phase 3 must not begin automatically after Phase 2.
 
 ## Phase 3 — Useful dashboard
 
-**Status:** in_progress — Phase 3 acceptance contract approved; P3-01 JIT ready.
+**Status:** in_progress — P3-01 implementation/verification ready; HARD — Owner review outstanding in PR #19.
 
 **Acceptance contract:** `docs/PHASE_3_ACCEPTANCE.md`
 
 ### P3-01 — Useful dashboard and annual mileage goal
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Make RideWorks useful before opening an individual Activity, centered on annual cycling mileage progress, recent rides and already-accepted Performance-v2 evidence.
 
@@ -390,6 +390,8 @@ Phase 3 must not begin automatically after Phase 2.
 **Acceptance:** `docs/PHASE_3_ACCEPTANCE.md` and `docs/tasks/P3-01.md`.
 
 **Allowed invocation:** `/TASK P3-01` or `/AUTOTASK P3-01`.
+
+**Current result:** Home/Activities routes, browser-local mileage/provenance, year-specific goal Settings and accepted Performance-v2 summaries implemented in [draft PR #19](https://github.com/k14krug/my_strava/pull/19). Owner confirmed **2,200 mi** for 2026; live record preserved. 269 full / 16 focused tests, independent 15-period/Performance checks, live/synthetic Chromium, Settings/OAuth, seven live Activity Reviews, restart and integrity passed. Evidence: `reports/P3-01/verification.md` / `acceptance.json`. Stopped at **HARD — Owner**; Analyst acceptance follows explicit Owner approval. Phase 4/5/6 not started. Current invocation used `/TASK` under the JIT's missing-declaration fallback.
 
 **Dependency:** Phase 2 and STRAVA-004 accepted / complete.
 

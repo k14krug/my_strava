@@ -1,31 +1,15 @@
 # STATUS.md
 
-**Product:** RideWorks.
+**Product:** RideWorks. Phase 1, Phase 2 and STRAVA-004 accepted / complete. Phase 3 awaits Owner review; Phase 4/5/6 not started.
 
-**Phase 1:** accepted / complete.
+**Current task:** P3-01 — Useful dashboard and annual mileage goal, `ready_for_review` after `/TASK P3-01`. `TASKS.md` remains `in_progress`; task/Phase 3 acceptance is outstanding.
 
-**Phase 2 — Historical context and performance history:** accepted / complete.
+**Branch / PR:** `task/p3-01-dashboard` / [draft PR #19](https://github.com/k14krug/my_strava/pull/19). Base `b56ff3b`; implementation head `d975a70`. Analyst JIT `docs/tasks/P3-01.md`; controlling contract `docs/PHASE_3_ACCEPTANCE.md`.
 
-**STRAVA-004 — Strava activity-stream enrichment and FIT comparison:** accepted / complete.
+**Delivered:** Home `/`, Activities `/activities`, narrow year-specific annual target in Settings, browser-local YTD/weekly mileage and pace, six recent cycling Activities, accepted Performance-v2 snapshots and neutral context. File distance precedes API; CSV units are never guessed. Owner confirmed **Keep 2,200 mi** for 2026; live goal record preserved exactly. No deferred Fitness/Training/Planning features.
 
-**Current Performance policy:** `virtual-power-evidence-v2` / `best-average-power-v1` / 1,200 s.
+**Verification:** 269 full / 16 focused tests passed. Live + synthetic Chromium desktop/phone, LA/Tokyo/calendar edges, independent SQL/Decimal checks for 15 periods and Performance references/252 event times, restart/goal preservation, search/sort/pagination, Settings/OAuth/sync/retry and seven live API Activity Review regressions passed. Schema-6 replay preserves 19 existing tables; live schema 7 retains 1,422 artifact hashes and 1,441 v1 rows. Performance 1,027 eligible / zero pending. One real bounded metadata sync used zero stream GETs; read-only rerun used zero external calls. See `reports/P3-01/verification.md` and `acceptance.json`.
 
-**Phase 3 — Useful dashboard:** active implementation boundary.
+**Owner review:** [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal). Private desktop/phone screenshots remain local; committed screenshots are synthetic.
 
-**Acceptance contract:** `docs/PHASE_3_ACCEPTANCE.md`.
-
-**Current task:** P3-01 — Useful dashboard and annual mileage goal.
-
-**JIT:** `docs/tasks/P3-01.md`.
-
-**Owner decisions:** Virtual Ride and outdoor Ride mileage both count toward the annual cycling mileage goal. Dashboard mileage uses the accepted purpose-specific distance evidence order: understood file-backed distance first, then current Strava API summary distance; unspecified CSV units are never guessed. Annual mileage is the first narrow goal; no generic goal engine.
-
-**Planned Phase 3 subset:** Home dashboard at `/`, Activities at `/activities`, annual mileage goal setting, YTD goal/pace, last-7-day mileage, recent cycling Activities, current 42-day best/latest eligible 20-minute result, compact mileage/Performance views and deterministic explainable insights.
-
-**Deferred:** Current FTP history, Fitness Score/Trend, Training Load, Next Workout/Plan, training-state recommendations, adaptive planning, full arbitrary-duration power curve, AI surfaces.
-
-**Current implementation task:** P3-01 is ready for invocation.
-
-**Allowed invocation:** `/TASK P3-01` or `/AUTOTASK P3-01`.
-
-**Phase 4:** not started.
+**Next action:** **HARD — Owner**, per JIT §15: review Home usefulness, mileage prominence/pace wording, recent rides/Performance and desktop/phone usability. After explicit Owner approval, stop at Gate 2 — HARD — Analyst for acceptance. Do not begin Phase 4 or another task. No implementation blocker remains.

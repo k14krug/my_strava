@@ -1,0 +1,441 @@
+{
+  "task": "P3-01",
+  "invocation": "/TASK",
+  "implementation_commit": "d975a70b92a2d6272011f697785d77755fad415b",
+  "base_main": "b56ff3baa065f71b8426c40a189b4f8ee3f98ae8",
+  "state": "ready_for_review",
+  "gate": "HARD \u2014 Owner",
+  "owner_acceptance": false,
+  "analyst_acceptance": false,
+  "annual_goal": {
+    "year": 2026,
+    "target_miles": "2200",
+    "owner_instruction": "Keep 2,200 mi",
+    "preexisting_record_preserved": true,
+    "seeded_default": false,
+    "synthetic_temporary_targets": [
+      "1234.50",
+      "5678.25"
+    ],
+    "synthetic_targets_cleared": true
+  },
+  "tests": {
+    "full": 269,
+    "focused_dashboard": 16,
+    "result": "passed"
+  },
+  "acceptance_checks": [
+    {
+      "number": 1,
+      "check": "Home and Activities routes",
+      "result": "passed",
+      "evidence": "live/synthetic Chromium; route unit test"
+    },
+    {
+      "number": 2,
+      "check": "Goal set/update/clear",
+      "result": "passed",
+      "evidence": "synthetic Settings Chromium; storage/settings unit tests"
+    },
+    {
+      "number": 3,
+      "check": "No default goal",
+      "result": "passed",
+      "evidence": "fresh synthetic store; unset/historical-year unit tests"
+    },
+    {
+      "number": 4,
+      "check": "Virtual and outdoor distance",
+      "result": "passed",
+      "evidence": "live independent classification scan; controlled synthetic fixture"
+    },
+    {
+      "number": 5,
+      "check": "File distance precedes conflicting API",
+      "result": "passed",
+      "evidence": "synthetic overlap; unit test; three live conflicts"
+    },
+    {
+      "number": 6,
+      "check": "API-only distance",
+      "result": "passed",
+      "evidence": "live seven YTD API contributors; synthetic API-only rides"
+    },
+    {
+      "number": 7,
+      "check": "Unspecified CSV distance excluded",
+      "result": "passed",
+      "evidence": "controlled synthetic CSV-only ride; unit test"
+    },
+    {
+      "number": 8,
+      "check": "YTD/last7/prior7 independently reproduce",
+      "result": "passed",
+      "evidence": "SQL/Decimal oracle, all 15 periods"
+    },
+    {
+      "number": 9,
+      "check": "Los Angeles/Tokyo calendar edges",
+      "result": "passed",
+      "evidence": "both browser contexts; six controlled year/leap boundary checks"
+    },
+    {
+      "number": 10,
+      "check": "Leap-year pace",
+      "result": "passed",
+      "evidence": "unit test, 366-day denominator"
+    },
+    {
+      "number": 11,
+      "check": "Goal percentage/remaining/calendar pace",
+      "result": "passed",
+      "evidence": "independent Decimal goal calculation; live Owner target"
+    },
+    {
+      "number": 12,
+      "check": "Recent links/evidence match Activities",
+      "result": "passed",
+      "evidence": "both live/synthetic browser contexts"
+    },
+    {
+      "number": 13,
+      "check": "Current/latest cards match Performance",
+      "result": "passed",
+      "evidence": "live browser and independent cached-result scan"
+    },
+    {
+      "number": 14,
+      "check": "Compact Performance source points",
+      "result": "passed",
+      "evidence": "independent arrival/expiry scan, 252 live event times"
+    },
+    {
+      "number": 15,
+      "check": "Deterministic insights",
+      "result": "passed",
+      "evidence": "independent pace and previous six-week best reproduction"
+    },
+    {
+      "number": 16,
+      "check": "Sync updates Home without second rebuild",
+      "result": "passed",
+      "evidence": "one real bounded sync; synthetic new/enriched sync"
+    },
+    {
+      "number": 17,
+      "check": "Failure visible on Home",
+      "result": "passed",
+      "evidence": "synthetic injected failure, restart and later-sync recovery"
+    },
+    {
+      "number": 18,
+      "check": "Restart preserves goal/dashboard",
+      "result": "passed",
+      "evidence": "live exact target tuple and aggregate comparison; synthetic restart"
+    },
+    {
+      "number": 19,
+      "check": "Desktop/phone usable",
+      "result": "passed",
+      "evidence": "actual Chromium Home/Settings/Activity Review no-overflow checks"
+    },
+    {
+      "number": 20,
+      "check": "Full regression suite",
+      "result": "passed",
+      "evidence": "269 tests passed; 16 focused tests; Settings and seven live reviews"
+    },
+    {
+      "number": 21,
+      "check": "Phase 4/5/6 unimplemented",
+      "result": "passed",
+      "evidence": "scope/diff inspection; deferred-metric unit test"
+    }
+  ],
+  "live": {
+    "independent_checks": [
+      {
+        "status": "passed",
+        "timezone": "America/Los_Angeles",
+        "year": 2026,
+        "periods_independently_verified": 15,
+        "ytd": {
+          "start": "2026-01-01",
+          "end_exclusive": "2026-10-08",
+          "miles": 1504.7640094349003,
+          "contributing_activities": 111,
+          "dated_cycling_activities": 119,
+          "file_count": 104,
+          "file_miles": 1415.6373217907421,
+          "api_count": 7,
+          "api_miles": 89.12668764415811,
+          "distance_unavailable": 8,
+          "date_unavailable_excluded": 0
+        },
+        "last7_miles": 74.04992344706912,
+        "prior7_miles": 101.35464512248468,
+        "diagnostics": {
+          "cycling_activities": 1417,
+          "excluded_noncycling": 24,
+          "date_unavailable": 0,
+          "timezone_unknown": 101,
+          "future_excluded": 0,
+          "included_classifications": {
+            "Virtual Ride": 1269,
+            "Ride": 148
+          },
+          "excluded_classifications": {
+            "Run": 22,
+            "Walk": 1,
+            "Rowing": 1
+          }
+        },
+        "goal_math_verified": true,
+        "no_default_goal": false,
+        "performance_summary_references_verified": true,
+        "performance_event_times_verified": 252,
+        "deterministic_latest_context_verified": true,
+        "file_api_distance_conflicts": 3
+      },
+      {
+        "status": "passed",
+        "timezone": "Asia/Tokyo",
+        "year": 2026,
+        "periods_independently_verified": 15,
+        "ytd": {
+          "start": "2026-01-01",
+          "end_exclusive": "2026-10-09",
+          "miles": 1509.865286725523,
+          "contributing_activities": 112,
+          "dated_cycling_activities": 120,
+          "file_count": 105,
+          "file_miles": 1420.7385990813648,
+          "api_count": 7,
+          "api_miles": 89.12668764415811,
+          "distance_unavailable": 8,
+          "date_unavailable_excluded": 0
+        },
+        "last7_miles": 74.04992344706912,
+        "prior7_miles": 101.35464512248468,
+        "diagnostics": {
+          "cycling_activities": 1417,
+          "excluded_noncycling": 24,
+          "date_unavailable": 0,
+          "timezone_unknown": 101,
+          "future_excluded": 0,
+          "included_classifications": {
+            "Virtual Ride": 1269,
+            "Ride": 148
+          },
+          "excluded_classifications": {
+            "Run": 22,
+            "Walk": 1,
+            "Rowing": 1
+          }
+        },
+        "goal_math_verified": true,
+        "no_default_goal": false,
+        "performance_summary_references_verified": true,
+        "performance_event_times_verified": 252,
+        "deterministic_latest_context_verified": true,
+        "file_api_distance_conflicts": 3
+      }
+    ],
+    "calendar_boundary_checks": [
+      {
+        "timezone": "America/Los_Angeles",
+        "year": 2025,
+        "periods_verified": 15,
+        "performance_event_times_verified": 260
+      },
+      {
+        "timezone": "Asia/Tokyo",
+        "year": 2026,
+        "periods_verified": 15,
+        "performance_event_times_verified": 260
+      },
+      {
+        "timezone": "America/Los_Angeles",
+        "year": 2026,
+        "periods_verified": 15,
+        "performance_event_times_verified": 260
+      },
+      {
+        "timezone": "Asia/Tokyo",
+        "year": 2026,
+        "periods_verified": 15,
+        "performance_event_times_verified": 260
+      },
+      {
+        "timezone": "America/Los_Angeles",
+        "year": 2024,
+        "periods_verified": 15,
+        "performance_event_times_verified": 206
+      },
+      {
+        "timezone": "Asia/Tokyo",
+        "year": 2024,
+        "periods_verified": 15,
+        "performance_event_times_verified": 206
+      }
+    ],
+    "sync_results": [
+      {
+        "status": "completed",
+        "scope": "activity:read_all",
+        "window_basis": "last_successful_sync_minus_3_days",
+        "overlap_days": 3,
+        "pages_requested": 1,
+        "api_activities_observed": 3,
+        "rate_limits": {
+          "X-RateLimit-Limit": [
+            200,
+            2000
+          ],
+          "X-RateLimit-Usage": [
+            1,
+            1
+          ],
+          "X-ReadRateLimit-Limit": [
+            100,
+            1000
+          ],
+          "X-ReadRateLimit-Usage": [
+            1,
+            1
+          ]
+        },
+        "new_activities": 0,
+        "existing_activities_enriched": 0,
+        "unchanged_observations": 3,
+        "changed_observations": 0,
+        "new_observations": 0,
+        "ambiguous_new_associations": 0,
+        "strong_local_matches": 0,
+        "performance_rebuild_recommended": 0,
+        "stream_candidates": 3,
+        "stream_fetches": 0,
+        "stream_enriched": 0,
+        "stream_reused": 3,
+        "stream_unavailable": 0,
+        "stream_failed": 0,
+        "stream_deferred": 0,
+        "stream_authorization_attention": false,
+        "stream_rate_limited": false,
+        "performance_update": "current",
+        "performance_pending": 0,
+        "performance_eligible": 1027
+      }
+    ],
+    "schema_version": 7,
+    "migration_evidence": "disposable_schema6_replay",
+    "accepted_preverification_schema": 7,
+    "schema6_existing_tables_replayed": 19,
+    "original_artifact_hashes_verified": 1422,
+    "v1_rows_unchanged": 1441,
+    "performance_eligible": 1027,
+    "performance_pending": 0,
+    "native_export_tables_unchanged": true,
+    "source_observations_retained": true,
+    "integrity": true,
+    "foreign_keys": true,
+    "goal_restart_and_same_dashboard": true
+  },
+  "read_only_rerun": {
+    "result": "passed",
+    "external_api_calls": 0,
+    "activities_title_sort_pagination_verified": true,
+    "preexisting_goals_preserved": true,
+    "goal_restart_and_same_dashboard": true,
+    "integrity": true,
+    "foreign_keys": true
+  },
+  "synthetic": {
+    "result": "passed",
+    "goal_set_updated_cleared": true,
+    "no_default_goal": true,
+    "no_goal_at_handoff": true,
+    "file_api_overlap_conflicts": 1,
+    "exception_failure_restart_later_sync_verified": true,
+    "desktop_phone_no_overflow": true,
+    "original_artifact_hashes_verified": 4,
+    "external_api_calls": 0
+  },
+  "settings_oauth_regression": {
+    "status": "passed",
+    "mode": "synthetic_fake_http_actual_chromium",
+    "settings_navigation": true,
+    "missing_configured_connected_attention": true,
+    "oauth_decline_reconnect_clean_url": true,
+    "same_running_server_callback": true,
+    "buttons_disabled_during_sync": true,
+    "compact_outcome_and_local_time": true,
+    "activities_update_without_restart": true,
+    "no_browser_secrets": true,
+    "desktop_phone_no_overflow": true,
+    "server_restart_connected_and_outcome_persist": true,
+    "near_expiry_refresh": true,
+    "rerun_new_activities": 0,
+    "rerun_new_observations": 0,
+    "rerun_unchanged": 2,
+    "disconnect_retains_history": true,
+    "native_evidence_unchanged": true,
+    "automatic_performance_convergence": true,
+    "exception_persists_after_restart": true,
+    "failed_sync_rebuild_preserves_history_and_sources": true,
+    "later_unchanged_sync_retries": true,
+    "manual_retry_action": true,
+    "new_api_first_in_newest": true,
+    "los_angeles_tokyo_api_date_and_newest_oldest": true,
+    "exception_only_banner": true,
+    "activity_review_regression": {
+      "status": "passed",
+      "mode": "isolated_synthetic",
+      "api_only_thin": true,
+      "enriched_fit_rich": true,
+      "native_chart_best20_unchanged": true,
+      "old_export_and_new_api_titles_inspectable": true,
+      "browser_local_api_date": true,
+      "performance_current_after_sync": true,
+      "api_summary_watts_excluded": true,
+      "activities_search_sort_type": true,
+      "desktop_phone_no_overflow": true
+    }
+  },
+  "activity_review_performance_regression": {
+    "status": "passed",
+    "mode": "live",
+    "api_only_charts": 7,
+    "complete_browser_payloads_verified": 7,
+    "source_labels_metadata": true,
+    "returned_offsets_and_samples_retained": true,
+    "power_hr_points_retained": true,
+    "inspection_keyboard": true,
+    "no_native_or_absolute_trust_claim": true,
+    "fit_precedence_and_best20_unchanged": true,
+    "normal_api_review_hierarchy": true,
+    "current_summary_cards_and_ride_summary": true,
+    "local_best20_independently_verified": true,
+    "qualifying_local_best20": 5,
+    "unavailable_local_best20": 2,
+    "performance_eligible_api_reviews": 5,
+    "api_six_week_context_verified": true,
+    "exception_only_banner": true,
+    "performance_api_provenance_and_views_verified": true,
+    "restart_stream_requests": 0,
+    "restart_reused": 7,
+    "all_persisted_tables_unchanged": true,
+    "originals_unchanged": true,
+    "integrity": true,
+    "foreign_keys": true,
+    "overlap_streams_inspectable": true,
+    "los_angeles_tokyo_dates": true,
+    "desktop_phone_no_overflow": true,
+    "restart_retains_graphs_and_connection": true,
+    "performance_unchanged_by_review": true,
+    "performance_eligible": 1027,
+    "performance_pending": 0
+  },
+  "phase_4_5_6_implemented": false,
+  "pr": "https://github.com/k14krug/my_strava/pull/19"
+}
