@@ -104,15 +104,16 @@ class CalendarTests(TestCase):
         self.assertEqual(chart[-2]['bar_kind'],'actual')
         self.assertEqual(chart[-1]['actual_miles'],100)
         self.assertEqual(chart[-1]['as_of_day'],'2026-10-07')
-        self.assertAlmostEqual(chart[-1]['bar_miles'],700*7/85)
-        self.assertEqual(chart[-1]['bar_kind'],'needed')
+        self.assertEqual(chart[-1]['bar_miles'],data['this_week']['miles'])
+        self.assertAlmostEqual(chart[-1]['needed_miles_per_week'],700*7/85)
+        self.assertEqual(chart[-1]['bar_kind'],'actual')
         progress=goal_progress(2026,'2026-10-07',300,'1000')
         self.assertEqual(progress['needed_miles_per_week'],chart[-1]['needed_miles_per_week'])
         self.assertEqual(progress['remaining_calendar_days'],85)
         data['target_miles']='150'
         met=weekly_goal(data)
         self.assertEqual(met[-2]['needed_miles_per_week'],0)
-        self.assertEqual(met[-1]['bar_miles'],0)
+        self.assertEqual(met[-1]['bar_miles'],100)
         self.assertEqual(met[-1]['actual_miles'],100)
 
     def test_needed_average_met_goal_year_end_leap_and_missing(self):
@@ -143,6 +144,10 @@ class CalendarTests(TestCase):
         self.assertIsNone(chart[-1]['needed_miles_per_week'])
         data['target_miles']=None
         self.assertTrue(all(w['needed_miles_per_week'] is None for w in weekly_goal(data)))
+        known=mileage([activity('1','2026-10-05T12:00:00+00:00',1609.344)],'UTC',as_of=datetime(2026,10,7,tzinfo=timezone.utc))
+        known['target_miles']=None
+        self.assertEqual(weekly_goal(known)[-1]['bar_miles'],1)
+        self.assertEqual(weekly_goal(known)[-1]['bar_kind'],'actual')
 
 
 class DashboardTests(TestCase):
@@ -292,8 +297,9 @@ class DashboardTests(TestCase):
         self.assertIn('Needed average:',html)
         chart=html.split('id="home-mileage-chart"')[1].split('</svg>')[0]
         self.assertNotIn('<title',chart)
-        self.assertEqual(chart.count('data-bar-kind="actual"'),11)
-        self.assertEqual(chart.count('data-bar-kind="needed"'),1)
+        self.assertEqual(chart.count('data-bar-kind="actual"'),12)
+        self.assertNotIn('data-bar-kind="needed"',chart)
+        self.assertEqual(chart.count('home-mileage-current'),1)
         self.assertEqual(chart.count('data-needed-week='),12)
         self.assertIn('tabindex="0"',chart)
         self.assertEqual(self.app.get('/static/home.js')[0],200)
@@ -313,6 +319,9 @@ class DashboardTests(TestCase):
             broken=deepcopy(data);broken['weekly_goal'][-1][field]+=1
             with self.assertRaises(AssertionError):verify(self.store,broken)
         broken=deepcopy(data);broken['recent'][0]['average_power']=999
+        with self.assertRaises(AssertionError):verify(self.store,broken)
+        broken=deepcopy(data)
+        broken['weekly_goal'][-1]['bar_miles']=broken['goal']['needed_miles_per_week']
         with self.assertRaises(AssertionError):verify(self.store,broken)
 
     def test_schema6_atomic_migration_preserves_all_existing_tables(self):

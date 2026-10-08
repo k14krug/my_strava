@@ -143,9 +143,9 @@ def verify(store,data):
         same(point['needed_miles_per_week'],needed)
         current=i==11
         assert point['current']==current and point['start']==week['start'] and point['as_of_day']==day.isoformat()
-        assert point['bar_kind']==('needed' if current else 'actual')
+        assert point['bar_kind']=='actual'
         same(point['actual_miles'],Decimal(str(week['miles'])) if week['miles'] is not None else None)
-        same(point['bar_miles'],needed if current else Decimal(str(week['miles'])) if week['miles'] is not None else None)
+        same(point['bar_miles'],Decimal(str(week['miles'])) if week['miles'] is not None else None)
     for recent in data['recent']:
         row=next(r for r in rows if r['activity_id']==recent['activity_id'])
         assert recent['average_power']==row['average_power']
@@ -185,7 +185,7 @@ def verify(store,data):
         diagnostics=data['diagnostics'],goal_math_verified=bool(data['goal']),no_default_goal=data['target_miles'] is None,
         this_week_actual_miles=data['this_week']['miles'],weekly_required_points_verified=len(data['weekly_goal']),
         needed_miles_per_week=data['goal']['needed_miles_per_week'] if data['goal'] else None,
-        current_bar_is_needed_average=True,current_actual_preserved=True,
+        all_bars_are_actual=True,current_bar_matches_this_week=True,current_actual_preserved=True,
         recent_average_power_sources_verified=len(data['recent']),
         performance_summary_references_verified=True,performance_event_times_verified=len(events),
         deterministic_latest_context_verified=True,file_api_distance_conflicts=sum(r['file_api_conflict'] for r in cycling))

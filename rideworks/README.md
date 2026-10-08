@@ -745,14 +745,15 @@ Monday, while last seven days include today and the six preceding local dates.
 Supported source dates with unknown timezone keep their source date.
 
 Annual goal information lives only in Mileage Progress. Completed Monday–Sunday
-bars show actual miles. The distinct current bar and required-pace line show
-needed average miles/week to December 31, not partial current-week actuals.
+bars show actual miles. The outlined current bar shows actual Monday-through-today
+mileage and matches This Week Miles. The green line alone shows needed average
+miles/week to December 31.
 Each completed-week point uses cumulative actual YTD mileage through Sunday;
 the current point uses YTD through today. Needed average is remaining goal miles
 multiplied by seven, divided by remaining calendar days after that day. Goal met
 means zero; no remaining time with miles remaining means Unavailable. Points
 before the current goal year are unavailable; prior-year targets are not reused.
-The actual current-week total remains in the top card and diagnostic payload.
+The same actual current-week total appears in the bar, top card and diagnostic payload.
 Bars/points show an immediate miles-only tooltip on pointer enter/move or keyboard
 focus, with immediate leave/blur dismissal and no native delayed SVG titles.
 

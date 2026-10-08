@@ -214,7 +214,7 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
           check(await page.locator('#needed-weekly').textContent()==='Needed average: '+(expected===null?'Unavailable':weekly(expected)+'/week'),'Needed weekly display');
           const bars=chart.locator('[data-week]');check(await bars.count()===12,'Twelve chart bars');
           for(let i=0;i<12;i++){
-            check(await bars.nth(i).getAttribute('data-bar-kind')===(i===11?'needed':'actual'),'Mixed bar semantics');
+            check(await bars.nth(i).getAttribute('data-bar-kind')==='actual','All bars are actual');
             check(await bars.nth(i).getAttribute('data-mileage-value')===weekly(data.weekly_goal[i].bar_miles),'Bar mileage');
             const geometry=await bars.nth(i).locator('.home-mileage-bar').evaluate(el=>({y:Number(el.getAttribute('y')),height:Number(el.getAttribute('height'))}));
             const height=120*(data.weekly_goal[i].bar_miles??0)/maximum;
@@ -228,12 +228,12 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
               check(geometry.x===58+i*45&&Math.abs(geometry.y-(140-120*required/maximum))<0.001,'Required point source geometry');
             }
           }
-          check(await bars.last().getAttribute('data-mileage-value')===weekly(expected),'Current bar is needed average');
+          check(await bars.last().getAttribute('data-mileage-value')===weekly(data.this_week.miles),'Current bar matches This Week Miles');
           const point=chart.locator('[data-needed-week]').last();
           check(await point.getAttribute('data-mileage-value')===weekly(expected),'Current line endpoint');
-          const currentBar=await bars.last().locator('.home-mileage-bar').evaluate(el=>({y:Number(el.getAttribute('y')),height:Number(el.getAttribute('height'))}));
-          const currentY=await point.locator('.home-needed-point').getAttribute('cy');
-          check(Math.abs(currentBar.y-Number(currentY))<0.001,'Current bar/endpoint geometry');
+          check(await chart.locator('.home-mileage-current').count()===1,'Distinct partial-week actual bar');
+          check((await page.locator('#home-this-week strong').textContent())===weekly(data.this_week.miles),'Current card/bar agreement');
+          check((await page.locator('.home-mileage-legend').textContent()).includes('Bars = actual miles')&&(await page.locator('.home-mileage-legend').textContent()).includes('Line = needed average/week'),'Actual/required legend');
           let checks=0;
           for(const width of [1448,390]){
             await page.setViewportSize({width,height:1086});
@@ -256,7 +256,7 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
             }
             await bars.last().hover();
             check(await page.locator('#mileage-tooltip').isVisible(),'Actual pointer hover');
-            check(await page.locator('#mileage-tooltip').textContent()===weekly(expected),'Actual hover value');
+            check(await page.locator('#mileage-tooltip').textContent()===weekly(data.this_week.miles),'Actual bar hover value');
             const tip=await page.locator('#mileage-tooltip').boundingBox();
             check(tip.x>=0&&tip.x+tip.width<=await page.evaluate(()=>document.documentElement.clientWidth),'Tooltip clipping');
             await page.mouse.move(0,0);check(await page.locator('#mileage-tooltip').isHidden(),'Actual leave');
@@ -346,7 +346,7 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
         desktop_phone_no_overflow=True,los_angeles_tokyo=True,recent_links_match_browser=True,
         performance_cards_match_page=True,normal_sync_reflected_on_home=not skip_sync,
         immediate_miles_only_tooltip_checks=tooltip_checks,tooltip_pointer_keyboard_desktop_phone=True,
-        this_week_actual_and_current_needed_bar=True,required_line_current_endpoint_geometry=True,
+        this_week_card_matches_current_actual_bar=True,all_bars_are_actual=True,required_line_current_endpoint_geometry=True,
         average_power_table_matches_source_payload=True,
         read_only_live_rerun=skip_sync,activities_title_sort_pagination_verified=True,
         exception_failure_restart_later_sync_verified=failure_verified,

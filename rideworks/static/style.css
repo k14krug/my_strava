@@ -273,7 +273,7 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 .home-chart { display:block; width:100%; height:auto; }
 .home-chart text { font:11px system-ui,sans-serif; fill:var(--muted); }
 .home-mileage-bar { fill:var(--blue); }
-.home-mileage-needed { fill:var(--green); fill-opacity:.2; stroke:var(--green); stroke-width:1.5; stroke-dasharray:4 2; }
+.home-mileage-current { fill-opacity:.2; stroke:var(--blue); stroke-width:1.5; stroke-dasharray:4 2; }
 .home-mileage-hit { fill:transparent; }
 .home-needed-line { fill:none; stroke:var(--green); stroke-width:2; pointer-events:none; }
 .home-needed-point { fill:var(--green); pointer-events:none; }

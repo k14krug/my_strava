@@ -98,8 +98,7 @@ def weekly_goal(data):
         result.append(dict(start=week['start'], as_of_day=day.isoformat(), current=current,
                            actual_miles=week['miles'], ytd_miles=week['ytd_miles'],
                            needed_miles_per_week=needed,
-                           bar_miles=needed if current else week['miles'],
-                           bar_kind='needed' if current else 'actual'))
+                           bar_miles=week['miles'], bar_kind='actual'))
     return result
 
 
