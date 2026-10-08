@@ -172,23 +172,23 @@ The supplied dashboard mockup is visual direction, not a literal feature checkli
 
 ### 5.1 Top summary cards
 
-The first useful dashboard should contain four prominent summary cards:
+The first useful dashboard should contain three prominent summary cards:
 
-1. **This Week Miles**
-   - actual cycling distance from the current local Monday through today;
-   - no annual-goal information is duplicated in this card.
+1. **Recent Mileage**
+   - **This Week:** actual cycling distance from the current local Monday through today;
+   - **Last 7 Days:** cycling distance over the trailing seven local calendar days;
+   - include the comparison with the immediately preceding seven-day period when calculable;
+   - keep wording neutral (e.g. “12.4 mi more than previous 7 days”);
+   - do not duplicate annual-goal information here;
+   - on desktop, the two mileage submetrics may sit side-by-side inside the card;
+   - on phone, stack them cleanly.
 
-2. **Last 7 Days**
-   - cycling distance over the trailing seven local calendar days;
-   - comparison with the immediately preceding seven-day period when both are calculable;
-   - neutral wording (e.g. “12.4 mi more than previous 7 days”), not an assumption that more is better.
-
-3. **Current 42-day best**
+2. **Current 42-day best**
    - reuse current Performance-v2 evidence and accepted `performance_view` semantics;
    - watt value and contributing Activity link;
    - no new power model.
 
-4. **Latest eligible 20-minute ride**
+3. **Latest eligible 20-minute ride**
    - latest current Performance-v2 eligible result;
    - watt value/date/Activity link;
    - if recent-context is available, show neutral difference from the prior six-week best.

@@ -1,0 +1,19 @@
+name: Add parked issues to Development Inbox
+
+on:
+  issues:
+    types: [labeled]
+
+# Use the encrypted project-access token supplied as a repository secret.
+permissions: {}
+
+jobs:
+  add-to-development-inbox:
+    if: github.event.issue.state == 'open' && github.event.label.name == 'inbox'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add issue to Development Inbox
+        uses: actions/add-to-project@v2
+        with:
+          project-url: https://github.com/users/k14krug/projects/2
+          github-token: ${{ secrets.DEVELOPMENT_INBOX_TOKEN }}
