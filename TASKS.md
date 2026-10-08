@@ -393,6 +393,8 @@ Phase 3 must not begin automatically after Phase 2.
 
 **Current result:** [Draft PR #19](https://github.com/k14krug/my_strava/pull/19), runtime `1cc01b6`, implements the latest 2026-10-07 Owner decision: all bars are actual mileage; outlined current-week bar matches This Week Miles, green line alone shows needed average/week, and legend/tooltips follow those values. Prior dashboard/goal/Avg Pwr behavior and Performance-v2 remain unchanged. Owner-confirmed **2,200-mi** record preserved. 276 full / 23 focused tests and fresh live/synthetic actual-bar/required-line geometry, immediate tooltip/desktop/phone/LA-Tokyo, independent source/goal/Performance, restart and integrity checks passed; zero external calls during live verification. Evidence: `reports/P3-01/verification.md` / `acceptance.json`. Re-presented **HARD — Owner**; Analyst acceptance follows explicit Owner approval. Phase 4/5/6 not started. `/TASK P3-01` used under JIT's missing-declaration fallback.
 
+**2026-10-08 reconciliation:** Owner-requested investigation complete; numeric Strava gap remains unresolved at **HARD — Owner**. All eight unavailable YTD Activities are Ride, GPX+export-backed, with established Strava IDs but no retained known-unit distance/API summary. Existing-evidence recovery is zero; file-first adds only 0.12 m. Proposed at most eight bounded summary-window GETs (plus one token refresh if needed), retaining only those IDs; not executed. See `reports/P3-01/verification.md`. Runtime and mileage policy unchanged; no approval/merge or Phase 4/5/6.
+
 **Dependency:** Phase 2 and STRAVA-004 accepted / complete.
 
 Phase 4 must not begin automatically.

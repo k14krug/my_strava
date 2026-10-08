@@ -1,4 +1,90 @@
-# P3-01 — Corrected Home dashboard and annual mileage goal
+# P3-01 — Dashboard verification and YTD mileage investigation
+
+## 2026-10-08 Owner-requested YTD mileage reconciliation — HARD — Owner
+
+**Finding:** the eight distance-unavailable YTD Activities are **8 Ride / 0 Virtual Ride**. Every one is **GPX-file-backed with an associated Strava export row and an established Strava activity ID**. None is CSV-only; none has any retained API summary, superseded API observation, or API stream. Their originals contain no explicit distance field. This is a missing understood-distance-evidence case, not a demonstrated parsing, association, aggregation, or Performance-eligibility defect.
+
+Investigation only, authorized by `/TASK P3-01` and the latest Owner PR comments. Clean task branch refreshed with `git fetch origin --prune` and fast-forward pull; JIT, controlling requirements/Phase 3 contract, recent PR comments and empty review-thread list read. Runtime remains `1cc01b6`; mileage selection, source data and JIT controls were not changed. No Strava API request, token refresh, enrichment, merge, approval or Phase 4/5/6 work occurred. Public documentation was read to assess the proposed request path.
+
+### Activity-level coverage and selected totals
+
+A private SQLite backup of the accepted review store was opened with `mode=ro` and `query_only=ON`. The private reconciliation contains one row per 2026 cycling Activity, plus the relevant year-boundary exclusion, with identity/title/date/type; LA YTD membership; selected metres/miles/source; file/API/export source case; all source identities and association provenance; current and superseded API evidence; CSV distance columns and their unspecified units; file session/lap distance evidence; original-file distance fields; signed file-minus-API delta; and explicit missing-distance reason. A private CSV provides the compact table; JSON and compressed raw-distance evidence preserve the detail. Private titles, IDs, original details and local paths are not included here or on the PR.
+
+Fixed comparison: `2026-10-08T15:00:00+00:00`, `America/Los_Angeles`. The retained store reproduces the Owner's **1,518.2 mi** dashboard value. Mileage uses exact `1609.344` metres/mile and Decimal sums, independently checked against production presentation/aggregation.
+
+| LA YTD selection | Activities | Miles |
+|---|---:|---:|
+| File distance | 104 | 1,415.637321791 |
+| Current API distance | 8 | 102.574030164 |
+| Distance unavailable | 8 | Unknown; excluded |
+| Total supported cycling dates / contributors | 120 / 112 | **1,518.211351955** |
+
+Classification is **109 Virtual Ride / 11 Ride**. File contributors are 103 Virtual Ride FIT sessions and one Ride TCX single lap; API contributors are six Virtual Ride and two Ride. All eight unavailable entries are Ride. No cycling Activity has an unsupported/missing date; the eight GPX-backed entries use supported export dates with unknown timezone, as the accepted policy requires.
+
+Source associations across the 120: **108 file + export without API**, **4 file + export + API**, **8 API without files/export**. Zero CSV-only or other-source cases. Four file/API overlaps have API-minus-file differences of 0, −0.03, −0.04 and −0.05 metres. All three previously reported conflicts are in this YTD cohort.
+
+### The eight unavailable Activities
+
+The same findings hold for **each of the eight**, individually verified in the private table:
+
+| Question | Result |
+|---|---|
+| Type | Ride; no Virtual Ride |
+| Retained source type | GPX file + associated export row |
+| Established Strava ID | Yes, distinct and unambiguously associated |
+| Understood file summary distance | Absent |
+| Other explicit distance in original GPX | Absent, including extensions |
+| Retained current/historical API summary distance | None; no API observation at all |
+| Retained API distance stream | None |
+| CSV evidence | Both repeated Distance columns retained; units unspecified. Other original distance-related columns were inspected and preserved privately without assigning units. |
+| Ignored known-unit distance | None found |
+| Current YTD membership / mileage contribution | Included in dated Activity count / no distance contribution |
+| Mileage recoverable from existing known-unit evidence | **0 mi evidenced**, not a claim that the ride had zero distance |
+
+Thus recoverable known-unit mileage is zero for the GPX+export category; there are no unavailable CSV-only, API-associated, FIT, TCX or other-source Activities to recover. GPX coordinates could support a newly calculated distance, but that would require a calculation/policy decision, not recovery of an existing distance summary. No GPS distance was calculated and no CSV unit was inferred.
+
+`xml_activity._gpx` intentionally does not manufacture a session distance/duration from points. `history.presentation` then correctly falls through to current API distance, which is absent here. All eight predate the initial recent-sync window; the forward-only `strava_api.sync_window` intentionally never visited them. No hidden API observation was lost through the presentation join, and no conflicting established Strava association was found. No parsing/association fix is proposed on this evidence.
+
+### What explains the reported gap—and what remains unknown
+
+- File-first precedence adds **0.12 m = 0.000074565 mi** compared with retained API values. Substituting the API values would *reduce* RideWorks to **1,518.211277390 mi**. It cannot explain a roughly 113-mile shortfall.
+- Distance attributable to the eight unavailable Activities is **unknown**. Existing known-unit evidence measures none of it; their combined actual/Strava mileage must not be reported as zero or inferred from CSV values.
+- Taking **1,631 mi only as the Owner's approximate reference**, the present gap is **112.788648045 mi**. After accounting for the known API-minus-file effect, **112.788722610 mi** remains unallocated between the eight missing distances and any other Strava-side membership/current-distance/display differences.
+- If `M` is the eventual API mileage of those eight and their current API dates/types preserve YTD membership, unchanged RideWorks policy would yield `1518.211351955 + M` miles. The unexplained remainder against the approximate reference would be `112.788648045 − M`; separating the known file/API effect leaves `112.788722610 − M`.
+- The year-boundary Activity responsible for the prior **5.101277291-mi** LA/Tokyo difference is separately documented privately; timezone choice does not establish the missing ~113 miles.
+
+The cause of the eight omissions is established. **The full numerical Strava/RideWorks reconciliation is not established yet.** Retained current API distance covers only 12 YTD Activities (the four overlaps plus eight API-selected entries), not the whole year. Neither an exact current Strava YTD total nor complete current Strava membership is retained. This investigation therefore cannot assert that the eight missing distances exhaust the discrepancy or that Strava's displayed total is an oracle.
+
+### Proposed bounded enrichment; not executed
+
+Under the existing summary-list endpoint restriction, propose **at most eight sequential `GET /athlete/activities` requests**, one bounded date window per missing Activity, with `page=1`, `per_page=100`. Each CSV date has unknown timezone, so use a conservative three-UTC-day window surrounding that supplied date; do not assign that date a guessed offset. Retain only the eight allowlisted exact Strava IDs and discard unrelated returned summaries. Stop for review if a target is absent, the page is full, identity/account/type/date is unexpected, or distance is invalid/missing; do not paginate or widen into a historical crawl. No stream/detail/segment requests. At most **one additional OAuth refresh POST** if needed: maximum **8 activity GETs / 9 HTTP requests**, fewer on an early stop.
+
+This uses the existing `activity:read_all` scope and documented list endpoint/metre-valued distance; existing rate-header checks and stop-on-429/auth/network behavior remain applicable. [Strava activity API reference](https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities), [SummaryActivity distance](https://developers.strava.com/docs/reference/#api-models-SummaryActivity), [rate limits](https://developers.strava.com/docs/rate-limits/), [authentication](https://developers.strava.com/docs/authentication/) checked 2026-10-08.
+
+An exact-ID alternative is **eight `GET /activities/{id}` requests**, supported by Strava with the same scope, but it is **not currently allowed by RideWorks' client endpoint allowlist**, and P2-05 §4.2 restricts detail requests when summary fields suffice. It would need an explicit narrow Analyst-authored exception/implementation brief; the summary-window proposal above stays within that endpoint restriction. [Get Activity documentation](https://developers.strava.com/docs/reference/#api-Activities-getActivityById).
+
+Either implementation would need a separately authorized bounded maintenance operation: validate the connected athlete and fixed IDs; attach observations to the eight existing Activities; preserve file/export provenance; leave the normal sync checkpoint unchanged (the existing `apply_observations` helper also writes that checkpoint and must not be reused naively); perform normal derived-state convergence as required; and rerun this reconciliation. No new mileage selection rule is needed. Expected effect, conditional on valid matching API responses: **8 → 0 unavailable and 112 → 120 contributors**, adding the returned metre distances converted to miles. The numeric increment is unknown until retrieval; exact agreement with ~1,631 is not promised.
+
+### Verification and reproduction
+
+Fresh investigation checks: independent SQL classification/date/distance selection agrees Activity-by-Activity with production; Decimal sums reproduce YTD and four overlap deltas; every relevant original file's hash/size verified; original FIT session distances agree with stored summaries; raw FIT distance fields and XML distance evidence inspected; preserved CSV bytes/hash and all distance-related headers inspected; established IDs checked across export/API associations; all API observations checked independently of current-source joins; integrity check `ok`, zero foreign-key violations. Fifteen live source/association/goal/sync tables still match the pre-investigation snapshot. Existing 276 full / 23 focused test results below belong to the preceding runtime change; they were not rerun for this read-only investigation.
+
+The complete diagnostic script, database snapshot, exact invocation and machine-readable/private human-readable outputs remain local and ignored. Reproduction uses the private script with explicit paths, never the original data as an output:
+
+```sh
+.venv/bin/python '<private-reconciliation-script>' \
+  --snapshot '<private-read-only-snapshot>' \
+  --data-dir '<accepted-store>' \
+  --output-dir '<private-output-directory>' \
+  --as-of 2026-10-08T15:00:00+00:00
+```
+
+**Stop: Gate 1 — HARD — Owner.** Decision needed: authorize the bounded summary enrichment proposal, or request a different evidence source. P3-01 remains `in_progress`; handoff is `ready_for_review` with the numeric discrepancy unresolved. No approval or merge; subsequent Analyst acceptance remains outstanding.
+
+
+## Prior dashboard implementation verification (2026-10-07)
+
+The following records the preceding runtime change; it is not new test execution or Owner acceptance.
 
 The latest 2026-10-07 [Owner correction in PR #19](https://github.com/k14krug/my_strava/pull/19#issuecomment-6048149785) is implemented and locally verified. **All mileage bars now show actual miles; the green line alone shows needed average/week.** This explicitly supersedes the earlier current-bar needed-pace decision. **Re-presented at Gate 1 — HARD — Owner**; P3-01 remains `in_progress` with handoff state `ready_for_review`. The first Home review was not approved. Owner approval and subsequent Analyst acceptance remain outstanding; Phase 4/5/6 work has not begun.
 
