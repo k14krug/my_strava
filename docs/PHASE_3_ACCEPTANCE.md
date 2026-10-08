@@ -208,7 +208,7 @@ Provide a meaningful annual-mileage visualization.
 Preferred first representation:
 
 - completed recent-week cycling-distance bars (approximately 11 completed weeks);
-- a visually distinct current-week bar showing the **needed average miles/week going forward**, not partial actual mileage;
+- a current partial-week bar showing **actual Monday-through-today cycling miles**;
 - an overlaid historical **needed miles/week** line showing, after each completed week, the weekly average still required to reach the annual target by year end;
 - YTD actual/target progress below or beside it;
 - miles remaining and current needed average miles/week below YTD progress.
@@ -216,7 +216,7 @@ Preferred first representation:
 The exact chart geometry is implementation-level. The required meaning is:
 
 - completed-week actual cycling miles;
-- current-week needed-going-forward bar, clearly distinguished from actual bars;
+- current partial-week actual bar, visually identifiable as incomplete but using the same actual-mile semantics as every other bar;
 - historical/current needed-miles-per-week line;
 - clearly defined local calendar buckets;
 - YTD actual and target;
@@ -230,9 +230,8 @@ current required pace uses actual YTD mileage through today and remaining days
 after today. If the goal is met, required pace is zero; if no calendar time
 remains while miles remain, it is Unavailable.
 
-The current week's actual mileage remains available in the This Week Miles card
-and diagnostic payload even though the chart's current bar represents needed
-pace.
+The current week's actual mileage must agree between the This Week Miles card,
+the current chart bar and the diagnostic payload.
 
 No smoothing or inferred missing mileage.
 
@@ -382,7 +381,7 @@ Required evidence:
 9. Browser timezone boundary checks in at least Los Angeles and Tokyo.
 10. Leap-year pace unit test.
 11. Goal percentage/miles remaining/ahead-behind pace and current needed miles/week independently reproduce.
-12. Historical needed-miles/week line and current needed-week bar independently reproduce from cumulative actual mileage and remaining calendar time.
+12. Historical/current needed-miles/week line independently reproduces from cumulative actual mileage and remaining calendar time; current chart bar independently matches actual This Week Miles.
 13. Mileage chart tooltip responds immediately and shows only miles, not dates.
 14. Recent Activities links/evidence/Avg Pwr match the accepted source-precedence rules and Activities history.
 15. Current 42-day best/latest eligible cards match Performance.
