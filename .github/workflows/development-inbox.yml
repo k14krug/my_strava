@@ -2,14 +2,14 @@ name: Add parked issues to Development Inbox
 
 on:
   issues:
-    types: [opened, reopened, labeled]
+    types: [labeled]
 
 # Use the encrypted project-access token supplied as a repository secret.
 permissions: {}
 
 jobs:
   add-to-development-inbox:
-    if: github.event.issue.state == 'open' && contains(github.event.issue.labels.*.name, 'inbox')
+    if: github.event.issue.state == 'open' && github.event.label.name == 'inbox'
     runs-on: ubuntu-latest
     steps:
       - name: Add issue to Development Inbox
