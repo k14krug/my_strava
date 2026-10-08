@@ -143,6 +143,10 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
                 if(data.target_miles===null)check((await local.locator('.home-goal-progress').textContent()).includes('Set annual goal'),'No-goal path');
                 check(await local.locator('#home-ytd').count()===0,'Duplicate annual card');
                 check((await local.locator('#home-this-week strong').textContent())===(data.this_week.miles===null?'Unavailable':data.this_week.miles.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+' mi'),'Actual This Week Miles');
+                check(await local.locator('.home-summary > section').count()===3,'Three top cards');
+                check(await local.locator('#home-recent-mileage #home-this-week').count()===1&&await local.locator('#home-recent-mileage #home-last7').count()===1,'Both submetrics inside Recent Mileage');
+                const last7=data.last7.miles===null?'Unavailable':data.last7.miles.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1})+' mi';
+                check(await local.locator('#home-last7 strong').textContent()===last7,'Last 7 Days value');
                 check(await local.locator('#home-mileage-chart [data-week]').count()===12,'Weekly buckets');
                 for(const row of data.recent){
                   check(await local.locator('.home-recent-row[data-activity-id="'+row.activity_id+'"] a').getAttribute('href')==='/activities/'+row.activity_id,'Recent review link');
@@ -238,6 +242,10 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
           for(const width of [1448,390]){
             await page.setViewportSize({width,height:1086});
             check(await page.evaluate(()=>document.documentElement.scrollWidth===document.documentElement.clientWidth),'Responsive width');
+            const week=await page.locator('#home-this-week').boundingBox(),last7=await page.locator('#home-last7').boundingBox();
+            if(width===1448)check(Math.abs(week.y-last7.y)<1&&last7.x>=week.x+week.width,'Desktop submetrics side by side');
+            else check(Math.abs(week.x-last7.x)<1&&last7.y>=week.y+week.height,'Phone submetrics stacked');
+            check(await page.locator('.home-summary > section').count()===3,'No replacement fourth metric');
             const items=chart.locator('[data-mileage-value]');
             for(let i=0;i<await items.count();i++){
               const immediate=await items.nth(i).evaluate(el=>{
@@ -352,6 +360,7 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
         immediate_miles_only_tooltip_checks=tooltip_checks,tooltip_pointer_keyboard_desktop_phone=True,
         this_week_card_matches_current_actual_bar=True,all_bars_are_actual=True,required_line_current_endpoint_geometry=True,
         average_power_table_matches_source_payload=True,
+        recent_mileage_three_cards_desktop_side_by_side_phone_stacked=True,
         read_only_live_rerun=skip_sync,activities_title_sort_pagination_verified=True,
         exception_failure_restart_later_sync_verified=failure_verified,
         sync_results=safe_sync,integrity=True,foreign_keys=True,phase_4_5_6_implemented=False)

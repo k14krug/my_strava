@@ -116,6 +116,11 @@ def home_page(store, query=''):
     if data['last7']['miles'] is not None and data['prior7']['miles'] is not None:
         difference = data['last7']['miles']-data['prior7']['miles']
         weekly_note = f'<p>{abs(difference):,.1f} mi {"more" if difference>0 else "less"} than previous 7 days</p>' if round(difference,1) else '<p>Same mileage as previous 7 days</p>'
+    recent_mileage = f'''<section class="metric home-metric home-recent-mileage" id="home-recent-mileage">
+<div>{icon('distance')}<h2>Recent Mileage</h2></div><div class="home-mileage-submetrics">
+<div id="home-this-week"><h3>This Week</h3><strong>{miles(data['this_week']['miles'])}</strong><p>Monday through today · actual cycling miles</p></div>
+<div id="home-last7"><h3>Last 7 Days</h3><strong>{miles(data['last7']['miles'])}</strong>{weekly_note}</div>
+</div></section>'''
     def power_summary(point):
         if point is None:
             return 'Unavailable','<p>No current eligible result.</p>'
@@ -155,7 +160,7 @@ def home_page(store, query=''):
     compact = {k:v for k,v in data.items() if k!='recent'}
     compact['recent'] = [{k:r[k] for k in ('activity_id','title','activity_type','start_time','absolute_time','date_text','distance','duration','distance_source','duration_source','average_power','average_power_source')} for r in data['recent']]
     return shell('Home',f'''<header class="home-heading" data-calendar-timezone="home_tz"><div><h1>Home</h1><p>{data['year']} cycling mileage · Virtual Ride + outdoor Ride</p></div>{sync}</header>
-<div class="metrics home-summary">{card('this-week','This Week Miles',miles(data['this_week']['miles']),'<p>Monday through today · actual cycling miles</p>','distance')}{card('last7','Last 7 Days',miles(data['last7']['miles']),weekly_note,'summary')}{card('current','Current 42-day best',current,current_note,'power')}{card('latest','Latest eligible 20-minute ride',latest,latest_note,'power')}</div>
+<div class="metrics home-summary">{recent_mileage}{card('current','Current 42-day best',current,current_note,'power')}{card('latest','Latest eligible 20-minute ride',latest,latest_note,'power')}</div>
 <div class="home-layout"><section class="panel home-recent"><div class="home-panel-heading"><h2>Recent Activities</h2><a href="/activities">View all Activities</a></div>{recent}</section>
 <section class="panel home-mileage"><div class="home-panel-heading"><h2>Mileage Progress</h2><span>Last 12 weeks · miles</span></div>{weekly_chart(data['weekly_goal'])}<p class="home-mileage-legend"><span class="legend-actual">Bars = actual miles</span><span class="legend-needed">Line = needed average/week</span></p><p>Monday–Sunday weeks; outlined current bar is actual Monday-through-today mileage. Needed pace uses remaining mileage and calendar days after each Sunday; current pace uses today. Required points apply to the goal year.</p><div class="home-goal-progress"><strong>{miles(ytd['miles'])} YTD</strong>{progress}</div>
 <details><summary>Weekly distances</summary><div class="home-evidence-table"><table><thead><tr><th>Week of</th><th>Actual mi</th><th>Needed mi/week</th><th>File</th><th>API</th><th>Missing</th></tr></thead><tbody>{week_rows}</tbody></table></div></details></section>

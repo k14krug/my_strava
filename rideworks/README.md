@@ -740,8 +740,11 @@ are inspectable in Mileage evidence & calendar boundaries.
 
 Home's `home_tz` query is set from the browser timezone before final aggregation;
 Settings uses `tz`. Neither substitutes server-local time. YTD includes January
-1 through the current instant; This Week Miles is actual mileage since local
-Monday, while last seven days include today and the six preceding local dates.
+1 through the current instant. Recent Mileage combines This Week (actual miles
+since local Monday) and Last 7 Days (today and the six preceding local dates),
+including the neutral comparison with the preceding seven days. The dashboard
+has three summary cards; mileage values sit side by side on desktop and stack
+on phone. Annual goal information stays in Mileage Progress.
 Supported source dates with unknown timezone keep their source date.
 
 Annual goal information lives only in Mileage Progress. Completed Monday–Sunday

@@ -254,6 +254,13 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 .home-metric h2 { font-size:12px; font-weight:550; }
 .home-metric strong { padding-left:0; font-size:25px; margin-top:10px; }
 .home-metric > p, .home-metric > a { font-size:11px; margin-top:7px; display:block; overflow-wrap:anywhere; }
+.home-summary { grid-template-columns:minmax(0,2fr) repeat(2,minmax(0,1fr)); }
+.home-recent-mileage > .home-mileage-submetrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0; margin-top:12px; color:var(--navy); }
+.home-mileage-submetrics > div { min-width:0; padding-right:18px; }
+.home-mileage-submetrics > div + div { border-left:1px solid var(--border); padding-left:18px; padding-right:0; }
+.home-mileage-submetrics h3 { font-size:12px; font-weight:550; color:var(--muted); }
+.home-mileage-submetrics strong { margin-top:7px; }
+.home-mileage-submetrics p { font-size:11px; color:var(--muted); margin-top:7px; }
 .home-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:14px; align-items:start; }
 .home-layout > section { min-width:0; }
 .home-panel-heading { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:12px; }
@@ -308,6 +315,10 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 @media(max-width:1100px) { .home-layout { grid-template-columns:minmax(0,1fr); } }
 @media(max-width:620px) {
   .home-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .home-recent-mileage { grid-column:1/-1; }
+  .home-recent-mileage > .home-mileage-submetrics { grid-template-columns:minmax(0,1fr); }
+  .home-mileage-submetrics > div { padding-right:0; }
+  .home-mileage-submetrics > div + div { border-left:0; border-top:1px solid var(--border); padding:12px 0 0; margin-top:12px; }
   .home-metric strong { font-size:22px; }
   .home-panel-heading { flex-wrap:wrap; }
   .home-recent-table, .home-recent-table tbody { display:block; }
