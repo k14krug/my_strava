@@ -35,3 +35,6 @@
 
 
 **Owner correction — current-week bar (2026-10-07):** Latest Owner decision supersedes the prior mixed-bar rule. All mileage bars represent actual cycling miles. Historical bars are completed-week actuals; the current bar is actual Monday-through-today mileage and must match This Week Miles. The green line alone represents needed average miles/week going forward. Re-present HARD — Owner after this minor correction.
+
+
+**Owner correction — Targeted historical summary enrichment (2026-10-08):** The eight unresolved 2026 YTD distance omissions are all outdoor Ride Activities with GPX + export evidence and established Strava IDs, but no retained known-unit distance/API summary. Owner authorized at most eight direct Strava `GET /activities/{id}` summary requests using existing `activity:read_all`, sequentially and through the existing summary allowlist. No historical list crawl, stream requests, fuzzy matching, CSV-unit guessing or GPX-derived distance. After enrichment, independently reconcile YTD mileage against the Owner-reported ~1,631 mi; explain any residual before Owner approval. Verify normal future Sync now already supplies API distance/duration fallback for newly synchronized GPX rides.
