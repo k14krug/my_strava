@@ -1,16 +1,16 @@
 # P3-01 — Corrected Home dashboard and annual mileage goal
 
-The 2026-10-07 [Owner correction in PR #19](https://github.com/k14krug/my_strava/pull/19#issuecomment-6047219191) is implemented and locally verified. **Re-presented at Gate 1 — HARD — Owner**; P3-01 remains `in_progress` with handoff state `ready_for_review`. The first Home review was not approved. Owner approval and subsequent Analyst acceptance remain outstanding; Phase 4/5/6 work has not begun.
+The latest 2026-10-07 [Owner correction in PR #19](https://github.com/k14krug/my_strava/pull/19#issuecomment-6048149785) is implemented and locally verified. **All mileage bars now show actual miles; the green line alone shows needed average/week.** This explicitly supersedes the earlier current-bar needed-pace decision. **Re-presented at Gate 1 — HARD — Owner**; P3-01 remains `in_progress` with handoff state `ready_for_review`. The first Home review was not approved. Owner approval and subsequent Analyst acceptance remain outstanding; Phase 4/5/6 work has not begun.
 
-Invocation: `/TASK PR #19`. Clean checkout checked and origin fetched unconditionally; existing task branch pulled with fast-forward only, then updated main merged (the STATUS conflict was resolved to record correction work in progress). Refreshed main `d18ce97`, Analyst JIT revision `dc26463`, Phase 3 contract revision `5340e47`; controlling product requirements and AGENTS.md remain unchanged. The JIT still has no Allowed Invocation declaration, so the `/TASK only` fallback controls this run. No JIT controls were authored or changed by Dex.
+Invocation: `/TASK PR #19`. Clean checkout checked and origin fetched unconditionally; existing task branch pulled with fast-forward only, then updated main merged (the STATUS conflict was resolved to record correction work in progress). Refreshed main `e490bca`, Analyst JIT revision `3820120`, Phase 3 contract revision `38211d2`; controlling product requirements and AGENTS.md remain unchanged. The JIT still has no Allowed Invocation declaration, so the `/TASK only` fallback controls this run. No JIT controls were authored or changed by Dex.
 
-Branch: `task/p3-01-dashboard`; prior Owner review `2648db8`; corrected implementation commit `d09b957957511b66ecf1c780352fea3684092bef`. [Aggregate acceptance evidence](acceptance.json) includes all **23** checks in the updated Phase 3 contract §11.
+Branch: `task/p3-01-dashboard`; prior Owner review `8101625`; corrected implementation commit `1cc01b645e745199b12b41bff7064e21540ab62b`. [Aggregate acceptance evidence](acceptance.json) includes all **23** checks in the updated Phase 3 contract §11.
 
 ## Owner corrections delivered
 
 1. **This Week Miles** replaces the duplicate top YTD goal card. It shows actual cycling distance from local Monday through today. Annual actual/target/progress and calendar pace appear only in Mileage Progress.
 2. Mileage Progress shows target, percentage, **miles remaining** and **Needed average: N.N mi/week**. Needed average is remaining target after today's retained mileage, multiplied by seven and divided by calendar days after today to January 1 next year. This is arithmetic goal progress, not training advice.
-3. Eleven completed-week bars retain actual miles. The distinct green outlined current bar shows needed weekly average; the green line uses cumulative actual YTD through each completed Sunday, and through today at its current endpoint. Current bar, line endpoint and displayed needed average agree. Actual current-week distance stays in its top card and diagnostic payload. Goal met gives zero; remaining miles with no time gives Unavailable. Points before the configured goal year are unavailable rather than borrowing a previous-year target.
+3. All twelve bars show actual miles. Eleven completed-week bars retain their actual totals; the blue outlined current bar shows actual Monday-through-today distance and agrees exactly with This Week Miles and the diagnostic payload. The green line alone uses cumulative actual YTD through each completed Sunday, and through today at its current endpoint. Its current endpoint agrees with displayed needed average. Bar tooltips show actuals; line-point tooltips show required weekly values. Needed pace is zero when the goal is met, while bars retain actual mileage; remaining miles with no time gives Unavailable needed pace. Points before the configured goal year are unavailable rather than borrowing a previous-year target.
 4. Mileage bars/points use an immediate custom miles-only readout on pointer enter/move or keyboard focus. Leave/blur hides immediately; Escape dismisses. No mileage SVG `<title>` or title attributes remain. Tooltip position is bounded to the viewport; no timer, hover delay or client calculation is introduced.
 5. Recent Activities adds **Avg Pwr**, selected from understood file session `avg_power`, then an understood single TCX lap when needed, then current API summary `average_watts`, otherwise Unavailable. Known zero is retained. CSV watts and raw sample averages are excluded; chosen source/context remain in the dashboard payload. Performance-v2 eligibility and best-20 calculation are unchanged.
 
@@ -20,7 +20,9 @@ Home `/`, Activities `/activities`, stable Activity Review URLs, old filtered-ro
 
 ## Verification
 
-**276 full automated tests and 23 focused dashboard/goal tests passed**. Seven additional meaningful tests cover cumulative required-week history/current-bar semantics, met-goal/year-end/leap/missing states, LA/Tokyo year edges, source-power precedence/currentness/zero/single-vs-multiple TCX laps, corrected annual-panel placement, and independent-oracle rejection of wrong required values/power. The existing actual FIT/API conflict test now covers file summary watts against conflicting API watts and retains the metadata-only read check.
+**276 full automated tests and 23 focused dashboard/goal tests passed**. Focused tests cover cumulative required-week history/current-bar semantics, met-goal/year-end/leap/missing states, LA/Tokyo year edges, source-power precedence/currentness/zero/single-vs-multiple TCX laps, corrected annual-panel placement, and independent-oracle rejection of wrong required values/power. The existing actual FIT/API conflict test covers file summary watts against conflicting API watts and retains the metadata-only read check.
+
+The current-bar tests now also reject substituting needed pace for actual mileage, retain actual mileage when a goal is met or unset, and assert all twelve bar kinds are actual. Historical actual bars and required-line calculations are unchanged.
 
 The full suite also preserves prior goal protection, atomic migration/write rollback, export/source/history, Activity Review, Performance-v2, Strava sync/streams, failure/retry and restart coverage. JavaScript syntax and `git diff --check` pass.
 
@@ -28,11 +30,11 @@ Actual Chromium passed:
 
 - fresh synthetic Home and Settings goal set/update/clear, no default, new/enriched sync, exception banner after failure/restart, later unchanged-sync recovery;
 - live read-only Home in Los Angeles and Tokyo, annual goal preservation, search/sort/disjoint pagination/back state, recent links/Avg Pwr, Performance references and restart with identical actual/required period data;
-- completed/current bar values, required-point values and SVG geometry, with the current bar and line endpoint aligned to the same needed-average value;
+- all completed/current bar actual values and SVG geometry, current-bar agreement with This Week Miles, required-line point values/geometry and endpoint agreement with displayed needed average;
 - **48 immediate tooltip lifecycle checks per run** (12 bars + 12 required points at two widths), including enter/move/leave/focus/blur in the same JavaScript turn, actual pointer hover/leave on bar and point, real keyboard Tab/Escape, mileage-only content and viewport clipping checks;
 - desktop 1,448-pixel and phone 390-pixel layouts with no overflow; live screenshots also inspected visually;
-- Settings/OAuth regression: decline/reconnect, clean callback, disabled controls during sync, automatic convergence, near-expiry refresh, restart/idempotent rerun, failure/manual retry/later-sync recovery, disconnect retaining history and source integrity;
-- seven established live API Activity Reviews: complete payload/source labels/offsets, charts/keyboard inspection, FIT precedence, local best-20/six-week context and Performance integration, LA/Tokyo, desktop/phone, restart/cache reuse with zero stream requests and no table changes.
+- Prior Settings/OAuth regression on `d09b957` (unchanged by this narrow bar correction): decline/reconnect, clean callback, disabled controls during sync, automatic convergence, near-expiry refresh, restart/idempotent rerun, failure/manual retry/later-sync recovery, disconnect retaining history and source integrity;
+- Prior seven established live API Activity Reviews on `d09b957` (unchanged by this narrow bar correction): complete payload/source labels/offsets, charts/keyboard inspection, FIT precedence, local best-20/six-week context and Performance integration, LA/Tokyo, desktop/phone, restart/cache reuse with zero stream requests and no table changes.
 
 ### Independent calculation and provenance
 
@@ -55,7 +57,7 @@ Six controlled checks use LA/Tokyo at two UTC year-edge instants and a leap-year
 
 Differences follow browser-local day/year membership; source distance is unchanged. The browser instants fall on October 7 in LA and October 8 in Tokyo. The accepted review baseline already included one additional API-backed cycling Activity since the first handoff: 1,442 total Activities, 1,418 cycling (1,270 Virtual / 148 Ride), 24 noncycling and 101 supported cycling source dates with unknown timezone. No live external request or Activity mutation was performed by correction verification.
 
-LA Owner presentation: **2,200-mi target; 69.0% complete; 681.8 mi remaining; 56.1 mi/week needed** over 85 calendar days after today. Actual this week is **26.3 mi**, independent of the needed current chart bar. Linear calendar pace is 169.5 mi behind (280/365 elapsed days). Current 42-day best remains **195 W**; latest eligible is **160 W**, 35 W below its previous-six-week best. These statements are neutral source-based arithmetic, not training prescriptions.
+LA Owner presentation: **2,200-mi target; 69.0% complete; 681.8 mi remaining; 56.1 mi/week needed** over 85 calendar days after today. Actual this week is **26.3 mi** in both card and current blue bar; the green line endpoint independently remains **56.1 mi/week**. Linear calendar pace is 169.5 mi behind (280/365 elapsed days). Current 42-day best remains **195 W**; latest eligible is **160 W**, 35 W below its previous-six-week best. These statements are neutral source-based arithmetic, not training prescriptions.
 
 ### Originals, migration, sync and restart
 
@@ -63,7 +65,7 @@ The correction does not change schema 7. Verification repeats the disposable sch
 
 Live verification preserves native/export tables, every prior Activity/API/stream observation, **1,441 v1 rows**, the goal tuple and all **1,422 original/export artifact SHA-256/size checks**. Integrity and foreign-key checks pass. Current Performance has **1,028 eligible / zero pending**; the increase from the first handoff follows the already-present newly synced ride under unchanged v2 policy. Originals were never altered; no tokens were copied into replay stores.
 
-Correction live verification and its rerun are **read-only**, with zero external API calls. Earlier first-presentation evidence retained in `acceptance.json` records one real bounded metadata sync: three unchanged Activities, zero new observations, three cached streams reused, zero stream GETs and automatic current Performance without another action. Fresh synthetic sync now separately verifies new/enriched Home data, failure persistence and recovery on the corrected implementation. No new real sync was needed to verify this presentation-only correction.
+Latest current-bar live verification is **read-only**, with zero external API calls. The preceding correction and its rerun were also read-only. Earlier first-presentation evidence retained in `acceptance.json` records one real bounded metadata sync: three unchanged Activities, zero new observations, three cached streams reused, zero stream GETs and automatic current Performance without another action. Fresh synthetic sync now separately verifies new/enriched Home data, failure persistence and recovery on the corrected implementation. No new real sync was needed to verify this presentation-only correction.
 
 ## Updated Phase 3 checklist
 
@@ -75,13 +77,13 @@ All **23 implementation/verification checks** in the updated contract §11 pass.
 | 4–7 | Cycling and distance source precedence | independent SQL; FIT/API overlap; API-only and CSV-only fixtures |
 | 8–10 | Independent mileage and calendar/leap | fifteen periods, both browser zones, controlled edges and unit tests |
 | 11 | Goal math including current needed/week | independent Decimal calculation |
-| 12 | Required history and current needed bar | twelve cumulative points; SVG values/geometry; actual current week retained |
-| 13 | Immediate miles-only tooltip | forty-eight lifecycle checks per run; actual pointer/keyboard at both widths |
+| 12 | Required line and current actual bar | twelve actual bars and required points; SVG geometry; current bar/card agreement |
+| 13 | Immediate miles-only tooltip | forty-eight lifecycle checks per run; correct actual-bar/required-line tooltip values; pointer/keyboard at both widths |
 | 14 | Recent evidence and Avg Pwr | six independent value/source/context checks; source precedence fixtures |
 | 15–17 | Cards/chart/neutral context | Performance page and separate result/event/prior-window scan |
 | 18–19 | Sync and Home failure state | prior real sync; fresh synthetic new/enriched/failure/restart/recovery |
 | 20–21 | Restart and usable layouts | unchanged goal/period/required values; desktop/phone Chromium |
-| 22 | Full regression | 276 full / 23 focused; Settings/OAuth and seven live Activity Reviews |
+| 22 | Full regression | 276 full / 23 focused rerun; preceding Settings/OAuth and seven live Activity Reviews retained |
 | 23 | Deferred scope absent | diff inspection and deferred-metric exclusion test |
 
 ## Reproduction and review artifacts
@@ -102,4 +104,4 @@ node --check rideworks/static/home.js
 
 [Aggregate evidence](acceptance.json), [synthetic desktop](home-desktop-synthetic.png), [synthetic phone](home-phone-synthetic.png). Committed images contain generated Activities and a temporary synthetic goal; live screenshots stay private. Private titles/IDs/raw streams/credentials/databases/local paths are not published in evidence.
 
-Owner review app restarted with the corrected runtime: [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal). Review the corrected cards, annual progress/needed average, chart semantics/tooltips and recent Avg Pwr on desktop/phone. **Stop at HARD — Owner** under JIT §15. Explicit Owner approval precedes Gate 2 — HARD — Analyst. No Phase 4/5/6 implementation or next task.
+Owner review app restarted with the corrected runtime: [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal). Review actual mileage in all bars (current bar matches This Week Miles), the separate needed-average line and their respective immediate tooltips on desktop/phone. **Stop at HARD — Owner** under JIT §15. Explicit Owner approval precedes Gate 2 — HARD — Analyst. No Phase 4/5/6 implementation or next task.

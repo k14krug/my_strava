@@ -1,11 +1,11 @@
 {
   "task": "P3-01",
-  "invocation": "/TASK PR #19",
-  "implementation_commit": "d09b957957511b66ecf1c780352fea3684092bef",
-  "refreshed_main": "d18ce97",
-  "analyst_jit": "dc26463",
-  "phase3_contract": "5340e47",
-  "prior_owner_review_head": "2648db83577ace894e0ab349917a6611baca6280",
+  "invocation": "/TASK P3-01",
+  "implementation_commit": "1cc01b645e745199b12b41bff7064e21540ab62b",
+  "refreshed_main": "e490bca",
+  "analyst_jit": "3820120",
+  "phase3_contract": "38211d2",
+  "prior_owner_review_head": "81016256b28c00cc87bb829a59d22251852171c0",
   "pr": "https://github.com/k14krug/my_strava/pull/19",
   "state": "ready_for_review",
   "gate": "HARD \u2014 Owner",
@@ -97,15 +97,15 @@
     },
     {
       "number": 12,
-      "check": "Historical needed-miles/week line and current needed-week bar independently reproduce from cumulative actual mileage and remaining calendar time.",
+      "check": "Historical/current needed-miles/week line independently reproduces from cumulative actual mileage and remaining calendar time; current chart bar independently matches actual This Week Miles.",
       "result": "passed",
-      "evidence": "Twelve independently scanned cumulative YTD/current required points; SVG value/geometry checks"
+      "evidence": "Twelve actual bars and cumulative required points independently scanned; current bar matches This Week Miles, line endpoint matches needed/week; SVG geometry checks"
     },
     {
       "number": 13,
       "check": "Mileage chart tooltip responds immediately and shows only miles, not dates.",
       "result": "passed",
-      "evidence": "Forty-eight synchronous pointer/focus lifecycle checks per live/synthetic run; actual hover/Tab/Escape at both widths"
+      "evidence": "48 immediate pointer/focus lifecycle checks per live/synthetic run; actual current-bar tooltip versus required-line tooltip verified at both widths"
     },
     {
       "number": 14,
@@ -301,8 +301,8 @@
         "actual_miles": 26.3025182931679,
         "ytd_miles": 1518.2113519545853,
         "needed_miles_per_week": 56.14730042726945,
-        "bar_miles": 56.14730042726945,
-        "bar_kind": "needed"
+        "bar_miles": 26.3025182931679,
+        "bar_kind": "actual"
       }
     ],
     "custom_tooltip_no_native_title": true,
@@ -312,7 +312,12 @@
     "avg_power_file_tcx_api_precedence": true,
     "csv_watts_and_stream_averages_excluded": true,
     "performance_policy_unchanged": true,
-    "all_bar_and_required_point_geometry_verified": true
+    "all_bar_and_required_point_geometry_verified": true,
+    "all_bars_are_actual": true,
+    "current_bar_matches_this_week": true,
+    "green_line_alone_is_needed_average": true,
+    "current_bar_tooltip": "actual mileage",
+    "line_point_tooltip": "needed weekly mileage"
   },
   "live": {
     "independent_checks": [
@@ -357,11 +362,12 @@
         "this_week_actual_miles": 26.3025182931679,
         "weekly_required_points_verified": 12,
         "needed_miles_per_week": 56.14730042726945,
-        "current_bar_is_needed_average": true,
+        "all_bars_are_actual": true,
+        "current_bar_matches_this_week": true,
         "current_actual_preserved": true,
         "recent_average_power_sources_verified": 6,
         "performance_summary_references_verified": true,
-        "performance_event_times_verified": 252,
+        "performance_event_times_verified": 251,
         "deterministic_latest_context_verified": true,
         "file_api_distance_conflicts": 3
       },
@@ -406,11 +412,12 @@
         "this_week_actual_miles": 44.08678318619263,
         "weekly_required_points_verified": 12,
         "needed_miles_per_week": 56.390614229566005,
-        "current_bar_is_needed_average": true,
+        "all_bars_are_actual": true,
+        "current_bar_matches_this_week": true,
         "current_actual_preserved": true,
         "recent_average_power_sources_verified": 6,
         "performance_summary_references_verified": true,
-        "performance_event_times_verified": 252,
+        "performance_event_times_verified": 251,
         "deterministic_latest_context_verified": true,
         "file_api_distance_conflicts": 3
       }
@@ -469,7 +476,10 @@
     "preexisting_goals_preserved": true,
     "external_api_calls": 0,
     "read_only_live_rerun": true,
-    "activities_title_sort_pagination_verified": true
+    "activities_title_sort_pagination_verified": true,
+    "all_bars_are_actual": true,
+    "current_bar_matches_this_week": true,
+    "live_runs_for_actual_bar_correction": 1
   },
   "synthetic": {
     "result": "passed",
@@ -609,5 +619,23 @@
     ],
     "additional_live_sync_during_correction": false
   },
-  "phase_4_5_6_implemented": false
+  "phase_4_5_6_implemented": false,
+  "latest_verification": {
+    "full_tests": 276,
+    "focused_tests": 23,
+    "live_current_bar_correction": "passed",
+    "synthetic_current_bar_correction": "passed",
+    "historical_bars_remain_actual": true,
+    "current_bar_card_exact_match": true,
+    "line_endpoint_needed_average_match": true,
+    "tooltip_correct_actual_and_required_values": true,
+    "tooltip_lifecycle_checks_per_run": 48,
+    "desktop_phone": true,
+    "goal_tuple_preserved": true,
+    "integrity": true,
+    "foreign_keys": true,
+    "artifact_hashes": 1422,
+    "external_api_calls": 0,
+    "prior_settings_oauth_and_seven_activity_reviews": "passed on d09b957; unchanged by the actual-bar correction"
+  }
 }
