@@ -1,12 +1,12 @@
 {
   "task": "P3-01",
   "invocation": "/TASK P3-01",
-  "implementation_commit": "38183e31792ca1133d50a2f2b1bc8689c5f3414a",
-  "refreshed_main": "a2faa70",
-  "analyst_jit": "25b7d5e",
-  "phase3_contract": "8c2c284",
-  "prior_owner_review_head": "ba26cb6",
-  "pr": "https://github.com/k14krug/my_strava/pull/19",
+  "implementation_commit": "6d9160e8510caa5734f776ba785a5f1da64ae35e",
+  "refreshed_main": "23ac11d",
+  "analyst_jit": "473a173",
+  "phase3_contract": "18fb186",
+  "prior_owner_review_head": "9f5d936",
+  "pr": "https://github.com/k14krug/rideworks/pull/19",
   "state": "ready_for_review",
   "gate": "HARD \u2014 Owner",
   "owner_acceptance": false,
@@ -24,8 +24,8 @@
     "synthetic_targets_cleared": true
   },
   "tests": {
-    "full": 284,
-    "focused_dashboard": 23,
+    "full": 285,
+    "focused_dashboard": 24,
     "result": "passed",
     "focused_summary_repair": 8
   },
@@ -657,7 +657,7 @@
     "owner_approval": false,
     "analyst_acceptance": false
   },
-  "previous_implementation_commit": "1cc01b645e745199b12b41bff7064e21540ab62b",
+  "previous_implementation_commit": "38183e31792ca1133d50a2f2b1bc8689c5f3414a",
   "preceding_actual_bar_verification": {
     "full_tests": 276,
     "focused_tests": 23,
@@ -980,5 +980,608 @@
     "integrity": true,
     "foreign_keys": true,
     "phase_4_5_6_implemented": false
+  },
+  "recent_mileage_consolidation": {
+    "summary_cards": 3,
+    "one_recent_mileage_card": true,
+    "this_week_and_last7_separate_submetrics": true,
+    "neutral_comparison_under_last7": true,
+    "annual_goal_excluded_from_card": true,
+    "desktop_side_by_side": true,
+    "phone_stacked": true,
+    "unchanged_calculations": true,
+    "full_tests": 285,
+    "focused_dashboard_tests": 24,
+    "external_api_calls": 0,
+    "live": {
+      "status": "passed",
+      "mode": "live",
+      "schema6_migration_accepted_tables_preserved": true,
+      "schema_version": 7,
+      "native_export_tables_unchanged": true,
+      "originals_unchanged": true,
+      "migration_evidence": "disposable_schema6_replay",
+      "accepted_preverification_schema": 7,
+      "schema6_existing_tables_replayed": 19,
+      "source_observations_retained": true,
+      "v1_rows_unchanged": 1441,
+      "original_artifact_hashes_verified": 1422,
+      "calendar_boundary_checks": [
+        {
+          "timezone": "America/Los_Angeles",
+          "year": 2025,
+          "periods_verified": 15,
+          "performance_event_times_verified": 260
+        },
+        {
+          "timezone": "Asia/Tokyo",
+          "year": 2026,
+          "periods_verified": 15,
+          "performance_event_times_verified": 260
+        },
+        {
+          "timezone": "America/Los_Angeles",
+          "year": 2026,
+          "periods_verified": 15,
+          "performance_event_times_verified": 260
+        },
+        {
+          "timezone": "Asia/Tokyo",
+          "year": 2026,
+          "periods_verified": 15,
+          "performance_event_times_verified": 260
+        },
+        {
+          "timezone": "America/Los_Angeles",
+          "year": 2024,
+          "periods_verified": 15,
+          "performance_event_times_verified": 206
+        },
+        {
+          "timezone": "Asia/Tokyo",
+          "year": 2024,
+          "periods_verified": 15,
+          "performance_event_times_verified": 206
+        }
+      ],
+      "independent_checks": [
+        {
+          "status": "passed",
+          "timezone": "America/Los_Angeles",
+          "year": 2026,
+          "periods_independently_verified": 15,
+          "ytd": {
+            "start": "2026-01-01",
+            "end_exclusive": "2026-10-09",
+            "miles": 1631.1954622504572,
+            "contributing_activities": 120,
+            "dated_cycling_activities": 120,
+            "file_count": 104,
+            "file_miles": 1415.6373217907421,
+            "api_count": 16,
+            "api_miles": 215.55814045971528,
+            "distance_unavailable": 0,
+            "date_unavailable_excluded": 0
+          },
+          "last7_miles": 74.81719259524378,
+          "prior7_miles": 94.89218588443488,
+          "diagnostics": {
+            "cycling_activities": 1418,
+            "excluded_noncycling": 24,
+            "date_unavailable": 0,
+            "timezone_unknown": 93,
+            "future_excluded": 0,
+            "included_classifications": {
+              "Virtual Ride": 1270,
+              "Ride": 148
+            },
+            "excluded_classifications": {
+              "Run": 22,
+              "Walk": 1,
+              "Rowing": 1
+            }
+          },
+          "goal_math_verified": true,
+          "no_default_goal": false,
+          "this_week_actual_miles": 26.3025182931679,
+          "weekly_required_points_verified": 12,
+          "needed_miles_per_week": 47.40037814579523,
+          "all_bars_are_actual": true,
+          "current_bar_matches_this_week": true,
+          "current_actual_preserved": true,
+          "recent_average_power_sources_verified": 6,
+          "performance_summary_references_verified": true,
+          "performance_event_times_verified": 250,
+          "deterministic_latest_context_verified": true,
+          "file_api_distance_conflicts": 3
+        },
+        {
+          "status": "passed",
+          "timezone": "Asia/Tokyo",
+          "year": 2026,
+          "periods_independently_verified": 15,
+          "ytd": {
+            "start": "2026-01-01",
+            "end_exclusive": "2026-10-10",
+            "miles": 1636.29673954108,
+            "contributing_activities": 121,
+            "dated_cycling_activities": 121,
+            "file_count": 105,
+            "file_miles": 1420.7385990813648,
+            "api_count": 16,
+            "api_miles": 215.55814045971528,
+            "distance_unavailable": 0,
+            "date_unavailable_excluded": 0
+          },
+          "last7_miles": 74.81719259524378,
+          "prior7_miles": 94.89218588443488,
+          "diagnostics": {
+            "cycling_activities": 1418,
+            "excluded_noncycling": 24,
+            "date_unavailable": 0,
+            "timezone_unknown": 93,
+            "future_excluded": 0,
+            "included_classifications": {
+              "Virtual Ride": 1270,
+              "Ride": 148
+            },
+            "excluded_classifications": {
+              "Run": 22,
+              "Walk": 1,
+              "Rowing": 1
+            }
+          },
+          "goal_math_verified": true,
+          "no_default_goal": false,
+          "this_week_actual_miles": 44.08678318619263,
+          "weekly_required_points_verified": 12,
+          "needed_miles_per_week": 47.541238833884826,
+          "all_bars_are_actual": true,
+          "current_bar_matches_this_week": true,
+          "current_actual_preserved": true,
+          "recent_average_power_sources_verified": 6,
+          "performance_summary_references_verified": true,
+          "performance_event_times_verified": 250,
+          "deterministic_latest_context_verified": true,
+          "file_api_distance_conflicts": 3
+        },
+        {
+          "status": "passed",
+          "timezone": "America/Los_Angeles",
+          "year": 2026,
+          "periods_independently_verified": 15,
+          "ytd": {
+            "start": "2026-01-01",
+            "end_exclusive": "2026-10-09",
+            "miles": 1631.1954622504572,
+            "contributing_activities": 120,
+            "dated_cycling_activities": 120,
+            "file_count": 104,
+            "file_miles": 1415.6373217907421,
+            "api_count": 16,
+            "api_miles": 215.55814045971528,
+            "distance_unavailable": 0,
+            "date_unavailable_excluded": 0
+          },
+          "last7_miles": 74.81719259524378,
+          "prior7_miles": 94.89218588443488,
+          "diagnostics": {
+            "cycling_activities": 1418,
+            "excluded_noncycling": 24,
+            "date_unavailable": 0,
+            "timezone_unknown": 93,
+            "future_excluded": 0,
+            "included_classifications": {
+              "Virtual Ride": 1270,
+              "Ride": 148
+            },
+            "excluded_classifications": {
+              "Run": 22,
+              "Walk": 1,
+              "Rowing": 1
+            }
+          },
+          "goal_math_verified": true,
+          "no_default_goal": false,
+          "this_week_actual_miles": 26.3025182931679,
+          "weekly_required_points_verified": 12,
+          "needed_miles_per_week": 47.40037814579523,
+          "all_bars_are_actual": true,
+          "current_bar_matches_this_week": true,
+          "current_actual_preserved": true,
+          "recent_average_power_sources_verified": 6,
+          "performance_summary_references_verified": true,
+          "performance_event_times_verified": 250,
+          "deterministic_latest_context_verified": true,
+          "file_api_distance_conflicts": 3
+        }
+      ],
+      "home_activities_settings_routes": true,
+      "old_root_bookmark_redirect": true,
+      "goal_set_updated_cleared": false,
+      "no_goal_at_handoff": false,
+      "goal_restart_and_same_dashboard": true,
+      "preexisting_goals_preserved": true,
+      "annual_goal_review_targets": {
+        "2026": "2200"
+      },
+      "desktop_phone_no_overflow": true,
+      "los_angeles_tokyo": true,
+      "recent_links_match_browser": true,
+      "performance_cards_match_page": true,
+      "normal_sync_reflected_on_home": false,
+      "immediate_miles_only_tooltip_checks": 48,
+      "tooltip_pointer_keyboard_desktop_phone": true,
+      "this_week_card_matches_current_actual_bar": true,
+      "all_bars_are_actual": true,
+      "required_line_current_endpoint_geometry": true,
+      "average_power_table_matches_source_payload": true,
+      "recent_mileage_three_cards_desktop_side_by_side_phone_stacked": true,
+      "read_only_live_rerun": true,
+      "activities_title_sort_pagination_verified": true,
+      "exception_failure_restart_later_sync_verified": false,
+      "sync_results": [],
+      "integrity": true,
+      "foreign_keys": true,
+      "phase_4_5_6_implemented": false
+    },
+    "synthetic": {
+      "status": "passed",
+      "mode": "synthetic",
+      "schema6_migration_accepted_tables_preserved": false,
+      "schema_version": 7,
+      "native_export_tables_unchanged": true,
+      "originals_unchanged": true,
+      "migration_evidence": "synthetic_schema7_fixture",
+      "accepted_preverification_schema": 7,
+      "schema6_existing_tables_replayed": 0,
+      "source_observations_retained": true,
+      "v1_rows_unchanged": 0,
+      "original_artifact_hashes_verified": 4,
+      "calendar_boundary_checks": [
+        {
+          "timezone": "America/Los_Angeles",
+          "year": 2025,
+          "periods_verified": 15,
+          "performance_event_times_verified": 2
+        },
+        {
+          "timezone": "Asia/Tokyo",
+          "year": 2026,
+          "periods_verified": 15,
+          "performance_event_times_verified": 2
+        },
+        {
+          "timezone": "America/Los_Angeles",
+          "year": 2026,
+          "periods_verified": 15,
+          "performance_event_times_verified": 2
+        },
+        {
+          "timezone": "Asia/Tokyo",
+          "year": 2026,
+          "periods_verified": 15,
+          "performance_event_times_verified": 2
+        },
+        {
+          "timezone": "America/Los_Angeles",
+          "year": 2024,
+          "periods_verified": 15,
+          "performance_event_times_verified": 2
+        },
+        {
+          "timezone": "Asia/Tokyo",
+          "year": 2024,
+          "periods_verified": 15,
+          "performance_event_times_verified": 2
+        }
+      ],
+      "independent_checks": [
+        {
+          "status": "passed",
+          "timezone": "America/Los_Angeles",
+          "year": 2026,
+          "periods_independently_verified": 15,
+          "ytd": {
+            "start": "2026-01-01",
+            "end_exclusive": "2026-10-09",
+            "miles": 6.999990058060924,
+            "contributing_activities": 5,
+            "dated_cycling_activities": 6,
+            "file_count": 3,
+            "file_miles": 3.999990058060924,
+            "api_count": 2,
+            "api_miles": 3,
+            "distance_unavailable": 1,
+            "date_unavailable_excluded": 0
+          },
+          "last7_miles": 6.999990058060924,
+          "prior7_miles": 0,
+          "diagnostics": {
+            "cycling_activities": 6,
+            "excluded_noncycling": 1,
+            "date_unavailable": 0,
+            "timezone_unknown": 0,
+            "future_excluded": 0,
+            "included_classifications": {
+              "Virtual Ride": 5,
+              "Ride": 1
+            },
+            "excluded_classifications": {
+              "Run": 1
+            }
+          },
+          "goal_math_verified": false,
+          "no_default_goal": true,
+          "this_week_actual_miles": 6.999990058060924,
+          "weekly_required_points_verified": 12,
+          "needed_miles_per_week": null,
+          "all_bars_are_actual": true,
+          "current_bar_matches_this_week": true,
+          "current_actual_preserved": true,
+          "recent_average_power_sources_verified": 6,
+          "performance_summary_references_verified": true,
+          "performance_event_times_verified": 6,
+          "deterministic_latest_context_verified": true,
+          "file_api_distance_conflicts": 1
+        },
+        {
+          "status": "passed",
+          "timezone": "Asia/Tokyo",
+          "year": 2026,
+          "periods_independently_verified": 15,
+          "ytd": {
+            "start": "2026-01-01",
+            "end_exclusive": "2026-10-10",
+            "miles": 6.999990058060924,
+            "contributing_activities": 5,
+            "dated_cycling_activities": 6,
+            "file_count": 3,
+            "file_miles": 3.999990058060924,
+            "api_count": 2,
+            "api_miles": 3,
+            "distance_unavailable": 1,
+            "date_unavailable_excluded": 0
+          },
+          "last7_miles": 6.999990058060924,
+          "prior7_miles": 0,
+          "diagnostics": {
+            "cycling_activities": 6,
+            "excluded_noncycling": 1,
+            "date_unavailable": 0,
+            "timezone_unknown": 0,
+            "future_excluded": 0,
+            "included_classifications": {
+              "Virtual Ride": 5,
+              "Ride": 1
+            },
+            "excluded_classifications": {
+              "Run": 1
+            }
+          },
+          "goal_math_verified": false,
+          "no_default_goal": true,
+          "this_week_actual_miles": 6.999990058060924,
+          "weekly_required_points_verified": 12,
+          "needed_miles_per_week": null,
+          "all_bars_are_actual": true,
+          "current_bar_matches_this_week": true,
+          "current_actual_preserved": true,
+          "recent_average_power_sources_verified": 6,
+          "performance_summary_references_verified": true,
+          "performance_event_times_verified": 6,
+          "deterministic_latest_context_verified": true,
+          "file_api_distance_conflicts": 1
+        },
+        {
+          "status": "passed",
+          "timezone": "America/Los_Angeles",
+          "year": 2026,
+          "periods_independently_verified": 15,
+          "ytd": {
+            "start": "2026-01-01",
+            "end_exclusive": "2026-10-09",
+            "miles": 6.999990058060924,
+            "contributing_activities": 5,
+            "dated_cycling_activities": 6,
+            "file_count": 3,
+            "file_miles": 3.999990058060924,
+            "api_count": 2,
+            "api_miles": 3,
+            "distance_unavailable": 1,
+            "date_unavailable_excluded": 0
+          },
+          "last7_miles": 6.999990058060924,
+          "prior7_miles": 0,
+          "diagnostics": {
+            "cycling_activities": 6,
+            "excluded_noncycling": 1,
+            "date_unavailable": 0,
+            "timezone_unknown": 0,
+            "future_excluded": 0,
+            "included_classifications": {
+              "Virtual Ride": 5,
+              "Ride": 1
+            },
+            "excluded_classifications": {
+              "Run": 1
+            }
+          },
+          "goal_math_verified": true,
+          "no_default_goal": false,
+          "this_week_actual_miles": 6.999990058060924,
+          "weekly_required_points_verified": 12,
+          "needed_miles_per_week": 102.29166749516158,
+          "all_bars_are_actual": true,
+          "current_bar_matches_this_week": true,
+          "current_actual_preserved": true,
+          "recent_average_power_sources_verified": 6,
+          "performance_summary_references_verified": true,
+          "performance_event_times_verified": 6,
+          "deterministic_latest_context_verified": true,
+          "file_api_distance_conflicts": 1
+        },
+        {
+          "status": "passed",
+          "timezone": "America/Los_Angeles",
+          "year": 2026,
+          "periods_independently_verified": 15,
+          "ytd": {
+            "start": "2026-01-01",
+            "end_exclusive": "2026-10-09",
+            "miles": 6.999990058060924,
+            "contributing_activities": 5,
+            "dated_cycling_activities": 6,
+            "file_count": 3,
+            "file_miles": 3.999990058060924,
+            "api_count": 2,
+            "api_miles": 3,
+            "distance_unavailable": 1,
+            "date_unavailable_excluded": 0
+          },
+          "last7_miles": 6.999990058060924,
+          "prior7_miles": 0,
+          "diagnostics": {
+            "cycling_activities": 6,
+            "excluded_noncycling": 1,
+            "date_unavailable": 0,
+            "timezone_unknown": 0,
+            "future_excluded": 0,
+            "included_classifications": {
+              "Virtual Ride": 5,
+              "Ride": 1
+            },
+            "excluded_classifications": {
+              "Run": 1
+            }
+          },
+          "goal_math_verified": false,
+          "no_default_goal": true,
+          "this_week_actual_miles": 6.999990058060924,
+          "weekly_required_points_verified": 12,
+          "needed_miles_per_week": null,
+          "all_bars_are_actual": true,
+          "current_bar_matches_this_week": true,
+          "current_actual_preserved": true,
+          "recent_average_power_sources_verified": 6,
+          "performance_summary_references_verified": true,
+          "performance_event_times_verified": 6,
+          "deterministic_latest_context_verified": true,
+          "file_api_distance_conflicts": 1
+        }
+      ],
+      "home_activities_settings_routes": true,
+      "old_root_bookmark_redirect": true,
+      "goal_set_updated_cleared": true,
+      "no_goal_at_handoff": true,
+      "goal_restart_and_same_dashboard": true,
+      "preexisting_goals_preserved": false,
+      "annual_goal_review_targets": {},
+      "desktop_phone_no_overflow": true,
+      "los_angeles_tokyo": true,
+      "recent_links_match_browser": true,
+      "performance_cards_match_page": true,
+      "normal_sync_reflected_on_home": true,
+      "immediate_miles_only_tooltip_checks": 46,
+      "tooltip_pointer_keyboard_desktop_phone": true,
+      "this_week_card_matches_current_actual_bar": true,
+      "all_bars_are_actual": true,
+      "required_line_current_endpoint_geometry": true,
+      "average_power_table_matches_source_payload": true,
+      "recent_mileage_three_cards_desktop_side_by_side_phone_stacked": true,
+      "read_only_live_rerun": false,
+      "activities_title_sort_pagination_verified": true,
+      "exception_failure_restart_later_sync_verified": true,
+      "sync_results": [
+        {
+          "status": "completed",
+          "scope": "activity:read_all",
+          "window_basis": "latest_export_calendar_day_utc_minus_3_days",
+          "overlap_days": 3,
+          "pages_requested": 1,
+          "api_activities_observed": 4,
+          "rate_limits": {},
+          "new_activities": 3,
+          "existing_activities_enriched": 1,
+          "unchanged_observations": 0,
+          "changed_observations": 0,
+          "new_observations": 4,
+          "ambiguous_new_associations": 0,
+          "strong_local_matches": 0,
+          "performance_rebuild_recommended": 1,
+          "stream_candidates": 2,
+          "stream_fetches": 2,
+          "stream_enriched": 2,
+          "stream_reused": 0,
+          "stream_unavailable": 0,
+          "stream_failed": 0,
+          "stream_deferred": 0,
+          "stream_authorization_attention": false,
+          "stream_rate_limited": false,
+          "performance_update": "updated",
+          "performance_pending": 0,
+          "performance_eligible": 4
+        },
+        {
+          "status": "completed",
+          "scope": "activity:read_all",
+          "window_basis": "last_successful_sync_minus_3_days",
+          "overlap_days": 3,
+          "pages_requested": 1,
+          "api_activities_observed": 4,
+          "rate_limits": {},
+          "new_activities": 0,
+          "existing_activities_enriched": 1,
+          "unchanged_observations": 3,
+          "changed_observations": 1,
+          "new_observations": 1,
+          "ambiguous_new_associations": 0,
+          "strong_local_matches": 0,
+          "performance_rebuild_recommended": 1,
+          "stream_candidates": 2,
+          "stream_fetches": 1,
+          "stream_enriched": 1,
+          "stream_reused": 1,
+          "stream_unavailable": 0,
+          "stream_failed": 0,
+          "stream_deferred": 0,
+          "stream_authorization_attention": false,
+          "stream_rate_limited": false,
+          "performance_update": "incomplete"
+        },
+        {
+          "status": "completed",
+          "scope": "activity:read_all",
+          "window_basis": "last_successful_sync_minus_3_days",
+          "overlap_days": 3,
+          "pages_requested": 1,
+          "api_activities_observed": 4,
+          "rate_limits": {},
+          "new_activities": 0,
+          "existing_activities_enriched": 0,
+          "unchanged_observations": 4,
+          "changed_observations": 0,
+          "new_observations": 0,
+          "ambiguous_new_associations": 0,
+          "strong_local_matches": 0,
+          "performance_rebuild_recommended": 0,
+          "stream_candidates": 2,
+          "stream_fetches": 0,
+          "stream_enriched": 0,
+          "stream_reused": 2,
+          "stream_unavailable": 0,
+          "stream_failed": 0,
+          "stream_deferred": 0,
+          "stream_authorization_attention": false,
+          "stream_rate_limited": false,
+          "performance_update": "updated",
+          "performance_pending": 0,
+          "performance_eligible": 4
+        }
+      ],
+      "integrity": true,
+      "foreign_keys": true,
+      "phase_4_5_6_implemented": false
+    }
   }
 }

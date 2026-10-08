@@ -1,5 +1,31 @@
 # P3-01 — Dashboard verification and YTD mileage investigation
 
+## 2026-10-08 Recent Mileage consolidation — HARD — Owner
+
+The [Owner-approved consolidation](https://github.com/k14krug/rideworks/pull/19#issuecomment-6071254155) is implemented at **`6d9160e8510caa5734f776ba785a5f1da64ae35e`**, following current Analyst JIT §8.3 (`473a173`) and Phase 3 contract (`18fb186`) on refreshed main `23ac11d`. Branch `task/p3-01-dashboard`, [PR #19](https://github.com/k14krug/rideworks/pull/19). P3-01 stays `in_progress` / `ready_for_review`; re-presented HARD — Owner, with Owner/Analyst task acceptance outstanding. No Phase 4/5/6 work.
+
+Three top cards now show **Recent Mileage**, **Current 42-day best** and **Latest eligible 20-minute ride**. Recent Mileage contains **This Week** (actual Monday-through-today miles) and **Last 7 Days** (trailing seven-day actuals and neutral prior-seven-day comparison). Desktop values sit side by side with a divider; phone values stack with a horizontal divider. Annual goal information stays in Mileage Progress. No fourth metric or new calculation was added. Distance selection, calendar/goal calculations, chart semantics, Avg Pwr, targeted enrichment and Performance-v2 are unchanged.
+
+**285 full tests / 24 focused dashboard tests pass.** The added regression uses distinct source-backed period values (2 mi this week, 7 mi last seven, 3 mi previous seven) to assert the combined card retains both values, places the neutral 4-mi comparison only under Last 7 Days and contains exactly three top cards.
+
+Fresh live and disposable synthetic Chromium pass LA/Tokyo source/calendar checks, all twelve actual bars/required-line geometry, 48 live / 46 synthetic immediate tooltip lifecycle checks, recent source-power/links, search/sort/pagination and restart. New DOM/geometry checks assert both submetrics are inside Recent Mileage, exactly three summary cards, side-by-side desktop layout and stacked phone layout. Both 1,448-pixel desktop and 390-pixel phone screenshots were refreshed and inspected. Independent SQL/Decimal again reproduces fifteen mileage periods, twelve required points and current Performance references. The exact 2,200-mi goal tuple, all 1,422 artifact hashes and 1,441 v1 rows remain intact; integrity/FKs pass. Live verification makes **zero external API calls**; synthetic sync/failure/recovery uses fake HTTP only. No historical enrichment is repeated.
+
+The enriched LA YTD remains **1,631.195462250 mi** (1,631.2 displayed), 120 contributors / zero distance unavailable; current actual week **26.3 mi**. This card consolidation does not revise the approximate-Strava residual conclusion below. Performance stays 1,028 eligible / zero pending.
+
+Reproduction (private inputs replaced with placeholders; use fresh ignored disposable directories and open the managed Chromium session first):
+
+```sh
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python -m unittest discover -s tests -p test_rideworks_dashboard.py
+.venv/bin/python tools/verify_rideworks_dashboard_ui.py --synthetic-dir '<fresh-disposable-store>' --session rideworks-p3-01 --output '<aggregate-output>'
+.venv/bin/python tools/verify_rideworks_dashboard_ui.py --data-dir '<accepted-store>' --baseline '<fresh-baseline>' --session rideworks-p3-01 --skip-sync --output '<aggregate-output>'
+.venv/bin/python -m rideworks --data-dir '<accepted-store>' serve --port 8771
+```
+
+[Aggregate evidence](acceptance.json), [synthetic desktop](home-desktop-synthetic.png), [synthetic phone](home-phone-synthetic.png). Live screenshots remain private. [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings](http://127.0.0.1:8771/settings#annual-goal). Owner review requested for the consolidated card and desktop/phone readability, per current JIT §15. Explicit Owner approval precedes Analyst acceptance; no next task.
+
+## Prior authorized enrichment evidence
+
 ## 2026-10-08 Authorized targeted summary enrichment — HARD — Owner
 
 **Result:** all eight established GPX-backed outdoor Ride Activities now have current, allowlisted Strava API summary distance and elapsed duration. They add **181,830.3 metres = 112.984110296 mi**. LA YTD is **1,631.195462250 mi** (Home **1,631.2 mi**), with **120 contributors / zero distance-unavailable Activities**.
