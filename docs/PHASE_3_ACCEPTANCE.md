@@ -140,6 +140,32 @@ Activities with no supported date cannot contribute to time-bounded dashboard mi
 
 The dashboard must make the browser timezone available server-side using the same bounded local-time pattern already used by Activities. Do not use server timezone as a hidden substitute.
 
+### 4.5 Targeted historical summary reconciliation
+
+Phase 3 acceptance additionally requires reconciliation of the eight known 2026
+outdoor Ride Activities that currently have preserved GPX + export evidence and
+established Strava IDs but no known-unit retained distance.
+
+The Owner authorized up to eight direct `GET /activities/{id}` Strava summary
+requests for these established IDs only.
+
+Requirements:
+
+- use existing `activity:read_all` authorization;
+- sequential requests, accepted token/rate-limit behavior;
+- no historical list crawl and no stream requests;
+- persist through the existing Strava summary allowlist/provenance model;
+- retain GPX originals unchanged;
+- current API summary distance/duration may fill presentation values only when
+  the preferred file summary value is unavailable;
+- reruns are idempotent;
+- normal future Sync now must already provide this fallback for newly observed
+  rides, so this is a bounded historical repair rather than an ongoing crawl.
+
+Phase 3 is not accepted until the post-enrichment YTD total is independently
+reconciled against the Owner-reported approximately 1,631-mile Strava total or
+any residual difference is explicitly explained.
+
 ## 5. Dashboard contents
 
 The supplied dashboard mockup is visual direction, not a literal feature checklist.
@@ -392,7 +418,15 @@ Required evidence:
 20. Restart retains goal setting and produces the same dashboard.
 21. Desktop and phone Chromium layouts have no overflow/unusable controls.
 22. Full automated regression suite passes.
-23. Phase 4/5/6 concepts remain unimplemented.
+23. The eight identified YTD outdoor rides receive only bounded established-ID
+    Strava summary enrichment; selected distances/durations and provenance
+    independently verify, and distance-unavailable count is recomputed.
+24. Post-enrichment RideWorks YTD mileage and residual difference versus the
+    Owner-reported approximately 1,631-mi Strava total are explicitly
+    reconciled.
+25. A focused normal-sync test proves future Strava-synchronized GPX rides can
+    receive API summary distance/duration fallback without historical crawling.
+26. Phase 4/5/6 concepts remain unimplemented.
 
 ## 12. Owner acceptance
 
