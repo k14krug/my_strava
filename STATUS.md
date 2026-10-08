@@ -38,3 +38,6 @@
 
 
 **Owner correction — Targeted historical summary enrichment (2026-10-08):** The eight unresolved 2026 YTD distance omissions are all outdoor Ride Activities with GPX + export evidence and established Strava IDs, but no retained known-unit distance/API summary. Owner authorized at most eight direct Strava `GET /activities/{id}` summary requests using existing `activity:read_all`, sequentially and through the existing summary allowlist. No historical list crawl, stream requests, fuzzy matching, CSV-unit guessing or GPX-derived distance. After enrichment, independently reconcile YTD mileage against the Owner-reported ~1,631 mi; explain any residual before Owner approval. Verify normal future Sync now already supplies API distance/duration fallback for newly synchronized GPX rides.
+
+
+**Owner correction — consolidate Recent Mileage (2026-10-08):** Replace the separate This Week Miles and Last 7 Days top cards with one Recent Mileage card containing both submetrics and the prior-7-day comparison. Do not fill the freed space with another invented metric. Top summary becomes three cards: Recent Mileage, Current 42-day best, Latest eligible 20-minute ride. Owner approved the proposed visual arrangement. Re-present HARD — Owner after implementation.
