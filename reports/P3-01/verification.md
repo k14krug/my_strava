@@ -1,5 +1,81 @@
 # P3-01 — Dashboard verification and YTD mileage investigation
 
+## 2026-10-08 Authorized targeted summary enrichment — HARD — Owner
+
+**Result:** all eight established GPX-backed outdoor Ride Activities now have current, allowlisted Strava API summary distance and elapsed duration. They add **181,830.3 metres = 112.984110296 mi**. LA YTD is **1,631.195462250 mi** (Home **1,631.2 mi**), with **120 contributors / zero distance-unavailable Activities**.
+
+This correction follows the [Owner's explicit authorization](https://github.com/k14krug/my_strava/pull/19#issuecomment-6063242126) and Analyst JIT §8.2. `/TASK P3-01` was used under the JIT's missing-declaration `/TASK only` fallback. Clean branch checked, origin fetched unconditionally and task branch pulled; refreshed main `a2faa70` was merged, bringing in JIT `25b7d5e` and Phase 3 contract `8c2c284`. Only the STATUS merge conflict required resolution. Implementation: **`38183e31792ca1133d50a2f2b1bc8689c5f3414a`**. P3-01 remains `in_progress`; Owner and Analyst acceptance remain outstanding.
+
+### Post-enrichment reconciliation
+
+| LA YTD evidence | Before | After |
+|---|---:|---:|
+| Supported cycling Activities | 120 | 120 |
+| Distance contributors | 112 | 120 |
+| Distance unavailable | 8 | **0** |
+| File contributors / miles | 104 / 1,415.637321791 | unchanged |
+| API contributors / miles | 8 / 102.574030164 | **16 / 215.558140460** |
+| Total miles | 1,518.211351955 | **1,631.195462250** |
+
+All eight repaired Activities remain **Ride** (zero Virtual Ride). Each is still associated with its original GPX/export evidence and same RideWorks Activity/Strava identity. Each selected distance and elapsed duration exactly matches its current API summary; both selected-source contexts are **Strava API summary**. No new Activity was created. The private full reconciliation was regenerated for all 120 YTD Activities and the relevant boundary exclusion, retaining per-Activity identity/date/classification, selection and alternatives/provenance. The private target table also records both selected metrics and API evidence. No titles, IDs, original details, source paths or coordinates are published here.
+
+The API summaries now supply absolute start instants where the GPX entries previously relied on supported export dates with unknown timezone. Independent LA calendar membership remains 120 Activities. Understood FIT/TCX distance still takes precedence; the four file/API overlaps and their summed **+0.12 m file-minus-API** difference are unchanged. API distance is used for these GPX rides because the files have no explicit understood session distance; no coordinates or raw samples were used to calculate mileage.
+
+### Residual against the Owner's approximate Strava report
+
+Using **1,631 mi as an approximate reference**, reference minus RideWorks is **−0.195462250 mi**: RideWorks is about 0.2 mi higher. The recomputed total rounds to **1,631 whole miles**, consistent with the Owner's report. The eight omitted Activities explain the material ~113-mile deficit; their API mileage is slightly larger than the gap estimated from a whole-mile reference. The known file-first effect is only **+0.000074565 mi**, leaving an API-comparable reference difference of approximately **−0.195387686 mi**.
+
+There is **no remaining material shortfall against the approximate reference**. The remaining 0.195462250 mi is within its whole-mile rounding resolution. This establishes agreement at the reported precision, **not exact current Strava equality**: an exact Strava total/display rule and complete current Strava-side membership were not independently obtained. Do not promote the approximate reference into an oracle or claim a proved exact zero residual. Owner review remains required.
+
+The stored **2026 / 2,200-mi goal and its updated timestamp are unchanged**. Current LA goal display: **74.1% complete, 568.8 mi remaining, 47.4 mi/week needed**. Current actual week remains **26.3 mi** in card/bar. Calendar-day-dependent seven-day/pace values use October 8 for this run; they need not equal the October 7 prior handoff.
+
+### Bounded operation and implementation
+
+The live run made **eight sequential `GET /activities/{id}` requests** for exactly the privately reconciled IDs, plus **one OAuth refresh POST**. **Zero activity-list, stream, segment, lap or other activity GETs**; no historical crawl, search, fuzzy association or new Activity creation. Existing `activity:read_all`, HTTPS endpoint restriction, 20-second timeout, no credential-forwarding redirects, response-size/JSON checks, rotating-token persistence and stop-on-rate/auth/error behavior were reused. Final read/overall rate usage was **8/100 and 8/200** for the short interval, **8/1,000 and 8/2,000** for the day.
+
+- `ApiClient.activity_summary` adds only the numeric-ID detail endpoint to the GET allowlist, with separate request accounting.
+- `repair-strava-summaries --targets <private-manifest>` is an explicit bounded maintenance command, independent of normal Sync now. The manifest maps at most eight established Strava IDs to existing GPX/export Ride Activities and is validated in full before HTTP begins.
+- Responses pass through the existing `normalize` summary allowlist. Maps/coordinates, descriptions, social fields, segments, laps and photos from DetailedActivity are discarded; the full response is never persisted or logged.
+- The existing observation transaction gains an established-target mode: it rechecks exact association and does not write the forward-sync checkpoint. Each successful response commits independently; later failures stop requests while retaining earlier successes. Missing distance retains the valid filtered observation, then stops explicitly. No value is manufactured.
+- Successful source changes made Performance pending; the accepted atomic `converge_performance` path completed. **1,028 eligible / zero pending**; all repaired outdoor rides remain excluded under the unchanged outdoor Performance policy.
+
+Official [Get Activity](https://developers.strava.com/docs/reference/#api-Activities-getActivityById) and [rate-limit documentation](https://developers.strava.com/docs/rate-limits/) were checked 2026-10-08. The new JIT explicitly authorizes the narrow direct-ID exception previously proposed as needing authorization.
+
+### Verification
+
+**284 full regression tests passed; eight focused repair tests passed** (the full suite includes all 23 existing dashboard tests). Focused coverage includes eight sequential requests; source/identity checks before any request; wrong athlete/ID/type/shape rejection; summary allowlisting; file/export preservation; zero-distance support; missing-distance stop; partial HTTP failure retaining earlier summaries; token rotation and exhausted-rate/401 handling; idempotence; unchanged checkpoint; and unchanged outdoor Performance eligibility.
+
+A focused **normal future Sync now** regression imports a generated GPX-backed outdoor ride with an established export ID and no distance/duration. One normal recent list request supplies its API summary; existing association is enriched, both selected values use API provenance, Home adds one mile, and no direct historical or stream request occurs. This repair is not wired into normal sync.
+
+Fresh live checks additionally passed:
+
+- independent SQL/Decimal reproduces every selected target metric, source counts, added mileage and YTD; existing independent dashboard verification reproduces fifteen periods, twelve cumulative required points, goal calculations and Performance references;
+- **17 native/export/goal/sync/stream tables** match the pre-enrichment snapshot, including a streaming fingerprint of all native records; all twelve prior API observations/current links remain unchanged and exactly eight new observations/links were added;
+- **all 1,422 original/export artifact hashes and sizes**, source allowlist, integrity `ok`, zero FK violations; unchanged Activity count, original goal tuple and forward-sync checkpoint;
+- an offline replay of the eight retained normalized API observations into a disposable copy produces **eight unchanged / zero new observations** and preserves the checkpoint. No second live fetch was performed;
+- actual Chromium Home in LA/Tokyo, desktop/phone, 48 immediate tooltip lifecycle checks, current bar/card and line/needed agreement, search/sort/disjoint pagination, Performance links, Settings goal preservation and restart with identical dashboard data;
+- all eight target Activities checked in the Activities browser and Activity Review at both widths (**16 reviews**): selected distance/duration API provenance, exact API metres/seconds and preserved GPX/export evidence; no overflow;
+- the first browser attempt exposed a verifier assumption: the required-line point overlapped the center of the bar group's bounding box. The verifier now hovers the bar's own hit area away from the point. Fresh rerun passed; product chart behavior was not changed.
+
+Fresh live browser verification used `--skip-sync` and made no further external requests. Prior synthetic goal/action/normal-sync/failure-recovery and Settings/OAuth evidence below remains historical; the full automated suite was freshly rerun. Live desktop/phone screenshots remain private and were visually inspected. The earlier 23-check mapping below is historical; updated contract checks 23–25 are supported by this section, with check 24 limited to the Owner's approximate reported precision. Check 26 remains true: Phase 4/5/6 are unimplemented.
+
+### Reproduction and handoff
+
+```sh
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python -m unittest discover -s tests -p test_rideworks_strava_summary_repair.py
+.venv/bin/python -m rideworks --data-dir '<accepted-store>' repair-strava-summaries --targets '<private-eight-ID-manifest>'
+.venv/bin/python '<private-post-enrichment-verifier>'
+.venv/bin/python tools/verify_rideworks_dashboard_ui.py --data-dir '<accepted-store>' --baseline '<fresh-private-baseline>' --session rideworks-p3-enrichment --skip-sync --output '<private-aggregate-output>'
+```
+
+The live repair command above was executed **once** for this authorization; it is not a request to repeat the eight GETs. Exact paths/commands, before/after snapshots, filtered private target results, full reconciliation, offline-idempotence evidence and live screenshots remain ignored/local.
+
+**Re-present Gate 1 — HARD — Owner:** [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal). Review the restored eight distances/durations and **1,631.2-mi** Home total, and the residual limitation against the approximate Strava reference. No approval or PR merge; subsequent Analyst acceptance remains outstanding. No Phase 4/5/6 or next task.
+
+
+## Prior investigation (before authorized enrichment)
+
 ## 2026-10-08 Owner-requested YTD mileage reconciliation — HARD — Owner
 
 **Finding:** the eight distance-unavailable YTD Activities are **8 Ride / 0 Virtual Ride**. Every one is **GPX-file-backed with an associated Strava export row and an established Strava activity ID**. None is CSV-only; none has any retained API summary, superseded API observation, or API stream. Their originals contain no explicit distance field. This is a missing understood-distance-evidence case, not a demonstrated parsing, association, aggregation, or Performance-eligibility defect.

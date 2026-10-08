@@ -395,6 +395,8 @@ Phase 3 must not begin automatically after Phase 2.
 
 **2026-10-08 reconciliation:** Owner-requested investigation complete; numeric Strava gap remains unresolved at **HARD — Owner**. All eight unavailable YTD Activities are Ride, GPX+export-backed, with established Strava IDs but no retained known-unit distance/API summary. Existing-evidence recovery is zero; file-first adds only 0.12 m. Proposed at most eight bounded summary-window GETs (plus one token refresh if needed), retaining only those IDs; not executed. See `reports/P3-01/verification.md`. Runtime and mileage policy unchanged; no approval/merge or Phase 4/5/6.
 
+**Authorized repair delivered (2026-10-08):** Runtime `38183e3`, updated JIT `25b7d5e` / contract `8c2c284`. Eight direct established-ID GETs plus one token refresh retained allowlisted distance/duration; zero list/stream requests. Added **112.984110296 mi**; LA YTD **1,631.195462250 mi**, 120 contributors / **zero distance unavailable**. Residual versus approximate 1,631 is **−0.195462250 mi**, consistent at whole-mile precision; exact Strava equality unverified. 284 full / 8 focused tests, independent SQL/Decimal, offline idempotence, fresh live Home and all eight desktop/phone Activity Reviews pass. Goal, forward checkpoint, originals and outdoor Performance policy preserved; 1,028 eligible / zero pending. Re-present **HARD — Owner**; no approval, merge or later phase.
+
 **Dependency:** Phase 2 and STRAVA-004 accepted / complete.
 
 Phase 4 must not begin automatically.
