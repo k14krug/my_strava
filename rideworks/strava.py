@@ -73,13 +73,15 @@ class ApiClient:
         self.opener=opener or build_opener(NoRedirect())
         self.rate={}
         self.stream_requests=0
+        self.summary_requests=0
 
     def request(self,method,url,*,form=None,token=None,basic=False,empty=False,max_json=MAX_JSON):
         allowed={'https://www.strava.com/oauth/token','https://www.strava.com/oauth/revoke',
                  'https://www.strava.com/api/v3/athlete/activities'}
         endpoint=url.split('?',1)[0]
         stream_endpoint=re.fullmatch(r'https://www\.strava\.com/api/v3/activities/[1-9][0-9]*/streams',endpoint)
-        if endpoint not in allowed and not (method=='GET' and stream_endpoint):
+        summary_endpoint=re.fullmatch(r'https://www\.strava\.com/api/v3/activities/[1-9][0-9]{0,19}',endpoint)
+        if endpoint not in allowed and not (method=='GET' and (stream_endpoint or summary_endpoint)):
             raise SyncError('Unsupported Strava endpoint')
         if exhausted(self.rate):
             raise ApiError('Strava rate limit exhausted; sync stopped without retry',429,self.rate)
@@ -93,6 +95,7 @@ class ApiClient:
             headers['Content-Type']='application/x-www-form-urlencoded'
         request=Request(url,data=data,headers=headers,method=method)
         if stream_endpoint:self.stream_requests+=1
+        if summary_endpoint:self.summary_requests+=1
         try:
             response=self.opener.open(request,timeout=20)
             with response:
@@ -134,6 +137,13 @@ class ApiClient:
         query=urlencode(dict(keys=','.join(STREAM_KEYS),key_by_type='true'))
         return self.request('GET',f'https://www.strava.com/api/v3/activities/{identity}/streams?'+query,
                             token=access_token,max_json=MAX_STREAM_JSON)
+
+    def activity_summary(self,access_token,external_id):
+        """Explicit established-ID maintenance only; normal sync uses listing."""
+        identity=str(external_id)
+        if not re.fullmatch(r'[1-9][0-9]{0,19}',identity):
+            raise SyncError('Invalid Strava summary identity')
+        return self.request('GET',f'https://www.strava.com/api/v3/activities/{identity}',token=access_token)
 
     def revoke(self,refresh_token):
         return self.request('POST','https://www.strava.com/oauth/revoke',

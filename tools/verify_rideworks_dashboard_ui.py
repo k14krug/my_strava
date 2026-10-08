@@ -254,7 +254,11 @@ def verify(root,session,*,baseline=None,synthetic=False,skip_sync=False):
               check(immediate.enter&&immediate.move&&immediate.leave&&immediate.focus&&immediate.blur,'Immediate pointer/focus lifecycle');
               check(/^([\\d,]+\\.\\d mi|Unavailable)$/.test(immediate.text),'Mileage-only tooltip');checks++;
             }
-            await bars.last().hover();
+            // The required-line point can overlap the group's bounding-box
+            // center. Hover the bar's own hit area away from that point.
+            const barHit=bars.last().locator('.home-mileage-hit');
+            const barBounds=await barHit.boundingBox();
+            await barHit.hover({position:{x:1,y:barBounds.height-2}});
             check(await page.locator('#mileage-tooltip').isVisible(),'Actual pointer hover');
             check(await page.locator('#mileage-tooltip').textContent()===weekly(data.this_week.miles),'Actual bar hover value');
             const tip=await page.locator('#mileage-tooltip').boundingBox();

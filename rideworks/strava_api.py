@@ -108,8 +108,10 @@ def _strong_candidates(store, values):
     return candidates
 
 
-def apply_observations(store, observations, athlete_id, successful_at):
-    """One all-or-nothing Store transaction, including successful checkpoint."""
+def apply_observations(store, observations, athlete_id, successful_at, *, established_targets=None):
+    """Atomic observations; targeted maintenance must preserve the sync checkpoint."""
+    if established_targets is not None and successful_at is not None:
+        raise SyncError('Targeted enrichment cannot advance the forward-sync checkpoint')
     totals = dict(new_activities=0,existing_activities_enriched=0,unchanged_observations=0,
                   changed_observations=0,new_observations=0,ambiguous_new_associations=0,
                   strong_local_matches=0,performance_rebuild_recommended=0)
@@ -126,6 +128,9 @@ def apply_observations(store, observations, athlete_id, successful_at):
                 established.add(previous['activity_id'])
             if len(established)>1:
                 raise SyncError('Conflicting established Strava identities; no Activities were merged')
+            if established_targets is not None:
+                if external not in established_targets or established != {established_targets[external]}:
+                    raise SyncError('Targeted summary does not match its established Activity')
             matches = set() if established else _strong_candidates(store,values)
             created = not established and len(matches)!=1
             identity = next(iter(established or matches)) if not created else str(uuid4())
@@ -161,6 +166,7 @@ def apply_observations(store, observations, athlete_id, successful_at):
             touched.add(identity)
         if touched:
             totals['performance_rebuild_recommended'] = sum(bool(store.connection.execute('SELECT 1 FROM performance_history WHERE activity_id=?',(identity,)).fetchone()) for identity in touched)
-        store.connection.execute('INSERT INTO strava_sync_state VALUES (1,?,?) ON CONFLICT(singleton) DO UPDATE SET athlete_id=excluded.athlete_id,successful_at=excluded.successful_at',
-                                 (str(athlete_id),successful_at))
+        if established_targets is None:
+            store.connection.execute('INSERT INTO strava_sync_state VALUES (1,?,?) ON CONFLICT(singleton) DO UPDATE SET athlete_id=excluded.athlete_id,successful_at=excluded.successful_at',
+                                     (str(athlete_id),successful_at))
     return totals
