@@ -22,3 +22,30 @@ validly predicting physiological readiness. Sparse best-20 outcomes are neither
 standardized maximal tests nor a suitable target for aggressive parameter fitting.
 The accepted best-20 method is therefore used only as a separate outcome/context
 series. No model parameters are fitted in P4-01.
+
+## Continuation check — 2026-10-09
+
+Reopened the TrainingPeaks NP, estimating-TSS, CTL, ATL and TSB pages above.
+Their formulas remain the cited industry baseline. The NP page specifically
+motivates the **600-second candidate minimum**; the 30-second comparison is a
+mathematical sensitivity, not equal physiological support. Vendor advice is not
+validation of this rider's segmentation policy. Neither the docs nor this
+research establishes exact vendor equivalence for gaps or partial sessions.
+
+Garmin's primary [Decoding FIT Activity Files](https://developer.garmin.com/fit/articles/cookbook/decoding_activity_files.html),
+particularly “Smart Recording,” distinguishes timestamped records from timer
+start/stop evidence and warns that sparse sampling complicates pause detection.
+Session start plus elapsed duration defines a summary span. This supports
+checking timer pairs and boundaries separately; it does **not** establish that
+a sample-count/timer match proves every missing second was paused. The current
+[SDK profile](https://raw.githubusercontent.com/garmin/fit-python-sdk/main/garmin_fit_sdk/profile.py)
+was also checked; retained parsing stays pinned to the accepted local parser.
+The website's dynamic cookbook shell did not expose the duration article text;
+no claim relies on that inaccessible text. The directly accessible decoding
+article is the timer/record source used here.
+
+The half-open one-second integration convention, segment stress sum, exact
+active-bin gate, one-second summary sensitivity, and recommendation are explicitly
+**RideWorks research candidates**. They are not implied Garmin or TrainingPeaks
+requirements. The original published research/limitations register remains
+applicable; no new physiological or predictive claim is made by the FTP expansion.

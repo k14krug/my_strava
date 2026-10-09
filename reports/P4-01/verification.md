@@ -1,186 +1,177 @@
-# P4-01 verification and Owner review handoff
+# P4-01 revised verification — dated FTP and interrupted recordings
 
-**State:** `ready_for_review` at JIT §12 **HARD — Owner**, not accepted.
-**Branch / PR:** `task/p4-01-training-state` / [draft PR #23](https://github.com/k14krug/rideworks/pull/23), research head `d4a4619`.
-**Invocation:** `/TASK P4-01`. Main refreshed to `84e7048`; Analyst JIT `e04d0ca`.
-The JIT omits Execution Control / Allowed Invocation; AGENTS.md's explicit
-missing-declaration fallback permits `/TASK only`. The brief was not modified.
-Its later Owner/Analyst boundaries remain controlling.
+**State:** `ready_for_review` at **HARD — Owner**, not accepted.
+**Branch / PR:** `task/p4-01-training-state` /
+[draft PR #23](https://github.com/k14krug/rideworks/pull/23).
+**Invocation:** `/TASK P4-01`; the JIT's missing Allowed Invocation declaration
+uses AGENTS.md's `/TASK only` fallback. No execution controls were edited.
 
-## Delivered
+Fetched origin and fast-forwarded the existing task branch, then integrated main
+`91842f7` with Analyst JIT `645cb48`, Phase 4 contract `a74c97c` and FTP privacy
+exception `a288dfd`. Read all four PR comments; there were no review/inline
+comments. The latest Owner comment supersedes the earlier FTP privacy hold.
+Transient STATUS/TASKS merge conflicts were resolved to the latest authorization.
+CSV source `46be978` and provenance `a1d10cc` remain unchanged.
 
-- [DESIGN-003](../../docs/design/DESIGN-003-training-state-model.md): evidence,
-  calculations, comparison, limitations, recommendation and exact Owner decisions.
-- [Coverage](coverage.md): year/type census and power/HR/duration/work intersections.
-- [Sources](sources.md): current primary research and vendor documentation.
-- [Aggregate machine-readable evidence](acceptance.json).
-- [Synthetic comparison](synthetic-model-comparison.png),
-  [anonymized duration/Performance periods](anonymized-context-periods.png),
-  [anonymized recorded-work periods](anonymized-work-periods.png),
-  and [synthetic checkpoints](synthetic.json).
-- Reproducible, disposable tools under `tools/`; eight scientific/regression tests.
+## Revised findings and deliverables
 
-Production modules, schema, accepted eligibility, source files, credentials,
-settings and Home remain unchanged. No Strava calls, rebuild, migration, CI,
-new production dependencies or later-phase implementation.
+- [DESIGN-003](../../docs/design/DESIGN-003-training-state-model.md) now recommends
+  separate 7-/42-day work and **partial recorded segment stress**, subject to
+  Owner choice of model and recording policy. Dated FTP collection is no longer
+  the prerequisite it was in the initial recommendation.
+- [FTP coverage](ftp-coverage.md) and [acceptance.json](acceptance.json) include
+  all intersections, year/type counts, recent windows, sensitivity and verification.
+  JSON separates `initial_research` from `continuation`; old absence claims are
+  about the retained-source evidence before the new CSV.
+- [Revised figure](anonymized-ftp-model-comparison.png) compares matched work and
+  stress on the same ≥600 s segments, relative days and distinct units. Prior
+  [synthetic](synthetic-model-comparison.png), [duration/Performance](anonymized-context-periods.png)
+  and [original-envelope work](anonymized-work-periods.png) figures remain initial
+  reference evidence. The original [verification](initial-verification.md) is
+  retained explicitly as historical evidence, with its old review question superseded.
+- New disposable tools: `research_training_state_ftp.py`, independent
+  `verify_training_state_ftp.py`, and aggregate-only `report_training_state_ftp.py`.
+  Ten new synthetic tests supplement the eight existing research tests.
 
-## Main findings
+**FTP input:** all 66 rows validate as positive watts, distinct sorted dates,
+consecutive exclusive ends and a final open interval. Repeated values stay
+separate. Source class is Owner-provided Strava UI historical setting, not
+laboratory measurement. Dex did not re-inspect the private screenshot; the
+committed Owner/Analyst transcription is the authorized research source. Its
+SHA-256 is retained in the public aggregate, without duplicating the dated series.
 
-1. **1,442 Activities / 1,418 cycling**, with **1,028 eligible power results**:
-   1,022 FIT and 6 API. Outdoor power remains excluded.
-2. Only **one** usable same-session cycling threshold candidate. Supplied 170 W,
-   2,762 complete seconds → NP 161.2048301769 W → candidate stress
-   68.9889335508. It is not adopted as an independently verified FTP, a present-day
-   FTP, or authority for any other activity/date. **1,027 eligible rides lack a
-   same-session candidate**. No valid longitudinal FTP or cycling HR-reference
-   history was established.
-3. **693** complete eligible recorded power envelopes yield calculated work;
-   **311** eligible rides have timing discontinuities and **24** missing/invalid
-   power in the whole-envelope check. No recording repair or zero filling.
-4. Latest six weeks: **38 rides**, **32.29 known elapsed hours**, no missing
-   duration summary, but only **23** complete eligible work contributions;
-   **15** rides lack this work contribution. No recent threshold candidate.
-5. An elapsed-time-only model is misleading: the largest elapsed example contains
-   166,891 seconds elapsed versus 5,998.72 seconds timer. Both source values are
-   preserved. Its example period is a semantic/outlier diagnostic, not a hard
-   training block. Resolving a future production duration policy belongs to the
-   Owner/Analyst, not this experiment.
-6. Recommendation: transparent separate 7-/42-day workload with coverage;
-   FTP-normalized stress remains conditional on date-valid reference inputs and
-   session timing. No Fitness/Fatigue/Form truth claim or workload-to-performance
-   prediction is established.
+**Coverage:** 1,121/1,418 cycling Activities have dated FTP; 878/1,028 eligible
+power rides intersect it. Of the 693 original complete envelopes, 597 have FTP;
+another 281/335 incomplete eligible recordings yield dated segment contributions.
+All 297 cycling FTP gaps precede the first date, including 150 eligible rides.
+No historical current-FTP backfill, best-20 inference or outdoor power admission.
 
-The sparse state and duration discrepancy are within the inventory/model-
-comparison questions of this research brief. They limit the recommendation;
-no policy was invented to “fix” them or expand the experiment into production.
+**Recording policies:** observed-bin work expands from 693 to 1,028 contributors;
+≥600 s segment stress expands from 597 complete envelopes to 878 contributors.
+Only 24 qualify under the exact full-timer candidate, versus 75 with a one-second
+summary discrepancy sensitivity. The sensitivity fills no missing active time.
+Two exact-timer candidates recover missing-power records at the exclusive stop
+boundary. Native segments preserve gaps, invalid power and duplicate evidence.
+The numerical minimum (30 s) versus conservative 600 s candidate changes stress
+by 1.24% in aggregate and 0.95% in the latest 42 days. Source timing contradictions
+and incomplete power remain reportable evidence, not silently repaired input.
 
-## Method and independent checks
+**Recent comparison:** as of 2026-10-08 (the same completed-day anchor as before),
+31/38 rides in 42 days contribute 11,075.38 kJ observed work; the same segments used
+for normalized stress provide 10,930.67 kJ and 1,428.54 segment-stress points.
+Seven days: 4/6 rides, 1,465.90 kJ observed, 1,449.91 kJ matched, 183.66 points.
+Full-timer stress is unavailable for these recent windows under the exact rule.
+Omitted rides, omitted within-ride seconds and no-record dates are distinct.
+Unknown dates/sessions are not zero, and partial stress is not a full TSS total.
 
-Inventory reads a **private SQLite backup plus copied, hash-verified originals**.
-Only DB-referenced artifacts are copied, not OAuth files. The accepted store is
-opened with SQLite `mode=ro`; the research read boundary also sets `query_only`.
-No `Store` initializer/migration runs. Every source is accounted for; FIT CRCs,
-artifact sizes and SHA-256 hashes are checked. Original XML and the original CSV
-are inspected, including fields not exposed by the application extraction.
+## Verification performed
 
-Current Performance signatures must be fresh; pending results cause a stop.
-The complete-record-envelope method requires at least 30 paired samples,
-nonnegative finite power and exact one-second timestamp increments. Applied only
-to the already eligible source, it preserves file precedence and API provenance.
-For a contiguous envelope, each sample covers its half-open one-second bin;
-`work_kJ = sum(watts) / 1000`. It does **not** claim that the recorded envelope
-covers unrecorded session boundaries or pauses. The sole threshold stress
-candidate also requires sample seconds = source elapsed seconds = timer seconds.
-Its FTP field comes from that same source session and is never propagated.
+The original snapshot was reused **only after** independently comparing every
+production table with the accepted live store. All 20 tables still match. The
+prior raw census is bound to the snapshot byte hash; no stale/newly synced data
+are mixed into it. The independent initial verifier was rerun successfully:
+1,442 Activity checks, 693 work results, one source-session stress calculation,
+5,909 days and 23,636 rolling comparisons. The continuation verifier rechecks
+all 1,422 original artifact sizes and hashes. No original parse was silently
+assumed to apply to a changed database.
 
-The independent verifier uses direct SQL selection and Decimal arithmetic rather
-than the new census presentation/calculation functions. It separately reconstructs
-classification/date/duration, checks full power timing against consecutive
-expected timestamps, sums powers, and directly enumerates all 30-s means for the
-isolated stress result. It uses direct 7-/42-day sums as the rolling oracle.
+Continuation checks use direct SQL and an independent algorithm:
 
-Verified:
+- all **1,442** activity dates/classifications and their linear FTP interval lookup;
+- **66** structurally validated intervals; no prehistory value or future backfill;
+- all **1,028** eligible power sources; all excluded rows retain unavailable load;
+- **878** dated segment-stress contributions and **24** exact-timer candidates;
+- **2,718** segment-metric comparisons across 30-/600-second candidates, with
+  direct integer 30-s sums and Decimal fourth powers/roots rather than the
+  research rolling-sum implementation;
+- independent source-row/time grouping, duplicate exclusion, timer-event pair
+  interpretation, active-bin completeness and session-boundary checks;
+- **5,909** daily rows and **70,908** direct-date 7-/42-day Decimal subtotal checks
+  across six work/stress candidates, including contributor and omission counts;
+- aggregate, year/type and recent-window coverage checks;
+- unknown-seed CTL/ATL/TSB remains unavailable; no fabricated decay through gaps;
+- all **20 live tables** still equal the snapshot after research; all **1,422**
+  original hashes/sizes pass; snapshot byte hash unchanged; SQLite integrity
+  `ok`, zero foreign-key violations.
 
-- **1,442 Activity** identities/classifications/dates/durations;
-- all **693** calculated recorded-work results, with no ineligible source used;
-- **one** source-scoped stress result, independently by Decimal;
-- **5,909 daily rows / 23,636 rolling Decimal comparisons** (duration and work);
-- all **20 production tables** match the snapshot by full row fingerprints,
-  including native records, both Performance policies, API observations, sync
-  state and the existing goal;
-- **1,422 original artifact** hash/size checks;
-- snapshot database byte hash unchanged; integrity `ok`, zero foreign-key errors;
-- no current FTP applied backward; no inferred FTP/HR state; no fabricated load.
+**Tests:** 303 full tests passed, including 18 focused research tests (ten new).
+Synthetic cases cover inclusive/exclusive FTP boundaries, repeated entries,
+no backfill, malformed source rejection, unknown timezone boundaries, real zero
+versus missing, gap/duplicate/backwards/subsecond handling, short-segment omission,
+timer stop/restart boundaries, nonlinear segment versus pooled stress, separate
+units, finite rolling edges and unknown-seed/missing-day behavior. Test fixtures
+are generated synthetic values, not additional personal source files.
 
-The scientific tests independently verify threshold-hour = 100, half-threshold-
-hour = 25, real zero watts, variable-power NP by direct window enumeration,
-quadratic FTP sensitivity, gap/missing rejection, EWMA impulse/step closed forms,
-previous-day balance timing, rolling-window cutoffs, unknown-seed behavior,
-unknown-day propagation, and incomplete duration/work subtotals.
+The independent verifier initially exposed a zero-duration timer pair its oracle
+had assumed absent. The research method already withheld it. The oracle was
+corrected to verify that exclusion; it does not reinterpret the pair or change
+the candidate policy. The corpus also has a file without usable timer pairs and
+six API streams without FIT timer evidence.
 
-**Final test run:** 293 full tests passed, including 8 focused research tests.
-The application suite is a regression check, not proof of model validity.
-No UI acceptance run is necessary because no product UI was changed. All three
-research figures were visually inspected for labels, missingness, and privacy.
+The revised plot was visually inspected for units, partial labels, missing/no-record
+markers and privacy. Public evidence uses aggregate counts, synthetic data and
+anonymized relative-day figures. No ride IDs, source IDs, activity dates/streams,
+private paths, coordinates, credentials or screenshot are added. Only the
+explicitly approved FTP source CSV contains the full dated FTP series.
 
 ## Reproduction
 
-Run from the repository root, with the accepted Python environment containing
-`fitdecode==0.11.0`. The **snapshot destination must not already exist**. These
-commands use path placeholders because private local paths must not be committed.
-Exact resolved invocations and logs remain with the ignored private outputs.
+Use the accepted environment (`fitdecode==0.11.0`). The original census/snapshot
+commands are in [initial verification](initial-verification.md). The continuation
+requires that same snapshot, its hash-bound census, and the committed FTP CSV.
+Paths below are placeholders; exact resolved commands/logs remain local-only.
+The common `--as-of 2026-10-08` permits direct before/after comparison. A later
+anchor is a new comparison, not proof that no rides occurred after the snapshot.
 
 ```bash
-.venv/bin/python tools/research_training_state.py \
-  --snapshot-from '<accepted-store>' \
-  --data-dir '<new-private-copy>' \
-  --output-dir '<private-census>'
-
-# Optional rerun after changes to the comparison code: reuse the completed raw
-# parse only after its database/version match and every artifact hash rechecks.
-.venv/bin/python tools/research_training_state.py \
-  --data-dir '<private-copy>' --output-dir '<private-census>' --reuse-raw
-
-# Plotting packages are installed only into a disposable local directory.
-.venv/bin/python -m pip install --target '<private-plot-packages>' matplotlib==3.10.7
-PYTHONPATH='<private-plot-packages>' .venv/bin/python tools/compare_training_state.py \
-  --input-dir '<private-census>' --output-dir '<private-comparison>' \
-  --as-of 2026-10-08 --plots
-
+# Establish that the retained snapshot still represents the accepted live store.
 .venv/bin/python tools/verify_training_state.py \
   --data-dir '<private-copy>' --input-dir '<private-census>' \
-  --comparison-dir '<private-comparison>' --live-dir '<accepted-store>' \
-  --output '<private-census>/independent-verification.json'
+  --comparison-dir '<initial-private-comparison>' --live-dir '<accepted-store>' \
+  --output '<private-census>/continuation-baseline-verification.json'
 
-.venv/bin/python -m unittest discover -s tests -p test_research_training_state.py -v
+# Optional plot packages remain outside production dependencies:
+# matplotlib==3.10.7, NumPy 2.2.6 in a disposable directory.
+PYTHONPATH='<private-plot-packages>' .venv/bin/python tools/research_training_state_ftp.py \
+  --data-dir '<private-copy>' --input-dir '<private-census>' \
+  --ftp data/athlete/strava_ftp_history.csv \
+  --output-dir '<private-ftp-comparison>' --as-of 2026-10-08 --plots
+
+.venv/bin/python tools/verify_training_state_ftp.py \
+  --data-dir '<private-copy>' --input-dir '<private-ftp-comparison>' \
+  --ftp data/athlete/strava_ftp_history.csv --live-dir '<accepted-store>' \
+  --output '<private-ftp-comparison>/independent-verification.json'
+
+.venv/bin/python -m unittest discover -s tests -p 'test_research_training_state*.py' -v
 .venv/bin/python -m unittest discover -s tests -v
+
+# Publish only reviewed aggregate/relative-day artifacts after verification.
+.venv/bin/python tools/report_training_state_ftp.py \
+  --input-dir '<private-ftp-comparison>' --report-dir reports/P4-01 --test-count 303
+
 git diff --check
 ```
 
-The optional live comparison reads but never writes the accepted store. If the
-Owner syncs new history after the snapshot, its preservation equality must fail;
-use a fresh snapshot for a new experiment rather than weakening the check.
-The aggregate calculations require no plotting packages; omit `--plots` to run
-with the existing application environment only. Plotting run used matplotlib
-3.10.7 / NumPy 2.2.6. No scientific fitting package is required.
+Private outputs retain selected source IDs, FTP interval/source/value, segment
+indices/NP/work/stress, native gaps/invalid counts, timer evidence and daily
+missingness. Do not copy these outputs wholesale into the repository. The
+publisher explicitly selects aggregate diagnostics; it does not publish private
+activity or dated daily rows. Production modules, schema, UI, dependencies,
+Performance-v2 and originals are unchanged. No Strava requests, profile import,
+P4-02 implementation, planning or merge occurred.
 
-Private outputs: `raw-inventory.json` (raw state/source pointers), `activities.json`
-(per-Activity facts/provenance), `daily-private.json` (dated context), copied store
-and originals. **Do not commit them.** The public report selects aggregate census
-fields, comparison summaries, independent check counts and synthetic checkpoints.
-Only relative-day anonymized plots are committed. No IDs, titles, source hashes,
-raw streams, local paths, coordinates, athlete tokens or original files are in
-these reports. Individual source-supplied threshold context is reported only to
-explain the one isolated calculation.
+## Review boundary
 
-## Requirement mapping and limits
+The continuation fulfills JIT §14's source validation, FTP intersections,
+recording-policy comparison, normalized stress, separate 7/42 models and revised
+recommendation. Current primary sources were rechecked for formula and timer
+semantics; [the source register](sources.md) separates documented practice from
+our candidate choices. HR normalized load remains unavailable without cycling
+reference state. Recorded contributions are not physiological validation.
 
-| JIT requirement | Evidence / result |
-| --- | --- |
-| §4 power/HR/duration/work inventory and overlap | Entire snapshot, year/type table and four-way overlap; source vs calculated work separated |
-| §5 dated athlete-state inventory | Original FIT/XML/CSV and retained API fields; usable threshold scoped to one session; weight/HR/zones limitations explicit |
-| §6A industry model | Current documented formula, isolated source-state candidate, synthetic decay comparisons; real longitudinal model unavailable |
-| §6B simpler model | Same-input synthetic comparison; actual recorded-work and duration context windows with contributor/missing counts |
-| §6C HR candidate | Not evaluated numerically because appropriate reference state is missing; no invented fallback |
-| §6D context | Actual anonymized periods, timer/elapsed discrepancy, Performance context, title-only race hints not promoted to confirmed hard sessions |
-| §7 evidence policy | Existing v2 selection unchanged; outdoor and short/incomplete exclusions counted |
-| §8 comparison | Coverage, state dependence, explainability, response/noise, unknown-day behavior and sparse outcome limitations; no parameter fitting |
-| §9 primary sources | Current TrainingPeaks docs, Banister lineage/limitations, 2026 peer-reviewed cycling model, primary HR/cycling findings |
-| §10 deliverables | DESIGN-003, this report, aggregate JSON, figures and reproducible scripts |
-| §11 production boundary | No production files/schema/UI changed |
-| §12 Owner gate | Direction, required manual data and P4-02 proposal ready; **approval outstanding** |
-| §13 Analyst gate | Follows Owner decision; independent verifier supplied, Analyst acceptance outstanding |
-
-Limitations: completeness of the rider's full life/training calendar is not
-established; no recorded cycling is not proven rest. Date-only sources do not
-support exact local-time placement. Opaque vendor fields may contain as-yet
-uninterpreted context. Source threshold and weight settings are not proven
-measurements. Whole-envelope filtering is conservative and not a final pause
-policy. Periods are selected for illustration and may overlap. TSS/CTL/ATL and HR
-load lack enough historical reference evidence for a fair real longitudinal
-comparison. No readiness, optimality or causality claim follows from these data.
-
-**Decision needed:** choose the workload-first direction or require dated FTP
-collection first; then authorize the Analyst to settle the narrow timing and
-missingness contract. The brief says **“Stop for Owner decision.”** No P4-02,
-Phase 5/6 work or substantive task acceptance is authorized by this handoff.
+**HARD — Owner:** choose the dual work/partial-segment-stress direction versus
+work-only or strict full-timer stress, and approve/change the 600-second recording
+candidate and missingness presentation. No additional FTP entry is required for
+the recent windows. After Owner choice, the Analyst reviews calculations/design
+and authors a narrow P4-02 JIT. No acceptance or P4-02 implementation is inferred
+from this research or its passing tests.

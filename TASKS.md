@@ -428,7 +428,7 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 **Allowed invocation:** `/TASK P4-01` or `/AUTOTASK P4-01`.
 
-**Current result / Owner continuation — 2026-10-09:** Initial research in [draft PR #23](https://github.com/k14krug/rideworks/pull/23) established 1,418 cycling Activities, 1,028 eligible power results and 693 complete recorded envelopes; the original retained-source athlete-state census remains valid. Revised P4-01 research is in progress using the Owner-authorized, committed 66-entry `data/athlete/strava_ftp_history.csv` and approved effective-date intervals. Re-evaluate normalized stress, recording gaps and 7-/42-day workload; return to HARD — Owner. The screenshot remains private. This supersedes the earlier instruction to keep the dated FTP values uncommitted. No production changes, P4-02 or task acceptance.
+**Current result / revised Owner review — 2026-10-09:** [Draft PR #23](https://github.com/k14krug/rideworks/pull/23) is back at **HARD — Owner** with revised DESIGN-003. The committed 66-entry FTP CSV covers 878/1,028 eligible power rides; 597 complete envelopes plus 281 interrupted recordings yield dated segment contributions. Exact full-timer stress qualifies 24 (75 under one-second summary sensitivity). Recommendation: separate 7-/42-day observed work and explicitly partial segment stress, candidate minimum 600 seconds, with coverage. 303 full / 18 focused tests and independent verification pass; production and originals unchanged. Prior retained-source census preserved. Owner model/recording-policy choice and subsequent Analyst acceptance outstanding; no P4-02, production changes or merge.
 
 **Dependency:** Phase 3 accepted / complete.
 
