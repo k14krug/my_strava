@@ -30,8 +30,11 @@ This supersedes the older Phase 4/5 order.
 
 **Candidate comparison:** classic TSS/CTL/ATL/TSB-style baseline, simpler transparent recent/long workload, HR-derived fallback if reference data supports it, and separate external/context signals. Industry convention is a baseline, not the product decision.
 
-**Current implementation task:** P4-01 ready for invocation.
+**Current implementation task:** P4-01 in progress — follow-up research authorized, awaiting revised findings.
 
 **Allowed invocation:** `/TASK P4-01` or `/AUTOTASK P4-01`.
 
 **Phase 5/6:** not started.
+
+
+**New Owner FTP decision — 2026-10-09:** P4-01 initial recommendation remains open in draft PR #23. Owner provided a private screenshot with 66 dated Strava historical FTP settings (July 2019–September 2026) and approved listed-date-to-next-date effective intervals, with no backfill before the first. This is separate from the originally retained athlete-state evidence. Owner authorized continued P4-01 research to compare normalized stress with 7-/42-day measured work and to evaluate segment/pause/missing-power timing policies rather than permanently enforcing the conservative 693 whole-envelope cutoff. Individual values/source image stay private; no production FTP persistence, no P4-02, and no Phase 5/6 work. Return to HARD — Owner after revised comparison.
