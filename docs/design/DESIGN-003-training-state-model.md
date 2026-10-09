@@ -4,6 +4,8 @@
 This accepts the research/design only; it is not production implementation approval.
 No production behavior, schema, source data or Performance policy changed.
 
+**Later P4-02 context (2026-10-09):** See [P4-02 training-state direction](P4-02-training-state-direction.md) for the Owner's subsequently clarified recreational/health-use goal, preference for consistent approximation, approved dated FTP authority, and the **new P4-02 direction** toward an HRSS-style fallback and 42-/7-day Fitness/Fatigue/Form chart. These ideas were **not established or implemented by P4-01**; the FIT/API power-quality rules, provenance, missing-data distinctions and P4-01 acceptance above remain intact. A separate P4-02 JIT and authorization are still required.
+
 **Requirements used:** [Product Requirements](../PRODUCT_REQUIREMENTS.md)
 PR-007/008/010–012, STATE-001–007, DATA-003–006;
 [Phase 4 acceptance](../PHASE_4_ACCEPTANCE.md), including §§6.1/8.1/8.2;
