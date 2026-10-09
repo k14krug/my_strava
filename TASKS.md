@@ -408,7 +408,7 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### P4-01 — Training-state model evaluation and athlete-state inventory
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Evaluate transparent training-load/current-state models against the rider's actual RideWorks history before implementing a production Fitness/Fatigue/Form model.
 
@@ -427,6 +427,8 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 **Acceptance:** `docs/PHASE_4_ACCEPTANCE.md` and `docs/tasks/P4-01.md`.
 
 **Allowed invocation:** `/TASK P4-01` or `/AUTOTASK P4-01`.
+
+**Owner continuation — 2026-10-09:** Initial research PR #23 is awaiting revised P4-01 evaluation. Owner provided 66 historical Strava FTP entries (private screenshot), approved each date as effective through the next entry, and authorized comparing normalized stress with workload-first using a review of recording gaps and duration semantics. Preserve the original retained-evidence census, keep individual FTP values out of the public repository, and return to HARD — Owner after revised model comparison. This authorizes P4-01 research, not P4-02 implementation or Phase 4 acceptance.
 
 **Dependency:** Phase 3 accepted / complete.
 
