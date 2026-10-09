@@ -1,7 +1,7 @@
 # DESIGN-003 — Training-state model evaluation
 
-**Status:** Owner-approved model and recording policy under JIT §16;
-**HARD — Analyst**, task acceptance pending. This is not production approval.
+**Status:** **Owner-approved and Analyst-accepted (P4-01, 2026-10-09)** under JIT §16.
+This accepts the research/design only; it is not production implementation approval.
 No production behavior, schema, source data or Performance policy changed.
 
 **Requirements used:** [Product Requirements](../PRODUCT_REQUIREMENTS.md)
@@ -433,10 +433,11 @@ research, not accepted alternative policies. Remaining limitations include unkno
 intensity in gaps, unknown session boundaries, incomplete longitudinal input and
 lack of physiological validation; approval does not remove these uncertainties.
 
-**Stop at HARD — Analyst.** Review this reconciliation, source-specific count,
-boundary-evidence correction, unchanged research comparisons and rerun verification.
-P4-01 remains `in_progress`; task acceptance is outstanding. No merge or P4-02
-implementation is authorized. A separately authored P4-02 JIT must specify the
+**HARD — Analyst accepted.** Review of the 15-second FIT-only reconciliation,
+source-specific count (131 FIT), corrected one-ride boundary evidence, historical
+comparison and reported verification completed on 2026-10-09 (PR #23, review
+#5475713826). P4-01 research/design is complete. A separately authored P4-02
+JIT must specify the
 versioned calculation, dated FTP ingestion/provenance, interval/daily evidence
 labels, contributor/time omissions and user-visible 7-/42-day views. No generic
 profile engine, FTP inference, outdoor admission, short-ride eligibility change,
