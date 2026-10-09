@@ -8,9 +8,9 @@
   "prior_owner_review_head": "9f5d936",
   "pr": "https://github.com/k14krug/rideworks/pull/19",
   "state": "ready_for_review",
-  "gate": "HARD — Analyst",
+  "gate": "accepted",
   "owner_acceptance": false,
-  "analyst_acceptance": "pending",
+  "analyst_acceptance": "accepted",
   "annual_goal": {
     "year": 2026,
     "target_miles": "2200",
@@ -1584,5 +1584,9 @@
       "phase_4_5_6_implemented": false
     }
   },
-  "owner_approval": "approved"
+  "owner_approval": "approved",
+  "task_status": "done",
+  "merge_commit": "5e5bceed0244ae1fa64ec3a45a101f49be5b8f15",
+  "phase_3_acceptance": "accepted",
+  "phase_4_5_6_started": false
 }
