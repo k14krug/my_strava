@@ -408,7 +408,7 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### P4-01 — Training-state model evaluation and athlete-state inventory
 
-**Status:** in_progress
+**Status:** done
 
 **Purpose:** Evaluate transparent training-load/current-state models against the rider's actual RideWorks history before implementing a production Fitness/Fatigue/Form model.
 
@@ -433,6 +433,10 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 **Owner continuation — Sauce experiment, 2026-10-09:** Before final model decision, compare pinned Sauce-for-Strava active-time/gap-correction logic with strict full-timer and observed-only 600-second segment stress. Test deterministic injected gaps against complete reference recordings and assess disagreement/coverage on real interrupted rides. Distinguish derived estimates from observed power; retain hard Owner gate, unchanged production data and Performance-v2, and no P4-02 implementation. See JIT §15 and PR #23 Analyst source review.
 
 **Owner model/policy decision — 2026-10-09:** APPROVED separate 7-/42-day observed work and evidence-scoped stress; FIT-only internal missing-power correction where every gap is <=15 seconds and total missing time <=1% of the recorded interval; no API gap correction yet; validated timer stop/start events govern pauses and NP resets. Use calculated / estimated / partial / unavailable evidence labels with explicit omissions. The Owner's design gate is resolved, superseding the earlier tentative 5-second rule. Dex must reconcile DESIGN-003 and reports on existing PR #23, rerun relevant checks, and stop at **HARD — Analyst** for acceptance. P4-01 remains in progress; no P4-02 work or merge authorized. See JIT §16.
+
+**Reconciled for Analyst review:** DESIGN-003 reflects the approved 15-second FIT-only rule and pause precedence. Verified subset: 131 FIT intervals (prior 133 included two API). Boundary metadata correction: one candidate has corroborating timer/session metadata; no corrected whole-session result is verified. 311 tests, 52 Node assertions and preservation checks pass. Stop at HARD — Analyst; task remains in_progress.
+
+**Analyst acceptance — 2026-10-09:** P4-01 research/design **accepted** after final Owner-approved 15 s / 1% **FIT-only** reconciliation (131 FIT intervals; two API candidates excluded). Corrected boundary statement: one FIT candidate has corroborating timer/session metadata, but no new corrected whole-session stress result verified. 311 reported Python tests, 52 Node assertions, independent numerical/report verification and original-data preservation passed. [PR #23 review](https://github.com/k14krug/rideworks/pull/23#pullrequestreview-5475713826). Accepted DESIGN-003 is research/design, not production. No P4-02 JIT/implementation, Phase 5 or 6 started; Phase 4 remains active pending separately authorized implementation.
 
 **Dependency:** Phase 3 accepted / complete.
 
