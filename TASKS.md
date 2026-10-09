@@ -402,7 +402,7 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ## Phase 4 — Training state
 
-**Status:** active — P4-01 research/design authorized.
+**Status:** active — P4-01 research/design accepted; P4-02 design and implementation authorization pending.
 
 **Acceptance contract:** `docs/PHASE_4_ACCEPTANCE.md`
 
@@ -439,6 +439,18 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 **Analyst acceptance — 2026-10-09:** P4-01 research/design **accepted** after final Owner-approved 15 s / 1% **FIT-only** reconciliation (131 FIT intervals; two API candidates excluded). Corrected boundary statement: one FIT candidate has corroborating timer/session metadata, but no new corrected whole-session stress result verified. 311 reported Python tests, 52 Node assertions, independent numerical/report verification and original-data preservation passed. [PR #23 review](https://github.com/k14krug/rideworks/pull/23#pullrequestreview-5475713826). Accepted DESIGN-003 is research/design, not production. No P4-02 JIT/implementation, Phase 5 or 6 started; Phase 4 remains active pending separately authorized implementation.
 
 **Dependency:** Phase 3 accepted / complete.
+
+### P4-02 — Longitudinal training-state experience
+
+**Status:** pending
+
+**Purpose:** Produce a useful, repeatable Fitness/Fatigue/Form view for this recreational rider, grounded in qualified measured-power stress, a practical approximate HR-based fallback, the approved dated FTP history, and explicit source quality.
+
+**Owner-confirmed design context:** [P4-02 training-state direction](docs/design/P4-02-training-state-direction.md), read together with accepted [DESIGN-003](docs/design/DESIGN-003-training-state-model.md) and the [Phase 4 acceptance contract](docs/PHASE_4_ACCEPTANCE.md). The October 9 follow-on conversation supports HRSS-style outdoor fallback and a 42-/7-day interactive longitudinal chart; it does **not** establish a finished HRSS algorithm, missing-data convention, Form timing convention, or production authorization.
+
+**Next gate:** The Analyst must resolve remaining necessary design choices with the Owner and author a separate P4-02 JIT, including its Execution Control/Allowed Invocation, before Dex may implement. Do not begin automatically.
+
+**Dependency:** P4-01 accepted; separate P4-02 design/JIT and Owner authorization pending.
 
 ### Phase 5 — Workout intent, outcome, and initial planning
 
