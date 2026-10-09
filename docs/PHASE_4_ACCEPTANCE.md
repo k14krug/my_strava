@@ -158,6 +158,29 @@ The aim is not to prove causality or optimize a predictive model from sparse out
 
 Avoid overfitting model parameters to the rider’s historical best-20 observations.
 
+## 8.1 Owner-approved reference-implementation challenge (2026-10-09)
+
+Before final model selection, compare the mature open-source Sauce for Strava
+active-time/corrected-power method with RideWorks' observed-only 600-second
+segments and strict full-timer methods on the *same* rider data. The Owner
+authorized this **disposable, labeled estimation research**, not adopting
+Sauce's behavior or implementing production gap filling.
+
+A controlled injected-gap experiment must use trustworthy complete-reference
+recordings where possible, including short dropout, longer losses, real zeros
+and provable timer pauses; document reference-set limits. Separate results
+on real interrupted rides, where full ground truth is unavailable. Report
+error and coverage jointly. The revised design must distinguish measured
+power, observed-only partial stress, corrected/estimated stress and any
+qualifying complete session. Proposed rules must remain explainable and
+reproducible; original source data are never edited.
+
+Do not import Sauce's FTP-before-history fallback, unverified HR reference
+assumptions or missing-TSS-as-zero daily treatment. All outdoor-power and
+Performance-v2 eligibility restrictions remain unchanged. Return to
+**HARD — Owner** with a defensible comparison before accepting DESIGN-003
+or authorizing P4-02. The detailed controlling experiment is P4-01 §15.
+
 ## 9. External research baseline
 
 P4-01 should verify current sources rather than relying on folklore.
