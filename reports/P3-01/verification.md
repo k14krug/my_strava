@@ -303,3 +303,30 @@ presentation, reconciled YTD mileage and bounded GPX/Strava summary repair.
 
 P3-01 remains `in_progress` pending HARD — Analyst review.
 Phase 4/5/6 remain unstarted.
+
+
+## Analyst acceptance and Phase 3 completion
+
+On **2026-10-08**, after explicit Owner approval, the Analyst reviewed the final
+P3-01 implementation and verification evidence against the final JIT and Phase 3
+acceptance contract and **accepted P3-01 / Phase 3**.
+
+The accepted result includes:
+
+- Home dashboard at `/` and Activities at `/activities`;
+- annual 2,200-mi cycling goal with Virtual + outdoor mileage;
+- file-first / current-API fallback distance provenance;
+- actual weekly mileage bars plus separate needed-mi/week line;
+- consolidated Recent Mileage card;
+- Recent Activities Avg Pwr;
+- Current 42-day best and latest eligible 20-minute context;
+- bounded eight-ID historical Strava summary repair, bringing LA YTD to
+  **1,631.195462250 mi** with **120 contributors / zero unavailable**;
+- unchanged Performance-v2 at **1,028 eligible / zero pending**;
+- future normal GPX-backed sync fallback;
+- preserved originals, goal, sync checkpoint and integrity.
+
+PR #19 merged to `main` as
+`5e5bceed0244ae1fa64ec3a45a101f49be5b8f15`.
+
+Phase 4/5/6 did not begin as part of this acceptance.
