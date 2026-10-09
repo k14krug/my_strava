@@ -1,7 +1,7 @@
 # P4-02 — Training-state direction and decision record
 
 **Recorded:** 2026-10-09  
-**Status:** Owner-confirmed goals/source choices and agreed P4-02 design direction; **not a finalized algorithm, P4-02 JIT, or implementation authorization**.  
+**Status:** Owner-confirmed source and usability choices, plus **approved practical longitudinal-model defaults** (2026-10-09); HR implementation details and remaining UI choices still require design. **Not a P4-02 JIT or implementation authorization**.  
 **Purpose:** Preserve the rider's recent decisions, the supporting Elevate/Sauce research, and unresolved details for the next design and implementation brief.
 
 ## 1. Rider goal and standard of usefulness — confirmed
@@ -23,18 +23,18 @@ This preference for pragmatism does **not** remove existing source-quality, prov
 
 An **Elevate-style heart-rate-derived stress (HRSS)** is the practical preferred *candidate* for rides lacking trustworthy measured power **when usable HR exists**, notably outdoor rides. Consistency and a meaningful approximation are the goal; do not demand exact correspondence to measured-power stress.
 
-Before first implementation, do a **modest sanity check** of recording quality and historically applicable resting HR, max HR, and cycling threshold HR. The values shown by Elevate and its threshold fallback are reference settings, **not** approved RideWorks athlete state. Choose a transparent initial policy for missing or uncertain HR reference state without inventing certainty.
+**Owner-provided working HR assumptions (2026-10-09):** Resting HR **58 bpm** and probable maximum HR **158 bpm**. They are rough current estimates, **not dated historical measurements**. Elevate's default fallback, if adopted unchanged, would infer threshold HR = 58 + 0.85 × (158 − 58) = **143 bpm**; this is a formula-derived starting point, **not a measured or separately approved lactate threshold**. Confirm adequate HR recording coverage and select a simple, explicit historical-assumption policy without inventing past HR settings.
 
 Do **not** automatically apply a universal multiplier to HRSS: preliminary paired virtual-ride comparisons showed variation by ride type and period. Extensive calibration is not required to make the initial P4-02 useful.
 
-Where no defensible power- or HR-derived stress exists, keep stress **unavailable**, distinct from a true zero and from a no-record day. P4-02 must decide and explain how days containing unknown stress influence a numeric longitudinal trend, rather than silently treating those rides as rest.
+**Owner-approved pragmatic handling of rare unscored rides (2026-10-09):** Preserve the ride and its **unavailable** stress status in activity/source evidence, but use a **zero contribution for the missing stress in the numerical daily Fitness/Fatigue model**, as Elevate effectively does. Also use zero recorded training stress for calendar days with no recorded activity, without claiming they were confirmed rest days. Do not block or break the chart, invent a ride score, or make the rare case a major UI feature. A selected-day detail can distinguish an unscored activity from no recorded activity. The chart is explicitly a pragmatic estimate that may understate load after an unscored ride. **This P4-02 calculation convention does not rewrite P4-01's assertion that missing observed stress is not a true measured zero.**
 
-## 4. Longitudinal model and interface — accepted direction, details open
+## 4. Longitudinal model and interface — calculation defaults approved; interface details open
 
-- The familiar **42-day Fitness (CTL) / 7-day Fatigue (ATL)** exponentially weighted daily-stress model is the preferred **working basis**. Elevate and Sauce use equivalent 42-/7-day update mathematics. Self-comparison and stability, not physiological exactness, justify this choice.
+- **Owner-approved for P4-02 v1:** **42-day Fitness (CTL) / 7-day Fatigue (ATL)** exponentially weighted daily selected stress. Elevate and Sauce use equivalent 42-/7-day update mathematics. Self-comparison and stability, not physiological exactness, justify this choice.
 - Favor an **interactive Fitness / Fatigue / Form longitudinal chart**, inspired by useful parts of Elevate and Sauce, with the daily load and measurement/estimate/missing quality inspectable. Neither reference application is the product specification.
-- **Form timing is undecided:** Elevate displays today's Form as *yesterday's* CTL minus ATL; Sauce displays today's CTL minus ATL. Choose, document, and clearly label the convention when P4-02 is designed.
-- Elevate's fixed Form training-zone thresholds are **reference material only**, not validated medical, readiness, or overtraining judgments. Subjective ride experience and recovery context can improve later training interpretation without being compulsory inputs.
+- **Owner-approved for P4-02 v1:** Follow **Elevate's prior-day Form convention**: today's Form = yesterday's Fitness − yesterday's Fatigue, representing the modeled start-of-day condition. Document the timing clearly in the UI/tooltips; this is not a directly observed recovery measurement.
+- **Owner-approved simple v1 defaults:** Initialize the series to **zero before the first usable historical stress date**, with the early build-up treated as provisional; **omit future projections** in the first release; **do not adopt Elevate's fixed Form training-zone labels/thresholds yet**. Such zones are reference material only, not validated medical, readiness, or overtraining judgments. Subjective recovery context may enrich later interpretation but must not be compulsory.
 - Preserve the distinction between **observed work (kJ)** and **FTP-normalized training stress** from P4-01. The exact placement of these alongside the new Fitness Trend chart remains a P4-02 presentation choice; earlier work/stress display concepts are not a mandate to use large dashboard cards.
 
 ## 5. Supporting reference research — not approved source truth
@@ -51,14 +51,14 @@ Where no defensible power- or HR-derived stress exists, keep stress **unavailabl
 
 **Explicit follow-on change in direction:** P4-01 deliberately did **not** approve HR mapping, CTL/ATL/TSB interpretation, or outdoor-power admission. The Owner's later conversation now supports **investigating an HRSS-style fallback and a 42-/7-day Fitness/Fatigue/Form chart for P4-02**. This is a later **P4-02 design direction**, not a retroactive claim that P4-01 validated an HR model, nor an override of P4-01's measured-power evidence rules. Outdoor **estimated power** remains excluded as the primary basis.
 
-**Still open for the P4-02 JIT/design:** exact HRSS formula and dated HR settings; HR-data eligibility; mixed/incomplete ride treatment; the missing-load convention within ATL/CTL; initialization; Form timing; future projection; final chart interactions and the presentation of kJ versus stress; any interpretation or zone labels.
+**Now selected for P4-02 v1:** 42-/7-day model; prior-day Form; zero initialization before usable data; no initial projections or fixed training zones; pragmatic Elevate-style zero **numerical contribution** for unscored rides while retaining their unavailable evidence status. **Still open for the P4-02 JIT/design:** exact HRSS calculation, assumptions about historical HR settings (current working HR 58/158 is not dated history), HR-data eligibility, per-ride source selection when only partial power exists, precise daily aggregation/versioning, and final chart interactions/presentation of kJ vs. normalized stress. Avoid inventing additional unknown-state infrastructure solely for rare unscored rides.
 
 **Not authorized here:** production changes, importing FTP/HR data into the running app, creating a P4-02 JIT that assumes unmade choices, implementing P4-02, or starting Phase 5/6.
 
 ## 7. Next step
 
-Prepare a modest P4-02 design and JIT around qualified measured-power stress, a transparent approximate HR fallback, reproducible daily stress, and an interactive 42-/7-day Fitness/Fatigue/Form view. Resolve only the missing-data, threshold-setting, and Form-convention decisions needed for an honest v1. Revisit outdoor reconstructed power and elaborate HR calibration only if they prove useful.
+Prepare the remaining modest P4-02 design around qualified measured-power stress, a transparent approximate HR fallback, the **now-approved practical daily/missing-stress model conventions**, and an interactive 42-/7-day Fitness/Fatigue/Form view. Settle only the HRSS and source-selection details needed for an honest v1, then bring the UI/design to the Owner before authoring the JIT. Revisit outdoor reconstructed power and elaborate HR calibration only if they prove useful.
 
 ---
 
-**Provenance:** Owner priorities and source choices: October 2026 RideWorks conversation. Elevate/Sauce formulas and source selection: reference-code research; paired-stress and daily-series observations: exploratory comparison of local-only Elevate export. Candidate implementation mechanisms and remaining choices: proposals, **not Owner-approved algorithms**.
+**Provenance:** Owner priorities, source choices, approximate HR inputs, and longitudinal-model/missing-stress defaults: October 9, 2026 RideWorks conversation. Elevate/Sauce formulas and source selection: reference-code research; paired-stress and daily-series observations: exploratory comparison of local-only Elevate export. Exact HRSS implementation and remaining UI/source-detail choices are **not yet Owner-approved algorithms**.
