@@ -293,3 +293,13 @@ node --check rideworks/static/home.js
 [Aggregate evidence](acceptance.json), [synthetic desktop](home-desktop-synthetic.png), [synthetic phone](home-phone-synthetic.png). Committed images contain generated Activities and a temporary synthetic goal; live screenshots stay private. Private titles/IDs/raw streams/credentials/databases/local paths are not published in evidence.
 
 Owner review app restarted with the corrected runtime: [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal). Review actual mileage in all bars (current bar matches This Week Miles), the separate needed-average line and their respective immediate tooltips on desktop/phone. **Stop at HARD — Owner** under JIT §15. Explicit Owner approval precedes Gate 2 — HARD — Analyst. No Phase 4/5/6 implementation or next task.
+
+
+## Owner approval and Analyst handoff
+
+On **2026-10-08**, the Owner explicitly approved the final P3-01 / Phase 3
+dashboard, including the consolidated Recent Mileage card, annual-goal
+presentation, reconciled YTD mileage and bounded GPX/Strava summary repair.
+
+P3-01 remains `in_progress` pending HARD — Analyst review.
+Phase 4/5/6 remain unstarted.
