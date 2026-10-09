@@ -181,6 +181,16 @@ Performance-v2 eligibility restrictions remain unchanged. Return to
 **HARD — Owner** with a defensible comparison before accepting DESIGN-003
 or authorizing P4-02. The detailed controlling experiment is P4-01 §15.
 
+## 8.2 Owner-approved training-state and gap policy (2026-10-09)
+
+The Owner approved all four Analyst recommendations after the Sauce comparison; controlling detail is in **P4-01 JIT §16**. Phase 4 v1 will separately present observed work (kJ) and FTP-normalized stress at 7/42 days, distinguishing calculated recorded intervals, **estimated** gap-corrected intervals, partial >=600-second observed segments, and unavailable outcomes. Whole-session labels require validated session/timer boundaries; show ride/time omissions and never equate unknown training with zero.
+
+**Selected gap screen: each unexplained internal gap <=15 seconds AND total missing <=1% of recorded interval span**, applied only to qualifying dense FIT power, with accurate source and correction provenance. This supersedes the earlier tentative <=5-second policy. API power remains eligible for observed-only work/stress; API gap reconstruction is deferred. Verified FIT stop/restart events take priority: do not fill a known pause; split and restart NP at timer boundaries, and avoid complete-session claims when timer data conflict. Observed >=600-second segment stress remains a fallback.
+
+The controlled 15-second/1% experiment's 133/281 potentially eligible interrupted *intervals* counted all sources, not a FIT-only implementation count or verified whole sessions. This is a pragmatic policy, not a bound on error. Historical FTP rules, outdoor exclusions and Performance-v2 remain unchanged; no CTL/ATL/TSB/readiness or missing-as-rest assumption is adopted.
+
+The **HARD — Owner** model choice is resolved. Dex must reconcile the PR's five-second research recommendation and evidence labels with the approved policy and present **HARD — Analyst** verification for P4-01 acceptance. This does not authorize PR merge or P4-02 production implementation.
+
 ## 9. External research baseline
 
 P4-01 should verify current sources rather than relying on folklore.
