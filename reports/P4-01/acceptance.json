@@ -1783,7 +1783,8 @@
     },
     "version": "p4-01-dated-ftp-segments-v1"
   },
-  "controlling_main": "91842f7",
+  "continuation_scope": "Historical dated-FTP continuation; calculations retained, default segment-only recommendation superseded by Sauce challenge",
+  "controlling_main": "fb4761d",
   "initial_research": {
     "as_of": "2026-10-08",
     "base": "84e7048",
@@ -2949,8 +2950,73 @@
     }
   },
   "initial_scope": "Retained evidence before Owner-supplied dated FTP; original findings preserved, recommendation superseded",
-  "jit": "645cb48",
-  "phase4_contract": "a74c97c",
+  "jit": "fb5b9dd",
+  "phase4_contract": "f915bc6",
+  "sauce_challenge": {
+    "actual_interrupted": 281,
+    "actual_recent_complete": 23,
+    "analyst_accepted": false,
+    "artifacts": [
+      "sauce-verification.md",
+      "sauce-comparison.json",
+      "sauce-errors.md",
+      "sauce-gap-comparison.png"
+    ],
+    "candidate": {
+      "accepted": false,
+      "actual_interrupted_admitted": 47,
+      "api": 1,
+      "fit": 46,
+      "max_missing_fraction": 0.01,
+      "max_missing_seconds": 5,
+      "newly_established_whole_ride_estimates": 0
+    },
+    "controlled_cases": 1823,
+    "decision_needed": "Evidence categories, small-gap threshold and missingness budget, API applicability and pause convention; no P4-02 authorization",
+    "external_activity_api_requests": 0,
+    "ftp_csv_changes": false,
+    "gate": "HARD \u2014 Owner",
+    "method": "p4-01-sauce-gap-experiment-v1",
+    "owner_accepted": false,
+    "pin": "4b6d4f42bf56d064507d694abd56e5f989530e03",
+    "preservation": {
+      "activities_verified": 1442,
+      "daily_rows_verified": 5909,
+      "dated_stress": 878,
+      "eligible": 1028,
+      "exact_timer_stress": 24,
+      "foreign_key_violations": 0,
+      "ftp_intervals_verified": 66,
+      "integrity": "ok",
+      "live_tables_unchanged": true,
+      "production_tables_compared": 20,
+      "rolling_comparisons": 70908,
+      "segment_metric_checks": 2718,
+      "snapshot_unchanged": true,
+      "verified_original_artifacts": 1422
+    },
+    "production_changes": false,
+    "reference_rides": 48,
+    "source_sha256": "ca64ef21178be7f17bbbca630252243327241b69d495374d8f8c913f4ec611b1",
+    "strict_timer_references": 24,
+    "supplemental_envelopes": 24,
+    "verification": {
+      "all_inputs_and_deletions_verified": true,
+      "all_observed_segment_results_verified": true,
+      "cases": 2127,
+      "focused_research_tests": 25,
+      "full_suite": 310,
+      "injected_values_changed": 0,
+      "method": "independent Python integer-window/Decimal oracle",
+      "node_assertions": 52,
+      "originals_edited": 0,
+      "policy_grids_verified": 4,
+      "published_distribution_checks": 816,
+      "recent_windows_verified": 2,
+      "reference_rides": 48,
+      "upstream_variant_checks": 8508
+    }
+  },
   "status": "ready_for_owner_review_not_accepted",
   "task": "P4-01"
 }

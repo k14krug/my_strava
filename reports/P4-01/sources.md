@@ -49,3 +49,23 @@ active-bin gate, one-second summary sensitivity, and recommendation are explicit
 **RideWorks research candidates**. They are not implied Garmin or TrainingPeaks
 requirements. The original published research/limitations register remains
 applicable; no new physiological or predictive claim is made by the FTP expansion.
+
+## Bounded Sauce challenge — 2026-10-09
+
+Read and executed pinned [Sauce source revision
+`4b6d4f42bf56d064507d694abd56e5f989530e03`](https://github.com/SauceLLC/sauce4strava/tree/4b6d4f42bf56d064507d694abd56e5f989530e03),
+as directed by the [Analyst source review](https://github.com/k14krug/rideworks/pull/23#issuecomment-6084684860)
+and [Owner authorization](https://github.com/k14krug/rideworks/pull/23#issuecomment-6084858539).
+The [verification source table](sauce-verification.md#exact-reference-code-and-explicit-adaptations)
+links exact active-time, padding, NP/stress, FTP and daily-aggregation code.
+The unmodified calculation file is hash-checked; only its data/power namespaces
+execute on documented adapted inputs. This is scoped function equivalence,
+not full-app parity or physiological validation.
+
+One correction to the review's informal gap description: the source repeats
+**the arriving value backward**, not the previous value forward. Synthetic
+value/zero/break markers remain distinct from measured zero. FTP prehistory
+fallback, HR assumptions and zero-filled daily/PMC inputs are not executed.
+The controlled evidence now challenges default 600-second segmentation for
+small losses; its earlier external motivation does not establish that policy
+as preferable to labeled estimates. No production rule is accepted here.
