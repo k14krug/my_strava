@@ -1,7 +1,7 @@
 # P4-01 Owner-policy reconciliation — Analyst handoff
 
-**State:** `ready_for_review` at **HARD — Analyst**, JIT §16. TASKS remains
-`in_progress`; Owner model/policy approval is recorded, Analyst acceptance pending.
+**State:** **Analyst accepted 2026-10-09** at the JIT §16 HARD gate. Owner model/policy
+approval and design/research acceptance are recorded; production is not authorized.
 **Branch / PR:** `task/p4-01-training-state` /
 [draft PR #23](https://github.com/k14krug/rideworks/pull/23).
 **Invocation:** `/TASK P4-01`, permitted by the refreshed JIT.
@@ -114,6 +114,7 @@ The unchanged [Sauce methods/results](sauce-verification.md),
 and [initial verification](initial-verification.md) remain historical evidence.
 Current lifecycle and decision metadata: [acceptance.json](acceptance.json).
 
-**Stop at HARD — Analyst:** accept or request corrections to this reconciled
-research/design and boundary-count correction. No merge, task acceptance,
-P4-02 implementation, production FTP import or later task is authorized here.
+**Analyst disposition:** ACCEPTED for P4-01 research/design in [PR #23 review](https://github.com/k14krug/rideworks/pull/23#pullrequestreview-5475713826), following the Owner-approved
+15-second FIT-only correction, source-specific audit and boundary-evidence correction.
+Historical experiment outputs are unchanged. This acceptance does **not** authorize
+P4-02 implementation, production FTP import or Phase 5/6.
