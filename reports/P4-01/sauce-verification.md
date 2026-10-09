@@ -1,6 +1,10 @@
 # P4-01 Sauce challenge — verification and interpretation
 
-**State:** ready for **HARD — Owner**, JIT §15; no model/recording-policy acceptance.
+**Historical stage:** §15 Sauce challenge, reviewed before the Owner's final
+choice. JIT §16 now selects **15 s / 1%, FIT only**, validated timer splitting
+and observed-only API inputs. See [current reconciliation](verification.md).
+Five-second recommendations and pending-Owner statements below describe this
+prior stage, not the current policy. The experiment outputs are unchanged.
 Branch `task/p4-01-training-state`, [draft PR #23](https://github.com/k14krug/rideworks/pull/23).
 Refreshed main `fb4761d`, JIT `fb5b9dd`, Phase 4 contract `f915bc6` integrated.
 Allowed Invocation is explicitly `/TASK only`. Read Analyst source review and
@@ -112,8 +116,10 @@ N-bin reference. No rescaling hides this convention difference.
   257 timing-discontinuous rides, +1.54% for 24 missing-power rides. Worst positive
   disagreement is +140.24% / +102.29%, respectively, not measured recovery accuracy.
 - The narrow screen admits 47/281 actual interrupted intervals: 46 FIT and one
-  API (API calibration remains unvalidated). **Zero** of these has the combined
-  exact timer/summary and observed-start/end evidence for a new whole-ride label.
+  API (API calibration remains unvalidated). **Correction in §16 audit:** one of these has consistent boundary/timer
+  metadata; the earlier zero-corroboration claim was incorrect. Zero corrected
+  whole-session calculations were verified by this envelope experiment. See
+  [current audit](owner-policy-audit.json).
   Larger gaps remain partial; unavailable power/FTP stays unavailable.
 - Latest 42 days: 31/38 contributors, 1,428.54 partial points versus 1,433.89
   unrestricted experimental points. The close sum does not validate missing

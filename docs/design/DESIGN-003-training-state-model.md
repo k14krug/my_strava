@@ -1,62 +1,83 @@
 # DESIGN-003 — Training-state model evaluation
 
-**Status:** revised research recommendation, **not accepted**. P4-01 returns to
-**HARD — Owner** under JIT §§12/14/15. Analyst review follows Owner direction.
+**Status:** Owner-approved model and recording policy under JIT §16;
+**HARD — Analyst**, task acceptance pending. This is not production approval.
 No production behavior, schema, source data or Performance policy changed.
 
 **Requirements used:** [Product Requirements](../PRODUCT_REQUIREMENTS.md)
 PR-007/008/010–012, STATE-001–007, DATA-003–006;
-[Phase 4 acceptance](../PHASE_4_ACCEPTANCE.md), including §§6.1/8.1;
-[P4-01](../tasks/P4-01.md), including Owner continuations §§14–15;
+[Phase 4 acceptance](../PHASE_4_ACCEPTANCE.md), including §§6.1/8.1/8.2;
+[P4-01](../tasks/P4-01.md), including Owner continuations §§14–16;
 [DESIGN-001](DESIGN-001.md), [DESIGN-002](DESIGN-002.md), and unchanged
 `virtual-power-evidence-v2` selection. Source research and independent checks:
 [verification](../../reports/P4-01/verification.md),
 [source register](../../reports/P4-01/sources.md).
 
-## Recommendation after the Sauce challenge
+## Owner-approved direction after the Sauce challenge
 
-Recommend separate **7-/42-day work and stress views with explicit calculation
-scope**, adding a narrow **small-gap stress estimate** candidate instead of making
-600-second segmentation the default response to every dropped sample. Keep fully
-observed calculations, estimated intervals and partial subtotals distinguishable.
+The Owner selected separate **7-/42-day observed work and FTP-normalized stress**
+views with explicit calculation scope. Preserve four classes: **calculated
+recorded interval**, **corrected estimated interval**, **partial observed-segment
+subtotal**, and **unavailable**. Work kJ always uses observed watts, never synthetic
+corrections. Contributor counts, known omitted time/ride counts and no-record dates
+must accompany longitudinal subtotals; missing is not zero or confirmed rest.
 The 66-entry FTP history and its approved date semantics remain unchanged.
 
-The controlled experiment materially changes the earlier recommendation: deleting
-one observed second can make the 600-second rule omit over a third of a recording's
-reference stress. Exact pinned Sauce correction is substantially closer for short
-losses. For the tested 1-/5-second losses its largest absolute error is 0.79%,
-whereas long losses and hidden intensity changes can produce severe errors.
-This is numerical reconstruction evidence, not physiological validation or a
-universal error bound.
+**Approved correction screen:** eligible dense 1 Hz **FIT** power, valid uniquely
+ordered nonnegative samples, no unresolved invalid/duplicate rows, each unexplained
+interior gap **≤15 missing seconds**, and total missing time **≤1% of recorded
+interval span**. Do not extrapolate beyond observed boundaries or correct across
+proved timer stops. Reconstructed samples and interval stress are estimates with
+source and method provenance. Accepted API streams remain eligible for observed
+work and qualifying observed-only stress; **API gap correction is deferred**.
+This supersedes the tentative five-second recommendation, not the experiment's
+unchanged five-/fifteen-/thirty-second measurements.
 
-Proposed candidate, **pending Owner choice**: allow a labeled **recorded-interval
-stress estimate** for nonnegative, uniquely time-ordered, dense 1 Hz eligible power with
-interior gaps no longer than **5 missing seconds**, total missing time no more
-than **1% of the recorded span**, no removed invalid/duplicate rows and no
-explicit timer pause in that interval. Apply the documented Sauce active-time/
-correction calculation with provenance for synthetic samples. Do not silently
-rename it measured power, full-session TSS or verified training load.
+The [source-specific audit](../../reports/P4-01/owner-policy-audit.json) finds
+**131 qualifying FIT interval screens among 281 interrupted contributors**.
+The earlier 133 at 15 seconds included **two API intervals**, excluded from the
+approved correction path. These are potential recorded-interval estimates, not
+131 verified complete rides. The tested 15 s / 1% controlled cases have a maximum
+absolute error of 2.88%; this is a one-rider, nonrandom sample result, **not a
+guarantee or physiological validation**. Hidden intensity changes remain unknown.
 
-This screen admits **47/281 interrupted rides** (46 FIT, one API). Calibration used
-FIT references; the API case lacks independent complete-reference validation.
-**None of those 47 has the corroborating session-boundary/timer evidence needed
-for a whole-ride label.** The narrow rule recovers an interval estimate, not a
-license to assume missing warmup/cooldown or complete session recording.
+**Boundary evidence correction:** the prior report incorrectly said none of the
+47 five-second candidates had corroborating boundary/timer evidence. The audit
+finds **one FIT recording**, also within the 131 fifteen-second subset, with
+consistent timer/session metadata and observed endpoints spanning that timer.
+The prior Sauce calculation used the recorded envelope, including the stop sample,
+not a separately verified timer-clipped corrected calculation. Thus zero new
+corrected whole-session calculations were verified; the stronger claim that zero
+had corroborating metadata is withdrawn. Whole-session labels still require
+independent calculation and boundary verification; no automatic promotion occurs.
 
-| Available evidence | Proposed display / calculation scope |
-| --- | --- |
-| Full timer/boundary evidence and complete active power | Calculated full-timer stress under the stated bin/NP convention; 24 prior candidates remain separate |
-| Same boundary evidence, with only qualifying small interior losses | **Whole-ride stress estimate**, explicitly estimated; tested through controlled losses, but no newly qualifying actual interrupted ride established here |
-| Complete observed envelope, session boundaries unproved | Calculated recorded-interval stress, not full-session TSS |
-| Small eligible interior losses, boundaries unproved | **Recorded-interval stress estimate**, missing/padded seconds and source visible |
-| Loss beyond the small-gap screen, ambiguous gaps or inconsistent timing | Observed ≥600 s segment subtotal, explicitly partial; work from shorter valid segments remains separately available |
-| No qualifying power/FTP or no qualifying interval | Stress unavailable; known work/context retained where permitted |
+Apply evidence and fallback precedence as follows:
 
-Proved timer pauses must be handled explicitly, never mistaken for unknown
-sensor dropout or measured zero. The timer-aware Sauce sensitivity still differs
-from the existing reset-at-pause reference; do not adopt a new pause convention
-without specifying it. Do not fill missing activities/dates with zero or adopt
-CTL/Fitness/Fatigue/Readiness from this experiment.
+1. Preserve observed watts, including real zeros, source selection and dated FTP.
+   With no qualified power/FTP or qualifying stress interval, report stress
+   unavailable while retaining permitted observed work/context.
+2. **Validated FIT timer stops/restarts outrank movement/active heuristics.**
+   Split active intervals, never fill the proved pause with watts or zeros,
+   reset NP at restart, and sum clearly labeled interval contributions. Do not
+   bridge rolling windows across a pause. The old Sauce `timer_aware` variant
+   inserts zero markers and is a historical sensitivity, **not this selected rule**.
+3. Within an unambiguous recorded active interval, complete power supports
+   calculated interval stress; qualifying FIT interior losses support an
+   estimated interval. Larger/uncertain losses, unresolved invalid/duplicate
+   evidence and API interruptions retain **continuous ≥600 s observed-segment
+   stress as partial**, or unavailable if no segment qualifies. Observed work
+   from shorter valid segments remains separate. The small-gap screen applies
+   per interval after validated timer splitting; the published 131 count screens
+   unpaused recorded envelopes, not newly reconstructed paused sessions.
+4. Missing/conflicting timer or session boundaries prohibit a whole-session
+   claim. A recorded-interval estimate does not prove an unrecorded warmup/cooldown
+   was absent. Retain calculated/estimated interval or partial evidence only
+   where its scope is established; otherwise unavailable. Reserve whole-session
+   labels for corroborated boundaries **and** verified calculation coverage.
+
+No CTL/ATL/TSB, readiness interpretation, missing-as-rest convention, outdoor
+power admission or Performance-v2 change follows. Analyst acceptance and a
+separate implementation JIT remain necessary before P4-02.
 
 ## Bounded Sauce experiment — source and representation
 
@@ -156,11 +177,11 @@ screen in the controlled experiment.
 
 | Maximum missing gap, with total loss ≤1% | Admitted controlled loss cases / 1,775 non-pristine cases | Worst absolute error among admitted | Potential estimates / 281 actual interrupted rides |
 | --- | ---: | ---: | ---: |
-| 5 s | 338 / 1,775 | 0.79% | 47 / 281 |
-| 15 s | 476 / 1,775 | 2.88% | 133 / 281 |
-| 30 s | 539 / 1,775 | 3.03% | 152 / 281 |
+| 5 s (comparison) | 338 / 1,775 | 0.79% | 47 / 281: 46 FIT + 1 API |
+| 15 s (selected, FIT only) | 476 / 1,775 | 2.88% | 133 / 281: **131 FIT** + 2 API excluded |
+| 30 s (comparison) | 539 / 1,775 | 3.03% | 152 / 281: 150 FIT + 2 API |
 
-The 1% screen intentionally limits cumulative loss; it is a proposed conservative
+The 1% screen intentionally limits cumulative loss; it is an Owner-selected pragmatic
 budget, not an optimized or physiologically established limit. Wider thresholds
 trade coverage for larger observed errors. These repeated interventions are
 correlated; percentiles are descriptive, not confidence bounds.
@@ -183,12 +204,20 @@ across the actual set, rather than silently treating them as observations.
 In the latest 42 days both methods cover the same **31 contributors among 38 recorded cycling rides**:
 partial sum 1,428.54 points versus unrestricted Sauce experimental sum 1,433.89.
 That close aggregate is not validation; seven recorded rides remain omitted and
-seven dates have no recorded ride. Under the five-second candidate, the 31 split
-into **23 complete envelopes, one tentative API interval estimate and seven
-partial recordings**. Latest seven days: 4/6 contributors, 183.66 partial versus
-185.69 unrestricted experimental points; two envelopes and two partials, with no
-new small-gap estimate. No full-timer recent total is established. Never combine
-these categories into an unlabeled whole-history TSS total.
+seven dates have no recorded ride. Under the **approved FIT-only 15 s screen**,
+the 31 split into **23 complete envelopes, two potential FIT interval estimates
+and six partial recordings**. Latest seven days retain four of six contributors:
+two envelopes, two partials and no estimate-screen admission. Historical observed
+segment versus unrestricted Sauce sums remain 183.66 versus 185.69 points; those
+are comparison outputs, not a computed total under the selected pause policy.
+
+Known interior missing time in those contributor streams is **510 s / 160 s**
+for 42 / 7 days; **21 s / 0 s** lies within selected FIT estimate screens. The
+historical ≥600 s comparator additionally omits **1,746 / 240 observed seconds**
+from short segments. These quantities are distinct: do not double-count them or
+call their sum complete missing training time. Time in omitted rides or outside
+recording boundaries remains unknown. Neither recent window has an exact
+full-timer stress total. Never combine categories into an unlabeled whole-load sum.
 
 ## New FTP evidence and date rules
 
@@ -241,7 +270,9 @@ for what existed before this additional evidence.
 
 ## Recording candidates and diagnostic evidence
 
-The methods are research candidates, not accepted production policy. Every
+The following methods describe the retained research comparisons. The selected
+design is governed by §16 and the precedence above; no production implementation
+is accepted here. Every
 calculation starts from the existing eligible source. Source summaries, native
 records, timer events and API moving flags remain separate evidence.
 
@@ -386,34 +417,30 @@ explanations; neither time constant has been validated as optimal for this rider
 | Alternative | Disposition |
 | --- | --- |
 | Work-only recent/longer summaries | Broadest eligible coverage, no FTP dependence; useful before July 2019, lacks relative-intensity normalization |
-| Separate work + evidence-scoped stress | **Recommended for Owner choice**; distinguish complete intervals, narrow estimates and partial segment subtotals |
+| Separate work + evidence-scoped stress | **Owner selected**; distinguish complete intervals, FIT estimates and partial segment subtotals |
 | Full-session TSS + default PMC | Defer as default: unresolved full-session input, missing-day and initialization assumptions |
 | HR/TRIMP fallback | Still unavailable: no usable dated cycling HR reference set; no mixing HR and power into one score |
 | Elapsed-only load | Reject: pause/recording duration can dominate apparent workload |
 | 3D/physiological predictive model | No validated historical CP/W′/maximal-power state or independent validation; no justified v1 expansion |
 
-## Owner decision and proposed P4-02 boundary
+## Analyst acceptance and P4-02 boundary
 
-1. Choose whether the first view should distinguish complete recorded work/stress,
-   narrow small-gap **estimates**, and partial segment stress. The experiment
-   supports correction for short losses; it does not support blanket Sauce
-   correction, automatic whole-ride labels or default CTL/ATL/TSB.
-2. Approve/change the **5 s / 1% candidate**, auxiliary-sensor assumptions,
-   API applicability and evidence labels. Retain 600-second segments as a
-   conservative fallback, not automatic rejection of otherwise useful short-gap
-   interval estimates. Resolve pause conventions explicitly; the timer-aware
-   sensitivity is not accepted production policy.
-3. Authorize the Analyst, after that choice, to specify narrow P4-02 calculation,
-   dated-FTP ingestion/provenance, activity/daily evidence categories, distinct
-   7-/42-day subtotals, coverage/navigation and limited Home integration.
-   Existing FTP is sufficient for recent windows. No generic profile engine,
-   FTP inference, outdoor power admission, short-ride eligibility change,
-   HR mapping, planning or prescriptions are proposed.
+The Owner model/policy gate is resolved by JIT §16 and Phase 4 §8.2. The selected
+15-second FIT-only rule, observed-only API eligibility, four evidence classes and
+validated pause/reset precedence supersede the earlier five-second proposal.
+The five-/thirty-second findings and prior method outputs remain comparative
+research, not accepted alternative policies. Remaining limitations include unknown
+intensity in gaps, unknown session boundaries, incomplete longitudinal input and
+lack of physiological validation; approval does not remove these uncertainties.
 
-**Stop at HARD — Owner, JIT §15.** Owner model/policy choice and subsequent Analyst
-acceptance remain outstanding. No merge or P4-02 implementation is authorized.
-The dated-FTP and original retained-source findings below remain evidence; the
-new recommendation supersedes the earlier default segment-only direction.
+**Stop at HARD — Analyst.** Review this reconciliation, source-specific count,
+boundary-evidence correction, unchanged research comparisons and rerun verification.
+P4-01 remains `in_progress`; task acceptance is outstanding. No merge or P4-02
+implementation is authorized. A separately authored P4-02 JIT must specify the
+versioned calculation, dated FTP ingestion/provenance, interval/daily evidence
+labels, contributor/time omissions and user-visible 7-/42-day views. No generic
+profile engine, FTP inference, outdoor admission, short-ride eligibility change,
+HR mapping, planning or prescriptions are introduced here.
 
 ## Initial retained-source evidence (before the new FTP dataset)
 

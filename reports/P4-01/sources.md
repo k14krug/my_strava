@@ -68,4 +68,5 @@ value/zero/break markers remain distinct from measured zero. FTP prehistory
 fallback, HR assumptions and zero-filled daily/PMC inputs are not executed.
 The controlled evidence now challenges default 600-second segmentation for
 small losses; its earlier external motivation does not establish that policy
-as preferable to labeled estimates. No production rule is accepted here.
+as preferable to labeled estimates. No production implementation is accepted here; the subsequent Owner design
+selection is recorded in JIT §16 and current verification.

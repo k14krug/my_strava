@@ -1,0 +1,74 @@
+{
+  "actual_cases_checked": 304,
+  "comparison": {
+    "15": {
+      "all_sources": 133,
+      "boundary_and_timer_screen": 1,
+      "source_classes": {
+        "FIT": 131,
+        "Strava API stream": 2
+      }
+    },
+    "30": {
+      "all_sources": 152,
+      "boundary_and_timer_screen": 1,
+      "source_classes": {
+        "FIT": 150,
+        "Strava API stream": 2
+      }
+    },
+    "5": {
+      "all_sources": 47,
+      "boundary_and_timer_screen": 1,
+      "source_classes": {
+        "FIT": 46,
+        "Strava API stream": 1
+      }
+    }
+  },
+  "corrected_whole_session_calculations_verified": 0,
+  "interrupted_denominator": 281,
+  "jit": "36c72d0",
+  "method": "p4-01-owner-policy-audit-v1",
+  "policy": {
+    "api": "observed-only; no gap correction",
+    "max_missing_fraction": 0.01,
+    "max_missing_seconds": 15,
+    "pause_rule": "split validated timer intervals; reset NP; no pause filling",
+    "source": "FIT"
+  },
+  "recent": {
+    "42": {
+      "classes": {
+        "calculated_recorded_envelope": 23,
+        "fit_estimate_screen": 2,
+        "partial_observed": 6
+      },
+      "contributors": 31,
+      "fit_estimate_screen_missing_seconds": 21.0,
+      "known_interior_missing_seconds": 510.0,
+      "no_record_days": 7,
+      "observed_seconds_omitted_by_historical_600s_comparator": 1746,
+      "omitted_rides": 7,
+      "omitted_whole_ride_or_boundary_time": "unknown; not zero",
+      "recorded_cycling": 38
+    },
+    "7": {
+      "classes": {
+        "calculated_recorded_envelope": 2,
+        "partial_observed": 2
+      },
+      "contributors": 4,
+      "fit_estimate_screen_missing_seconds": 0,
+      "known_interior_missing_seconds": 160,
+      "no_record_days": 2,
+      "observed_seconds_omitted_by_historical_600s_comparator": 240,
+      "omitted_rides": 2,
+      "omitted_whole_ride_or_boundary_time": "unknown; not zero",
+      "recorded_cycling": 6
+    }
+  },
+  "scope": "Coverage reconciliation only; historical Sauce outputs unchanged; no production calculation",
+  "selected_boundary_and_timer_screen": 1,
+  "selected_fit_intervals": 131
+}

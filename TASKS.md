@@ -434,6 +434,8 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 **Owner model/policy decision — 2026-10-09:** APPROVED separate 7-/42-day observed work and evidence-scoped stress; FIT-only internal missing-power correction where every gap is <=15 seconds and total missing time <=1% of the recorded interval; no API gap correction yet; validated timer stop/start events govern pauses and NP resets. Use calculated / estimated / partial / unavailable evidence labels with explicit omissions. The Owner's design gate is resolved, superseding the earlier tentative 5-second rule. Dex must reconcile DESIGN-003 and reports on existing PR #23, rerun relevant checks, and stop at **HARD — Analyst** for acceptance. P4-01 remains in progress; no P4-02 work or merge authorized. See JIT §16.
 
+**Reconciled for Analyst review:** DESIGN-003 reflects the approved 15-second FIT-only rule and pause precedence. Verified subset: 131 FIT intervals (prior 133 included two API). Boundary metadata correction: one candidate has corroborating timer/session metadata; no corrected whole-session result is verified. 311 tests, 52 Node assertions and preservation checks pass. Stop at HARD — Analyst; task remains in_progress.
+
 **Dependency:** Phase 3 accepted / complete.
 
 ### Phase 5 — Workout intent, outcome, and initial planning

@@ -52,6 +52,18 @@ class SauceGapResearchTests(unittest.TestCase):
         self.assertEqual(informed['counts']['zeroPad'],60)
         self.assertLess(informed['active_seconds'],heuristic['active_seconds'])
 
+    def test_validated_timer_split_resets_np_and_excludes_pause_records(self):
+        from tools.research_training_state_ftp import segments, metrics
+        # Deliberately high records inside the proved pause must not contribute.
+        times=list(range(1860));power=[100]*900+[999]*60+[300]*900
+        parts,error=segments(times,power,[(0,900),(960,1860)])
+        self.assertIsNone(error)
+        result=metrics(parts,power,200,600)
+        self.assertEqual(result['seconds'],1800)
+        self.assertEqual(result['work_kj'],360)
+        self.assertAlmostEqual(result['stress'],62.5)
+        self.assertEqual([len(p) for p in parts],[900,900])
+
     def test_recorded_zero_survives_and_no_600_second_segment_is_unknown(self):
         s=self.streams();s['watts']=[0]*1800
         self.assertEqual(oracle(dict(streams=s,ftp=200),{})['stress'],0)

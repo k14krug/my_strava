@@ -1784,7 +1784,7 @@
     "version": "p4-01-dated-ftp-segments-v1"
   },
   "continuation_scope": "Historical dated-FTP continuation; calculations retained, default segment-only recommendation superseded by Sauce challenge",
-  "controlling_main": "fb4761d",
+  "controlling_main": "20cfbb6",
   "initial_research": {
     "as_of": "2026-10-08",
     "base": "84e7048",
@@ -2950,8 +2950,115 @@
     }
   },
   "initial_scope": "Retained evidence before Owner-supplied dated FTP; original findings preserved, recommendation superseded",
-  "jit": "fb5b9dd",
-  "phase4_contract": "f915bc6",
+  "jit": "36c72d0",
+  "owner_policy_reconciliation": {
+    "analyst_accepted": false,
+    "audit": {
+      "actual_cases_checked": 304,
+      "comparison": {
+        "15": {
+          "all_sources": 133,
+          "boundary_and_timer_screen": 1,
+          "source_classes": {
+            "FIT": 131,
+            "Strava API stream": 2
+          }
+        },
+        "30": {
+          "all_sources": 152,
+          "boundary_and_timer_screen": 1,
+          "source_classes": {
+            "FIT": 150,
+            "Strava API stream": 2
+          }
+        },
+        "5": {
+          "all_sources": 47,
+          "boundary_and_timer_screen": 1,
+          "source_classes": {
+            "FIT": 46,
+            "Strava API stream": 1
+          }
+        }
+      },
+      "corrected_whole_session_calculations_verified": 0,
+      "interrupted_denominator": 281,
+      "jit": "36c72d0",
+      "method": "p4-01-owner-policy-audit-v1",
+      "policy": {
+        "api": "observed-only; no gap correction",
+        "max_missing_fraction": 0.01,
+        "max_missing_seconds": 15,
+        "pause_rule": "split validated timer intervals; reset NP; no pause filling",
+        "source": "FIT"
+      },
+      "recent": {
+        "42": {
+          "classes": {
+            "calculated_recorded_envelope": 23,
+            "fit_estimate_screen": 2,
+            "partial_observed": 6
+          },
+          "contributors": 31,
+          "fit_estimate_screen_missing_seconds": 21.0,
+          "known_interior_missing_seconds": 510.0,
+          "no_record_days": 7,
+          "observed_seconds_omitted_by_historical_600s_comparator": 1746,
+          "omitted_rides": 7,
+          "omitted_whole_ride_or_boundary_time": "unknown; not zero",
+          "recorded_cycling": 38
+        },
+        "7": {
+          "classes": {
+            "calculated_recorded_envelope": 2,
+            "partial_observed": 2
+          },
+          "contributors": 4,
+          "fit_estimate_screen_missing_seconds": 0,
+          "known_interior_missing_seconds": 160,
+          "no_record_days": 2,
+          "observed_seconds_omitted_by_historical_600s_comparator": 240,
+          "omitted_rides": 2,
+          "omitted_whole_ride_or_boundary_time": "unknown; not zero",
+          "recorded_cycling": 6
+        }
+      },
+      "scope": "Coverage reconciliation only; historical Sauce outputs unchanged; no production calculation",
+      "selected_boundary_and_timer_screen": 1,
+      "selected_fit_intervals": 131
+    },
+    "experiment_outputs_changed": false,
+    "ftp_csv_changes": false,
+    "gate": "HARD \u2014 Analyst",
+    "owner_approved": true,
+    "production_changes": false,
+    "verification": {
+      "focused_research_tests": 26,
+      "full_suite": 311,
+      "node_assertions": 52,
+      "preservation": {
+        "activities_verified": 1442,
+        "daily_rows_verified": 5909,
+        "dated_stress": 878,
+        "eligible": 1028,
+        "exact_timer_stress": 24,
+        "foreign_key_violations": 0,
+        "ftp_intervals_verified": 66,
+        "integrity": "ok",
+        "live_tables_unchanged": true,
+        "rolling_comparisons": 70908,
+        "segment_metric_checks": 2718,
+        "snapshot_unchanged": true,
+        "verified_original_artifacts": 1422
+      },
+      "report": {
+        "policy_grids_verified": 4,
+        "published_distribution_checks": 816,
+        "recent_windows_verified": 2
+      }
+    }
+  },
+  "phase4_contract": "67ad8ca",
   "sauce_challenge": {
     "actual_interrupted": 281,
     "actual_recent_complete": 23,
@@ -2997,6 +3104,7 @@
     },
     "production_changes": false,
     "reference_rides": 48,
+    "scope": "Historical \u00a715 comparison; five-second recommendation superseded by Owner \u00a716. Zero corroborating-boundary claim corrected: one metadata candidate; no corrected whole-session calculation verified.",
     "source_sha256": "ca64ef21178be7f17bbbca630252243327241b69d495374d8f8c913f4ec611b1",
     "strict_timer_references": 24,
     "supplemental_envelopes": 24,
@@ -3017,6 +3125,6 @@
       "upstream_variant_checks": 8508
     }
   },
-  "status": "ready_for_owner_review_not_accepted",
+  "status": "ready_for_analyst_review_not_accepted",
   "task": "P4-01"
 }
