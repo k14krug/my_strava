@@ -426,9 +426,11 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 **Acceptance:** `docs/PHASE_4_ACCEPTANCE.md` and `docs/tasks/P4-01.md`.
 
-**Allowed invocation:** `/TASK P4-01` or `/AUTOTASK P4-01`.
+**Allowed invocation:** `/TASK P4-01` only (explicit JIT Execution Control).
 
-**Current result / revised Owner review — 2026-10-09:** [Draft PR #23](https://github.com/k14krug/rideworks/pull/23) is back at **HARD — Owner** with revised DESIGN-003. The committed 66-entry FTP CSV covers 878/1,028 eligible power rides; 597 complete envelopes plus 281 interrupted recordings yield dated segment contributions. Exact full-timer stress qualifies 24 (75 under one-second summary sensitivity). Recommendation: separate 7-/42-day observed work and explicitly partial segment stress, candidate minimum 600 seconds, with coverage. 303 full / 18 focused tests and independent verification pass; production and originals unchanged. Prior retained-source census preserved. Owner model/recording-policy choice and subsequent Analyst acceptance outstanding; no P4-02, production changes or merge.
+**Owner continuation — 2026-10-09:** Initial research PR #23 is awaiting revised P4-01 evaluation. Owner provided 66 historical Strava FTP entries (private screenshot), approved each date as effective through the next entry, and authorized comparing normalized stress with workload-first using a review of recording gaps and duration semantics. Preserve the original retained-evidence census, use the Owner-approved publicly committed FTP CSV as the research source, and return to HARD — Owner after revised model comparison. This authorizes P4-01 research, not P4-02 implementation or Phase 4 acceptance.
+
+**Owner continuation — Sauce experiment, 2026-10-09:** Before final model decision, compare pinned Sauce-for-Strava active-time/gap-correction logic with strict full-timer and observed-only 600-second segment stress. Test deterministic injected gaps against complete reference recordings and assess disagreement/coverage on real interrupted rides. Distinguish derived estimates from observed power; retain hard Owner gate, unchanged production data and Performance-v2, and no P4-02 implementation. See JIT §15 and PR #23 Analyst source review.
 
 **Dependency:** Phase 3 accepted / complete.
 
