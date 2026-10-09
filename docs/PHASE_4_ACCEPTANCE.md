@@ -97,6 +97,33 @@ If historical FTP is absent or incomplete:
 - compare minimal ways to supply missing historical athlete state, including simple manual dated entries;
 - stop for Owner decision before production use if the chosen model materially depends on data RideWorks does not yet have.
 
+### 6.1 New Owner-provided Strava historical FTP evidence
+
+After the initial P4-01 research snapshot, the Owner supplied a private Strava
+FTP-history screenshot transcribed as 66 dated values spanning July 2019 to
+September 2026. The Owner explicitly approved treating each listed calendar
+date as the effective start until the next listed date, with the last interval
+open-ended and **no inferred value before the first date**.
+
+This is **new evidence**, not a contradiction of the previous retained-source
+inventory. Distinguish a reported Strava FTP setting from independently
+validated physiological threshold. The Owner subsequently **approved
+committing the 66 date/value entries** to the public RideWorks repo; PR #23
+tracks them at `data/athlete/strava_ftp_history.csv` with a provenance README.
+The original screenshot remains private. Do not treat this tracked dataset as
+already persisted in the running RideWorks athlete-state store.
+
+Before accepting P4-01's model recommendation, require a revised comparison
+with this dated FTP series and a separate evaluation of recording-gap/timer
+semantics. The original 693 complete one-second envelopes are a conservative
+research floor, **not** the approved full-session load policy. Report FTP ×
+eligible-power overlap and current gaps, and do not fill missing power or
+missing whole-ride stress with zeros.
+
+The Owner authorized further **research only**. P4-01 must return to HARD —
+Owner for the revised model recommendation; no P4-02 or production FTP import is
+authorized by this decision.
+
 ## 7. Current power-evidence boundary
 
 For the first evaluation:

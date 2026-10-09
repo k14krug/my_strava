@@ -260,6 +260,13 @@ Do **not** commit:
 
 Small deliberately selected test fixtures may be committed only when the JIT explicitly permits them or Ken explicitly approves them.
 
+**Explicit FTP-data exception (2026-10-09):** The Owner authorized
+committing their 66-entry historical Strava FTP date/value record as a
+version-controlled RideWorks source dataset, with documented provenance and
+approved date-effective intervals. The source screenshot remains local-only.
+This limited approval does not cover other personal activity records,
+databases, export archives, or secrets.
+
 Prefer committing compact derived inventories, summaries, test fixtures, and reports that contain only the information needed for the research task.
 
 Analysis tools should accept local paths as inputs rather than assuming Ken's directory layout.
