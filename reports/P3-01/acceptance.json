@@ -8,9 +8,9 @@
   "prior_owner_review_head": "9f5d936",
   "pr": "https://github.com/k14krug/rideworks/pull/19",
   "state": "ready_for_review",
-  "gate": "HARD \u2014 Owner",
+  "gate": "HARD — Analyst",
   "owner_acceptance": false,
-  "analyst_acceptance": false,
+  "analyst_acceptance": "pending",
   "annual_goal": {
     "year": 2026,
     "target_miles": "2200",
@@ -191,7 +191,7 @@
     "this_week_actual_miles": 26.3025182931679,
     "annual_progress_only_in_mileage_panel": true,
     "goal": {
-      "target_miles": 2200.0,
+      "target_miles": 2200,
       "actual_miles": 1518.2113519545853,
       "percent": 69.00960690702661,
       "remaining_miles": 681.7886480454147,
@@ -1583,5 +1583,6 @@
       "foreign_keys": true,
       "phase_4_5_6_implemented": false
     }
-  }
+  },
+  "owner_approval": "approved"
 }
