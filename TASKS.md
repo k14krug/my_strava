@@ -395,4 +395,45 @@ Phase 3 must not begin automatically after Phase 2.
 
 **Dependency:** Phase 2 and STRAVA-004 accepted / complete.
 
-Phase 4 must not begin automatically.
+Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically.
+
+
+---
+
+## Phase 4 — Training state
+
+**Status:** active — P4-01 research/design authorized.
+
+**Acceptance contract:** `docs/PHASE_4_ACCEPTANCE.md`
+
+### P4-01 — Training-state model evaluation and athlete-state inventory
+
+**Status:** pending
+
+**Purpose:** Evaluate transparent training-load/current-state models against the rider's actual RideWorks history before implementing a production Fitness/Fatigue/Form model.
+
+**Scope summary:**
+
+* inventory historical FTP/weight/HR-state evidence and missing periods;
+* census eligible power/HR/duration/work coverage;
+* compare classic TSS/CTL/ATL/TSB-style baseline with simpler transparent short/long workload;
+* evaluate HR-derived fallback only when required HR reference state exists;
+* keep power/HR/external-load evidence classes distinct;
+* keep outdoor suspect/estimated power out of the first load baseline;
+* compare model behavior against real training periods and Performance-v2 history without overfitting;
+* recommend the first RideWorks training-state model in DESIGN-003;
+* no production state UI/schema/planning in P4-01.
+
+**Acceptance:** `docs/PHASE_4_ACCEPTANCE.md` and `docs/tasks/P4-01.md`.
+
+**Allowed invocation:** `/TASK P4-01` or `/AUTOTASK P4-01`.
+
+**Dependency:** Phase 3 accepted / complete.
+
+### Phase 5 — Workout intent, outcome, and initial planning
+
+Planning now follows Training State. It is not started.
+
+### Phase 6 — Adaptive planning
+
+Unchanged; not started.
