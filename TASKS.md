@@ -428,7 +428,7 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 **Allowed invocation:** `/TASK P4-01` or `/AUTOTASK P4-01`.
 
-**Current result:** Research package ready at **HARD — Owner** on `task/p4-01-training-state`. Proposed DESIGN-003 recommends separate transparent 7-/42-day workload with coverage, with normalized stress conditional on dated FTP and session timing. Full retained-evidence inventory: 1,418 cycling Activities, 1,028 eligible power results, 693 complete recorded envelopes, only one usable session-threshold candidate. 293 full / 8 focused tests and independent SQL/Decimal verification pass; production tables and originals preserved. See `reports/P4-01/verification.md`. Owner direction and subsequent Analyst acceptance remain outstanding; no production implementation or P4-02.
+**Current result:** Research package ready at **HARD — Owner** in [draft PR #23](https://github.com/k14krug/rideworks/pull/23), branch `task/p4-01-training-state`, research head `d4a4619`. Proposed DESIGN-003 recommends separate transparent 7-/42-day workload with coverage, with normalized stress conditional on dated FTP and session timing. Full retained-evidence inventory: 1,418 cycling Activities, 1,028 eligible power results, 693 complete recorded envelopes, only one usable session-threshold candidate. 293 full / 8 focused tests and independent SQL/Decimal verification pass; production tables and originals preserved. See `reports/P4-01/verification.md`. Owner direction and subsequent Analyst acceptance remain outstanding; no production implementation or P4-02.
 
 **Dependency:** Phase 3 accepted / complete.
 

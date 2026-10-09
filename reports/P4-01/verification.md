@@ -1,6 +1,7 @@
 # P4-01 verification and Owner review handoff
 
 **State:** `ready_for_review` at JIT §12 **HARD — Owner**, not accepted.
+**Branch / PR:** `task/p4-01-training-state` / [draft PR #23](https://github.com/k14krug/rideworks/pull/23), research head `d4a4619`.
 **Invocation:** `/TASK P4-01`. Main refreshed to `84e7048`; Analyst JIT `e04d0ca`.
 The JIT omits Execution Control / Allowed Invocation; AGENTS.md's explicit
 missing-declaration fallback permits `/TASK only`. The brief was not modified.

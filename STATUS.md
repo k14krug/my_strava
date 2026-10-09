@@ -4,7 +4,7 @@
 
 **Current task:** P4-01 — Training-state model evaluation and athlete-state inventory. TASKS `in_progress`; STATUS `ready_for_review` at **HARD — Owner** (JIT §12). Owner direction and subsequent Analyst acceptance outstanding.
 
-**Branch / PR:** `task/p4-01-training-state`; review PR being opened. Base `84e7048`, Analyst JIT `e04d0ca`. Invocation `/TASK P4-01`; missing Allowed Invocation uses AGENTS.md's `/TASK only` fallback.
+**Branch / PR:** `task/p4-01-training-state` / [draft PR #23](https://github.com/k14krug/rideworks/pull/23). Research head `d4a4619`. Base `84e7048`, Analyst JIT `e04d0ca`. Invocation `/TASK P4-01`; missing Allowed Invocation uses AGENTS.md's `/TASK only` fallback.
 
 **Delivered:** Proposed DESIGN-003, complete retained-evidence census, current primary-source research, reproducible research tools, synthetic model comparison and anonymized actual-period figures. No production changes or Strava calls.
 
