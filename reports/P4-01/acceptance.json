@@ -1292,7 +1292,7 @@
       "duplicate_timestamp_samples": 2,
       "eligible": 1028,
       "eligible_on_ftp_change_date": 51,
-      "gap_seconds": 46040.0,
+      "gap_seconds": 46040,
       "gapped_sample_count_equals_timer": 92,
       "invalid_power_samples": 755,
       "minimum_segment_sensitivity_affected_rides": 163,
@@ -1346,123 +1346,6 @@
       "verified_original_artifacts": 1422
     },
     "latest": {
-      "42": {
-        "coverage": {
-          "complete_envelope": {
-            "dated_ftp": 23,
-            "denominator": 23,
-            "floor_stress": 23,
-            "full_timer_stress": 0,
-            "full_timer_tolerance1": 13,
-            "matched_work_kj": 23,
-            "no_dated_ftp": 0,
-            "segment_work_kj": 23,
-            "stress30": 23,
-            "stress600": 23,
-            "uncertain_ftp_date": 0
-          },
-          "cycling": {
-            "dated_ftp": 38,
-            "denominator": 38,
-            "floor_stress": 23,
-            "full_timer_stress": 0,
-            "full_timer_tolerance1": 13,
-            "matched_work_kj": 31,
-            "no_dated_ftp": 0,
-            "segment_work_kj": 31,
-            "stress30": 31,
-            "stress600": 31,
-            "uncertain_ftp_date": 0
-          },
-          "eligible": {
-            "dated_ftp": 31,
-            "denominator": 31,
-            "floor_stress": 23,
-            "full_timer_stress": 0,
-            "full_timer_tolerance1": 13,
-            "matched_work_kj": 31,
-            "no_dated_ftp": 0,
-            "segment_work_kj": 31,
-            "stress30": 31,
-            "stress600": 31,
-            "uncertain_ftp_date": 0
-          },
-          "incomplete_envelope": {
-            "dated_ftp": 8,
-            "denominator": 8,
-            "floor_stress": 0,
-            "full_timer_stress": 0,
-            "full_timer_tolerance1": 0,
-            "matched_work_kj": 8,
-            "no_dated_ftp": 0,
-            "segment_work_kj": 8,
-            "stress30": 8,
-            "stress600": 8,
-            "uncertain_ftp_date": 0
-          },
-          "outdoor": {
-            "dated_ftp": 6,
-            "denominator": 6,
-            "floor_stress": 0,
-            "full_timer_stress": 0,
-            "full_timer_tolerance1": 0,
-            "matched_work_kj": 0,
-            "no_dated_ftp": 0,
-            "segment_work_kj": 0,
-            "stress30": 0,
-            "stress600": 0,
-            "uncertain_ftp_date": 0
-          },
-          "virtual": {
-            "dated_ftp": 32,
-            "denominator": 32,
-            "floor_stress": 23,
-            "full_timer_stress": 0,
-            "full_timer_tolerance1": 13,
-            "matched_work_kj": 31,
-            "no_dated_ftp": 0,
-            "segment_work_kj": 31,
-            "stress30": 31,
-            "stress600": 31,
-            "uncertain_ftp_date": 0
-          }
-        },
-        "window": {
-          "days": 42,
-          "floor_stress": {
-            "contributors": 23,
-            "missing": 15,
-            "subtotal": 1095.0988964183089
-          },
-          "full_timer_stress": {
-            "contributors": 0,
-            "missing": 38,
-            "subtotal": null
-          },
-          "matched_work_kj": {
-            "contributors": 31,
-            "missing": 7,
-            "subtotal": 10930.666
-          },
-          "no_record_days": 7,
-          "rides": 38,
-          "segment_work_kj": {
-            "contributors": 31,
-            "missing": 7,
-            "subtotal": 11075.375
-          },
-          "stress30": {
-            "contributors": 31,
-            "missing": 7,
-            "subtotal": 1442.1750296449634
-          },
-          "stress600": {
-            "contributors": 31,
-            "missing": 7,
-            "subtotal": 1428.5355744955782
-          }
-        }
-      },
       "7": {
         "coverage": {
           "complete_envelope": {
@@ -1577,6 +1460,123 @@
             "contributors": 4,
             "missing": 2,
             "subtotal": 183.66364426229273
+          }
+        }
+      },
+      "42": {
+        "coverage": {
+          "complete_envelope": {
+            "dated_ftp": 23,
+            "denominator": 23,
+            "floor_stress": 23,
+            "full_timer_stress": 0,
+            "full_timer_tolerance1": 13,
+            "matched_work_kj": 23,
+            "no_dated_ftp": 0,
+            "segment_work_kj": 23,
+            "stress30": 23,
+            "stress600": 23,
+            "uncertain_ftp_date": 0
+          },
+          "cycling": {
+            "dated_ftp": 38,
+            "denominator": 38,
+            "floor_stress": 23,
+            "full_timer_stress": 0,
+            "full_timer_tolerance1": 13,
+            "matched_work_kj": 31,
+            "no_dated_ftp": 0,
+            "segment_work_kj": 31,
+            "stress30": 31,
+            "stress600": 31,
+            "uncertain_ftp_date": 0
+          },
+          "eligible": {
+            "dated_ftp": 31,
+            "denominator": 31,
+            "floor_stress": 23,
+            "full_timer_stress": 0,
+            "full_timer_tolerance1": 13,
+            "matched_work_kj": 31,
+            "no_dated_ftp": 0,
+            "segment_work_kj": 31,
+            "stress30": 31,
+            "stress600": 31,
+            "uncertain_ftp_date": 0
+          },
+          "incomplete_envelope": {
+            "dated_ftp": 8,
+            "denominator": 8,
+            "floor_stress": 0,
+            "full_timer_stress": 0,
+            "full_timer_tolerance1": 0,
+            "matched_work_kj": 8,
+            "no_dated_ftp": 0,
+            "segment_work_kj": 8,
+            "stress30": 8,
+            "stress600": 8,
+            "uncertain_ftp_date": 0
+          },
+          "outdoor": {
+            "dated_ftp": 6,
+            "denominator": 6,
+            "floor_stress": 0,
+            "full_timer_stress": 0,
+            "full_timer_tolerance1": 0,
+            "matched_work_kj": 0,
+            "no_dated_ftp": 0,
+            "segment_work_kj": 0,
+            "stress30": 0,
+            "stress600": 0,
+            "uncertain_ftp_date": 0
+          },
+          "virtual": {
+            "dated_ftp": 32,
+            "denominator": 32,
+            "floor_stress": 23,
+            "full_timer_stress": 0,
+            "full_timer_tolerance1": 13,
+            "matched_work_kj": 31,
+            "no_dated_ftp": 0,
+            "segment_work_kj": 31,
+            "stress30": 31,
+            "stress600": 31,
+            "uncertain_ftp_date": 0
+          }
+        },
+        "window": {
+          "days": 42,
+          "floor_stress": {
+            "contributors": 23,
+            "missing": 15,
+            "subtotal": 1095.0988964183089
+          },
+          "full_timer_stress": {
+            "contributors": 0,
+            "missing": 38,
+            "subtotal": null
+          },
+          "matched_work_kj": {
+            "contributors": 31,
+            "missing": 7,
+            "subtotal": 10930.666
+          },
+          "no_record_days": 7,
+          "rides": 38,
+          "segment_work_kj": {
+            "contributors": 31,
+            "missing": 7,
+            "subtotal": 11075.375
+          },
+          "stress30": {
+            "contributors": 31,
+            "missing": 7,
+            "subtotal": 1442.1750296449634
+          },
+          "stress600": {
+            "contributors": 31,
+            "missing": 7,
+            "subtotal": 1428.5355744955782
           }
         }
       }
@@ -1887,12 +1887,12 @@
           "kind": "Virtual Ride",
           "known_work": 102,
           "overlap_power_hr_duration_work": {
+            "1110": 954,
+            "1111": 74,
             "0011": 1,
             "0100": 2,
             "0110": 212,
-            "0111": 27,
-            "1110": 954,
-            "1111": 74
+            "0111": 27
           },
           "power_hr_duration_work": 74,
           "preserved_power_excluded": 242,
@@ -2186,9 +2186,9 @@
           "kind": "Virtual Ride",
           "known_work": 0,
           "overlap_power_hr_duration_work": {
+            "1110": 90,
             "0100": 1,
-            "0110": 10,
-            "1110": 90
+            "0110": 10
           },
           "power_hr_duration_work": 0,
           "preserved_power_excluded": 11,
@@ -2293,8 +2293,8 @@
           "kind": "Virtual Ride",
           "known_work": 0,
           "overlap_power_hr_duration_work": {
-            "0110": 31,
-            "1110": 144
+            "1110": 144,
+            "0110": 31
           },
           "power_hr_duration_work": 0,
           "preserved_power_excluded": 31,
@@ -2347,9 +2347,9 @@
           "kind": "Virtual Ride",
           "known_work": 0,
           "overlap_power_hr_duration_work": {
+            "1110": 124,
             "0100": 1,
-            "0110": 30,
-            "1110": 124
+            "0110": 30
           },
           "power_hr_duration_work": 0,
           "preserved_power_excluded": 31,
@@ -2401,8 +2401,8 @@
           "kind": "Virtual Ride",
           "known_work": 0,
           "overlap_power_hr_duration_work": {
-            "0110": 40,
-            "1110": 88
+            "1110": 88,
+            "0110": 40
           },
           "power_hr_duration_work": 0,
           "preserved_power_excluded": 40,
@@ -2507,8 +2507,8 @@
           "kind": "Virtual Ride",
           "known_work": 0,
           "overlap_power_hr_duration_work": {
-            "0110": 30,
-            "1110": 127
+            "1110": 127,
+            "0110": 30
           },
           "power_hr_duration_work": 0,
           "preserved_power_excluded": 30,
@@ -2560,8 +2560,8 @@
           "kind": "Virtual Ride",
           "known_work": 0,
           "overlap_power_hr_duration_work": {
-            "0110": 12,
-            "1110": 105
+            "1110": 105,
+            "0110": 12
           },
           "power_hr_duration_work": 0,
           "preserved_power_excluded": 12,
@@ -2614,11 +2614,11 @@
           "kind": "Virtual Ride",
           "known_work": 91,
           "overlap_power_hr_duration_work": {
+            "1110": 68,
+            "1111": 63,
             "0011": 1,
             "0110": 19,
-            "0111": 27,
-            "1110": 68,
-            "1111": 63
+            "0111": 27
           },
           "power_hr_duration_work": 63,
           "preserved_power_excluded": 47,
@@ -2698,8 +2698,8 @@
           "kind": "Virtual Ride",
           "known_work": 0,
           "overlap_power_hr_duration_work": {
-            "0110": 23,
-            "1110": 127
+            "1110": 127,
+            "0110": 23
           },
           "power_hr_duration_work": 0,
           "preserved_power_excluded": 23,
@@ -2779,9 +2779,9 @@
           "kind": "Virtual Ride",
           "known_work": 11,
           "overlap_power_hr_duration_work": {
-            "0110": 17,
             "1110": 81,
-            "1111": 11
+            "1111": 11,
+            "0110": 17
           },
           "power_hr_duration_work": 11,
           "preserved_power_excluded": 17,
@@ -2807,14 +2807,14 @@
         "hr_summary": 1320,
         "known_work": 112,
         "overlap_power_hr_duration_work": {
+          "1110": 954,
+          "1111": 74,
           "0000": 60,
           "0010": 2,
           "0011": 2,
           "0100": 77,
           "0110": 213,
-          "0111": 36,
-          "1110": 954,
-          "1111": 74
+          "0111": 36
         },
         "power_hr_duration_work": 74,
         "preserved_power_excluded": 286,
@@ -2855,14 +2855,14 @@
         "hr_summary": 1321,
         "known_work": 112,
         "overlap_power_hr_duration_work": {
+          "1110": 954,
+          "1111": 74,
           "0000": 72,
           "0010": 7,
           "0011": 2,
           "0100": 82,
           "0110": 215,
-          "0111": 36,
-          "1110": 954,
-          "1111": 74
+          "0111": 36
         },
         "power_hr_duration_work": 74,
         "preserved_power_excluded": 287,
@@ -2902,7 +2902,7 @@
         "days_without_recorded_cycling": 7,
         "eligible_rides_missing_ftp": 31,
         "known_elapsed_hours": 32.29333333333334,
-        "label": "A \u2014 latest 42 days",
+        "label": "A — latest 42 days",
         "recorded_power_work_kj": 8111.378,
         "recorded_rides_without_eligible_power": 7,
         "rides": 38,
@@ -2952,10 +2952,18 @@
   "initial_scope": "Retained evidence before Owner-supplied dated FTP; original findings preserved, recommendation superseded",
   "jit": "36c72d0",
   "owner_policy_reconciliation": {
-    "analyst_accepted": false,
+    "analyst_accepted": true,
     "audit": {
       "actual_cases_checked": 304,
       "comparison": {
+        "5": {
+          "all_sources": 47,
+          "boundary_and_timer_screen": 1,
+          "source_classes": {
+            "FIT": 46,
+            "Strava API stream": 1
+          }
+        },
         "15": {
           "all_sources": 133,
           "boundary_and_timer_screen": 1,
@@ -2971,14 +2979,6 @@
             "FIT": 150,
             "Strava API stream": 2
           }
-        },
-        "5": {
-          "all_sources": 47,
-          "boundary_and_timer_screen": 1,
-          "source_classes": {
-            "FIT": 46,
-            "Strava API stream": 1
-          }
         }
       },
       "corrected_whole_session_calculations_verified": 0,
@@ -2993,21 +2993,6 @@
         "source": "FIT"
       },
       "recent": {
-        "42": {
-          "classes": {
-            "calculated_recorded_envelope": 23,
-            "fit_estimate_screen": 2,
-            "partial_observed": 6
-          },
-          "contributors": 31,
-          "fit_estimate_screen_missing_seconds": 21.0,
-          "known_interior_missing_seconds": 510.0,
-          "no_record_days": 7,
-          "observed_seconds_omitted_by_historical_600s_comparator": 1746,
-          "omitted_rides": 7,
-          "omitted_whole_ride_or_boundary_time": "unknown; not zero",
-          "recorded_cycling": 38
-        },
         "7": {
           "classes": {
             "calculated_recorded_envelope": 2,
@@ -3021,6 +3006,21 @@
           "omitted_rides": 2,
           "omitted_whole_ride_or_boundary_time": "unknown; not zero",
           "recorded_cycling": 6
+        },
+        "42": {
+          "classes": {
+            "calculated_recorded_envelope": 23,
+            "fit_estimate_screen": 2,
+            "partial_observed": 6
+          },
+          "contributors": 31,
+          "fit_estimate_screen_missing_seconds": 21,
+          "known_interior_missing_seconds": 510,
+          "no_record_days": 7,
+          "observed_seconds_omitted_by_historical_600s_comparator": 1746,
+          "omitted_rides": 7,
+          "omitted_whole_ride_or_boundary_time": "unknown; not zero",
+          "recorded_cycling": 38
         }
       },
       "scope": "Coverage reconciliation only; historical Sauce outputs unchanged; no production calculation",
@@ -3029,7 +3029,7 @@
     },
     "experiment_outputs_changed": false,
     "ftp_csv_changes": false,
-    "gate": "HARD \u2014 Analyst",
+    "gate": "HARD — Analyst",
     "owner_approved": true,
     "production_changes": false,
     "verification": {
@@ -3056,6 +3056,13 @@
         "published_distribution_checks": 816,
         "recent_windows_verified": 2
       }
+    },
+    "analyst_review": {
+      "outcome": "accepted",
+      "date": "2026-10-09",
+      "reviewed_head": "98c30ec2a809e6fea879b5861964bac653b9a054",
+      "pr_review": "https://github.com/k14krug/rideworks/pull/23#pullrequestreview-5475713826",
+      "scope": "research/design only; no P4-02 or production implementation"
     }
   },
   "phase4_contract": "67ad8ca",
@@ -3082,7 +3089,7 @@
     "decision_needed": "Evidence categories, small-gap threshold and missingness budget, API applicability and pause convention; no P4-02 authorization",
     "external_activity_api_requests": 0,
     "ftp_csv_changes": false,
-    "gate": "HARD \u2014 Owner",
+    "gate": "HARD — Owner",
     "method": "p4-01-sauce-gap-experiment-v1",
     "owner_accepted": false,
     "pin": "4b6d4f42bf56d064507d694abd56e5f989530e03",
@@ -3104,7 +3111,7 @@
     },
     "production_changes": false,
     "reference_rides": 48,
-    "scope": "Historical \u00a715 comparison; five-second recommendation superseded by Owner \u00a716. Zero corroborating-boundary claim corrected: one metadata candidate; no corrected whole-session calculation verified.",
+    "scope": "Historical §15 comparison; five-second recommendation superseded by Owner §16. Zero corroborating-boundary claim corrected: one metadata candidate; no corrected whole-session calculation verified.",
     "source_sha256": "ca64ef21178be7f17bbbca630252243327241b69d495374d8f8c913f4ec611b1",
     "strict_timer_references": 24,
     "supplemental_envelopes": 24,
@@ -3125,6 +3132,6 @@
       "upstream_variant_checks": 8508
     }
   },
-  "status": "ready_for_analyst_review_not_accepted",
+  "status": "accepted_research_design_no_production_implementation",
   "task": "P4-01"
 }
