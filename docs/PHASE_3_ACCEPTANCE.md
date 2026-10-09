@@ -1,8 +1,9 @@
 # Phase 3 Acceptance — Useful Dashboard
 
-**Status:** approved planning contract / implementation authorized by Owner on 2026-10-06  
+**Status:** accepted / complete — Owner and Analyst accepted PR #19 on 2026-10-08  
 **Phase goal:** Make RideWorks useful before opening an individual Activity.  
-**Primary question:** **How am I doing overall right now?**
+**Primary question:** **How am I doing overall right now?**  
+**Merge:** `5e5bceed0244ae1fa64ec3a45a101f49be5b8f15`
 
 ## 1. Product decisions controlling Phase 3
 
