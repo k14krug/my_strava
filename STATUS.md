@@ -2,7 +2,7 @@
 
 **Product:** RideWorks. Phase 1, Phase 2 and STRAVA-004 accepted / complete. Phase 3 active; Phase 4/5/6 not started.
 
-**Current task:** P3-01, `in_progress` / `ready_for_review` at HARD — Owner in PR #19. Owner/Analyst task acceptance remains outstanding.
+**Current task:** P3-01, `in_progress` / `ready_for_review` at HARD — Analyst in PR #19. Owner Gate 1 approved; Analyst acceptance pending.
 
 **Branch / PR:** `task/p3-01-dashboard` / [draft PR #19](https://github.com/k14krug/rideworks/pull/19). Refreshed main `23ac11d`; Analyst JIT `473a173` / Phase 3 contract `18fb186`; runtime `6d9160e`.
 
@@ -14,4 +14,4 @@
 
 **Review app:** [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal).
 
-**Next action:** HARD — Owner review of consolidation and desktop/phone readability under current JIT §8.3 / §15. Explicit Owner approval precedes Analyst acceptance. No merge, next task or Phase 4/5/6.
+**Next action:** HARD — Analyst review of PR #19 against the final P3-01 JIT and Phase 3 acceptance contract. No merge, next task or Phase 4/5/6 until Analyst acceptance.
