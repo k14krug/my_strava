@@ -324,6 +324,31 @@ Dashboard insights must be actionable or informative and explainable. Avoid fill
 
 ---
 
+### Training-state requirements
+
+**STATE-001 — Training state is distinct from planning**  
+Training-state analysis answers **Where am I now?** Planning answers **What should I do next?** A current-state calculation must not silently become a workout prescription.
+
+**STATE-002 — Workload inputs retain evidence class and athlete context**  
+Training-load calculations must retain the evidence they used and any athlete-state inputs they depend on. Where load is normalized to FTP, heart-rate thresholds, weight, zones, or similar values, use date-appropriate historical state rather than applying today's value backward.
+
+**STATE-003 — Missing and lower-confidence load evidence stays visible**  
+An Activity without eligible evidence for a chosen load method must not silently contribute zero load. Power-derived, heart-rate-derived, external-load, estimated-power, and missing load evidence must remain distinguishable.
+
+**STATE-004 — Training state must be explainable and reproducible**  
+Important load/state calculations must be versioned or otherwise reproducible from retained Activity evidence and athlete context. If RideWorks says fatigue/load is elevated, the rider must be able to see the underlying recent work and model assumptions.
+
+**STATE-005 — No opaque fitness/readiness score as the foundation**  
+RideWorks must not begin with one unexplained score that claims to represent fitness, fatigue, readiness, or form. Composite summaries are allowed later only when their inputs and interpretation remain inspectable.
+
+**STATE-006 — Objective core; subjective data may enrich later**  
+The first useful training-state model must work from retained objective training history without requiring daily questionnaires. Optional RPE, fatigue, sleep, soreness, motivation, illness, or notes may enrich later interpretation.
+
+**STATE-007 — Performance and training load are related but not interchangeable**  
+Recent workload, long-term workload, recovery spacing, hard-session frequency, and performance changes may inform current-state interpretation, but a load score must not be presented as measured performance or physiological truth.
+
+---
+
 ### Planning requirements
 
 **PLAN-001 — Planned workout representation**  
@@ -441,32 +466,44 @@ Minimum user-visible outcomes:
 
 The supplied dashboard mockup is the long-term direction. Phase 3 requires a useful subset, not feature parity with the mockup.
 
-### Phase 4 — Workout intent and outcome
+### Phase 4 — Training state
 
-**Goal:** Connect what was planned with what actually happened.
+**Goal:** Answer "Where am I now?" using transparent longitudinal evidence from completed training history.
+
+Candidate inputs may include:
+
+- recent workload;
+- longer-term workload;
+- training intensity;
+- hard-session frequency;
+- recovery spacing;
+- recent performance changes;
+- recent races or unusually demanding sessions;
+- optional subjective information later when useful.
+
+The first Phase 4 model must **not depend on planned-workout or adherence data**, because planning now follows in Phase 5. Phase 5 may later enrich training-state interpretation with planned-versus-actual outcomes without redefining the underlying state history.
+
+The exact load/state model remains open and must be evaluated rather than copied blindly from industry convention. Classic TSS/CTL/ATL/TSB-style methods are an important reference baseline, not an automatic product decision.
+
+Minimum user-visible outcomes by Phase 4 completion should include:
+
+- inspectable per-activity or per-day training-load evidence for the selected method;
+- recent-versus-longer-term workload context;
+- an explainable current-state presentation rather than one mystery score;
+- visible missing/ineligible evidence and athlete-context assumptions;
+- at least one longitudinal view that can be compared with already-trusted Performance history.
+
+### Phase 5 — Workout intent, outcome, and initial planning
+
+**Goal:** Connect what was planned with what actually happened and show what comes next.
 
 Minimum user-visible outcomes:
 
 - planned workout/intended purpose represented separately from completed activity;
 - ride review indicates whether key workout goals were achieved;
 - explainable intended-versus-actual findings such as "harder than intended" are supported;
-- tomorrow's workout is shown from the plan.
-
-### Phase 5 — Training state
-
-**Goal:** Answer "Where am I now?" using transparent longitudinal evidence.
-
-Candidate inputs may include:
-
-- recent workload;
-- longer-term workload;
-- hard-session frequency;
-- recovery spacing;
-- recent performance changes;
-- workout completion/failure patterns;
-- recent races or unusually demanding sessions.
-
-The exact model remains open and must be evaluated rather than copied blindly from industry convention.
+- tomorrow's workout is shown from the plan;
+- Phase 4 training state may inform presentation and later planning decisions, but planning remains conceptually separate.
 
 ### Phase 6 — Adaptive planning
 
@@ -563,8 +600,8 @@ Examples:
 - **Phase 1:** "How did this ride go?"
 - **Phase 2:** "How does this compare with my past performance?"
 - **Phase 3:** "How am I doing overall right now?"
-- **Phase 4:** "Did I accomplish today's workout, and what is tomorrow?"
-- **Phase 5:** "What is my current training state?"
+- **Phase 4:** "What is my current training state?"
+- **Phase 5:** "Did I accomplish today's workout, and what is tomorrow?"
 - **Phase 6:** "What should change next because of what actually happened?"
 
 That sequence is the guardrail against returning to an infrastructure-first project.
@@ -578,10 +615,10 @@ These remain deliberately open and should be answered when their phase approache
 1. Which additional activity-review metrics, beyond the approved Phase 1 minimum, are valuable enough to add in later phases?
 2. Which goal types should be implemented first?
 3. What exact evidence should trigger statements such as "harder than intended"?
-4. What planning source or representation should supply tomorrow's workout initially?
-5. Which performance/training-state metrics belong on the first dashboard subset?
-6. When should estimated power become eligible for longitudinal performance or training-load use?
-7. What training-state model best fits this rider and remains explainable?
+4. What training-state model best fits this rider and remains explainable?
+5. What historical athlete-state evidence (especially FTP) is available or must be entered manually for load normalization?
+6. When should estimated outdoor power become eligible for training-load use, and at what confidence level?
+7. What planning source or representation should supply tomorrow's workout initially in Phase 5?
 8. What parts of planning should remain deterministic versus AI-assisted, if AI is used at all?
 
 These questions should not be answered prematurely merely to complete a schema or architecture diagram.
