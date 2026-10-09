@@ -10,20 +10,28 @@
 
 **Phase 3 — Useful dashboard:** accepted / complete.
 
-**P3-01 / PR #19:** Owner and Analyst accepted; merged to `main` as `5e5bceed0244ae1fa64ec3a45a101f49be5b8f15`.
+**Roadmap decision — 2026-10-08:** Training State moves ahead of planning.
 
-**Home dashboard:** three top cards — Recent Mileage (This Week + Last 7 Days), Current 42-day best, Latest eligible 20-minute ride. Mileage Progress shows actual weekly bars, separate needed-average/week line, YTD goal progress, remaining miles and pace context. Recent Activities includes Avg Pwr.
+- **Phase 4:** Training State — “Where am I now?”
+- **Phase 5:** Workout intent/outcome and initial planning — “Did I accomplish today's workout, and what is tomorrow?”
+- **Phase 6:** Adaptive planning — “What should change next?”
 
-**Annual goal:** 2026 / 2,200 mi, preserved.
+This supersedes the older Phase 4/5 order.
 
-**Current mileage evidence:** LA YTD **1,631.195462250 mi** / **120 contributors / zero distance unavailable** after the Owner-authorized bounded repair of eight GPX-backed outdoor Ride summaries. The eight added **112.984110296 mi** through allowlisted Strava API summary evidence. Original GPX/export evidence remains preserved.
+**Phase 4 acceptance:** `docs/PHASE_4_ACCEPTANCE.md`.
 
-**Performance:** `virtual-power-evidence-v2` remains active; **1,028 eligible / zero pending** at final Phase 3 verification.
+**Current task:** P4-01 — Training-state model evaluation and athlete-state inventory.
 
-**Verification:** 285 full / 24 focused dashboard tests, independent SQL/Decimal mileage/goal/Performance checks, Chromium desktop/phone + LA/Tokyo, immediate tooltip interaction, sync/failure recovery, restart, integrity/FKs and 1,422 artifact preservation checks passed.
+**JIT:** `docs/tasks/P4-01.md`.
 
-**Phase 4/5/6:** not started.
+**Task type:** research/design first. Do not implement a production CTL/ATL/TSB/Fitness/Fatigue model until the candidate models and historical athlete-state evidence are reviewed.
 
-**Current implementation task:** none.
+**Key gate:** Historical FTP/weight/zones/HR reference values are date-aware. Today's FTP must not be silently applied backward. Outdoor suspect power and estimated power are excluded from the first power-load baseline. Missing load evidence is not zero.
 
-**Next action:** await Owner direction before planning or starting the next implementation task.
+**Candidate comparison:** classic TSS/CTL/ATL/TSB-style baseline, simpler transparent recent/long workload, HR-derived fallback if reference data supports it, and separate external/context signals. Industry convention is a baseline, not the product decision.
+
+**Current implementation task:** P4-01 ready for invocation.
+
+**Allowed invocation:** `/TASK P4-01` or `/AUTOTASK P4-01`.
+
+**Phase 5/6:** not started.
