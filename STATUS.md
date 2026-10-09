@@ -1,17 +1,29 @@
 # STATUS.md
 
-**Product:** RideWorks. Phase 1, Phase 2 and STRAVA-004 accepted / complete. Phase 3 active; Phase 4/5/6 not started.
+**Product:** RideWorks.
 
-**Current task:** P3-01, `in_progress` / `ready_for_review` at HARD — Analyst in PR #19. Owner Gate 1 approved; Analyst acceptance pending.
+**Phase 1:** accepted / complete.
 
-**Branch / PR:** `task/p3-01-dashboard` / [draft PR #19](https://github.com/k14krug/rideworks/pull/19). Refreshed main `23ac11d`; Analyst JIT `473a173` / Phase 3 contract `18fb186`; runtime `6d9160e`.
+**Phase 2 — Historical context and performance history:** accepted / complete.
 
-**Delivered:** Owner-approved Recent Mileage consolidates This Week and Last 7 Days, retaining neutral prior-seven-day comparison and unchanged calculations. Exactly three top cards; desktop mileage values side-by-side with an internal divider, phone stacked. Annual goal information stays in Mileage Progress.
+**STRAVA-004 — Strava activity-stream enrichment and FIT comparison:** accepted / complete.
 
-**Verification:** 285 full / 24 focused dashboard tests pass. Fresh live and disposable synthetic Chromium check desktop/phone three-card geometry, LA/Tokyo boundaries, independent SQL/Decimal mileage/Performance, actual bars/needed line, tooltip behavior and restart. Exact goal tuple, 1,422 artifact hashes and 1,441 v1 rows preserved; integrity/FKs pass. Zero external API calls during this correction. Evidence: `reports/P3-01/verification.md` / `acceptance.json`.
+**Phase 3 — Useful dashboard:** accepted / complete.
 
-**Preserved state:** Completed eight-ID enrichment; LA YTD 1,631.195462250 mi, 120 contributors / zero unavailable. Owner-confirmed 2,200-mi goal unchanged; Performance 1,028 eligible / zero pending. Current local This Week 26.3 mi / Last 7 Days 74.8 mi, 20.1 mi less than prior seven. Difference versus approximate 1,631-mi reference is within whole-mile rounding; exact current Strava equality remains unverified.
+**P3-01 / PR #19:** Owner and Analyst accepted; merged to `main` as `5e5bceed0244ae1fa64ec3a45a101f49be5b8f15`.
 
-**Review app:** [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal).
+**Home dashboard:** three top cards — Recent Mileage (This Week + Last 7 Days), Current 42-day best, Latest eligible 20-minute ride. Mileage Progress shows actual weekly bars, separate needed-average/week line, YTD goal progress, remaining miles and pace context. Recent Activities includes Avg Pwr.
 
-**Next action:** HARD — Analyst review of PR #19 against the final P3-01 JIT and Phase 3 acceptance contract. No merge, next task or Phase 4/5/6 until Analyst acceptance.
+**Annual goal:** 2026 / 2,200 mi, preserved.
+
+**Current mileage evidence:** LA YTD **1,631.195462250 mi** / **120 contributors / zero distance unavailable** after the Owner-authorized bounded repair of eight GPX-backed outdoor Ride summaries. The eight added **112.984110296 mi** through allowlisted Strava API summary evidence. Original GPX/export evidence remains preserved.
+
+**Performance:** `virtual-power-evidence-v2` remains active; **1,028 eligible / zero pending** at final Phase 3 verification.
+
+**Verification:** 285 full / 24 focused dashboard tests, independent SQL/Decimal mileage/goal/Performance checks, Chromium desktop/phone + LA/Tokyo, immediate tooltip interaction, sync/failure recovery, restart, integrity/FKs and 1,422 artifact preservation checks passed.
+
+**Phase 4/5/6:** not started.
+
+**Current implementation task:** none.
+
+**Next action:** await Owner direction before planning or starting the next implementation task.
