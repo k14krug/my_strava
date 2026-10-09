@@ -24,6 +24,8 @@ def main(argv=None):
     connect = commands.add_parser('strava-connect', help='Authorize private manual Strava synchronization')
     connect.add_argument('--callback-port', type=int, default=8772, help='Temporary loopback OAuth callback port (default: 8772)')
     commands.add_parser('sync-strava', help='Manually sync recent/new Strava activity metadata')
+    repair=commands.add_parser('repair-strava-summaries', help='Explicit bounded established-ID summary repair (at most eight GPX rides)')
+    repair.add_argument('--targets',required=True,help='Private JSON mapping of Strava IDs to established RideWorks Activity IDs')
     commands.add_parser('strava-disconnect', help='Revoke/remove local Strava authorization; retain history')
     serve = commands.add_parser("serve", help="Open the local RideWorks browser application")
     serve.add_argument("--port", type=int, help="Loopback port (overrides FLASK_RUN_PORT; default: 8765)")
@@ -34,7 +36,7 @@ def main(argv=None):
             from .web import serve as serve_web
             serve_web(config.data_dir, config.port, debug=config.debug)
             return 0
-        if args.command in ('strava-connect','sync-strava','strava-disconnect'):
+        if args.command in ('strava-connect','sync-strava','strava-disconnect','repair-strava-summaries'):
             from .config import ConfigurationError, strava_credentials
             from .strava import ApiClient, connect, disconnect, sync
             from .strava_api import SyncError
@@ -46,10 +48,17 @@ def main(argv=None):
                     except ConfigurationError:
                         if args.command!='strava-disconnect':raise
                         client=None
-                    operation={'strava-connect':connect,'sync-strava':sync,'strava-disconnect':disconnect}[args.command]
-                    result=operation(store,client,**({'port':args.callback_port} if args.command=='strava-connect' else {}))
+                    if args.command=='repair-strava-summaries':
+                        from pathlib import Path
+                        from .strava_summary_repair import enrich_summaries
+                        try:targets=json.loads(Path(args.targets).read_text())
+                        except (OSError,ValueError):raise SyncError('Cannot read the private summary repair target manifest') from None
+                        result=enrich_summaries(store,client,targets)
+                    else:
+                        operation={'strava-connect':connect,'sync-strava':sync,'strava-disconnect':disconnect}[args.command]
+                        result=operation(store,client,**({'port':args.callback_port} if args.command=='strava-connect' else {}))
                 print(json.dumps(result,indent=2))
-                return 0
+                return 0 if result['status'] not in ('stopped','failed') else 1
             except (RideWorksError,OSError,sqlite3.Error) as error:
                 report=dict(status='failed',error=str(error) if isinstance(error,RideWorksError) else 'Local Strava operation failed',
                             rate_limits=getattr(error,'rate',{}))

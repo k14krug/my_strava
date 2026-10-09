@@ -343,7 +343,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is accepted and complete. Phase 3 is now the active planning/implementation boundary; P3-01 is ready.
+Phase 1 and Phase 2 are accepted and complete. STRAVA-004 is accepted and complete. Phase 3 is the active boundary; P3-01 implementation/verification is ready for Owner review in PR #19.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
@@ -356,13 +356,13 @@ Phase 3 must not begin automatically after Phase 2.
 
 ## Phase 3 — Useful dashboard
 
-**Status:** in_progress — Phase 3 acceptance contract approved; P3-01 JIT ready.
+**Status:** in_progress — P3-01 implementation/verification ready; HARD — Owner review outstanding in PR #19.
 
 **Acceptance contract:** `docs/PHASE_3_ACCEPTANCE.md`
 
 ### P3-01 — Useful dashboard and annual mileage goal
 
-**Status:** pending
+**Status:** in_progress
 
 **Purpose:** Make RideWorks useful before opening an individual Activity, centered on annual cycling mileage progress, recent rides and already-accepted Performance-v2 evidence.
 
@@ -390,6 +390,12 @@ Phase 3 must not begin automatically after Phase 2.
 **Acceptance:** `docs/PHASE_3_ACCEPTANCE.md` and `docs/tasks/P3-01.md`.
 
 **Allowed invocation:** `/TASK P3-01` or `/AUTOTASK P3-01`.
+
+**Current result:** [Draft PR #19](https://github.com/k14krug/rideworks/pull/19), runtime `6d9160e`, implements the Owner-approved Recent Mileage consolidation from refreshed main `23ac11d` / JIT `473a173` / contract `18fb186`. Three top cards: Recent Mileage (This Week and Last 7 Days with neutral prior-seven comparison), Current 42-day best and Latest eligible 20-minute ride. Desktop mileage values sit side-by-side with an internal divider; phone values stack. Annual goal stays in Mileage Progress; underlying calculations, actual bars/needed line, source selection and Performance-v2 are unchanged. 285 full / 24 focused dashboard tests and fresh live/synthetic Chromium desktop/phone, LA/Tokyo, independent SQL/Decimal, tooltip, restart and integrity checks pass. Zero external API calls during this correction; 2,200-mi goal tuple and enriched 1,631.195462250-mi YTD preserved (120 contributors / zero unavailable; Performance 1,028 eligible / zero pending). Evidence: `reports/P3-01/verification.md` / `acceptance.json`. Ready for review at **HARD — Owner** under current JIT §8.3 / §15; explicit Owner approval precedes Analyst acceptance. No merge or Phase 4/5/6.
+
+**2026-10-08 reconciliation:** Owner-requested investigation complete; numeric Strava gap remains unresolved at **HARD — Owner**. All eight unavailable YTD Activities are Ride, GPX+export-backed, with established Strava IDs but no retained known-unit distance/API summary. Existing-evidence recovery is zero; file-first adds only 0.12 m. Proposed at most eight bounded summary-window GETs (plus one token refresh if needed), retaining only those IDs; not executed. See `reports/P3-01/verification.md`. Runtime and mileage policy unchanged; no approval/merge or Phase 4/5/6.
+
+**Authorized repair delivered (2026-10-08):** Runtime `38183e3`, updated JIT `25b7d5e` / contract `8c2c284`. Eight direct established-ID GETs plus one token refresh retained allowlisted distance/duration; zero list/stream requests. Added **112.984110296 mi**; LA YTD **1,631.195462250 mi**, 120 contributors / **zero distance unavailable**. Residual versus approximate 1,631 is **−0.195462250 mi**, consistent at whole-mile precision; exact Strava equality unverified. 284 full / 8 focused tests, independent SQL/Decimal, offline idempotence, fresh live Home and all eight desktop/phone Activity Reviews pass. Goal, forward checkpoint, originals and outdoor Performance policy preserved; 1,028 eligible / zero pending. Re-present **HARD — Owner**; no approval, merge or later phase.
 
 **Dependency:** Phase 2 and STRAVA-004 accepted / complete.
 

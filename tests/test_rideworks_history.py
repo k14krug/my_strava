@@ -35,7 +35,7 @@ class HistoryTests(unittest.TestCase):
                 z.writestr(name, content)
         self.assertEqual(self.store.import_strava_export(path)['failures'], [])
 
-    def html(self, route='/'):
+    def html(self, route='/activities'):
         status, kind, body = self.app.get(route)
         self.assertEqual((status, kind), (200, 'text/html'))
         return body.decode()
@@ -67,7 +67,7 @@ class HistoryTests(unittest.TestCase):
         self.assertIn('1–30 of 50 matching activities · 75 in history', html)
         self.assertIn('rel="next"', html)
         self.assertNotIn('rel="prev"', html)
-        self.assertIn('rel="prev"', self.html('/?page=2'))
+        self.assertIn('rel="prev"', self.html('/activities?page=2'))
 
     def test_all_and_individual_types_include_noncycling(self):
         self.many()
@@ -91,7 +91,7 @@ class HistoryTests(unittest.TestCase):
         for query, count in [('from=2024-01-02', 2), ('to=2024-01-02', 2),
                              ('from=2024-01-02&to=2024-01-02', 1)]:
             self.assertEqual(browse(self.store, query)['count'], count)
-        html = self.html('/?from=2024-01-01&to=2024-01-01')
+        html = self.html('/activities?from=2024-01-01&to=2024-01-01')
         self.assertIn('2024-01-01 23:59:00 · timezone unknown', html)
         self.assertNotIn('data-local-time', html)
 
@@ -115,7 +115,7 @@ class HistoryTests(unittest.TestCase):
 
     def test_pagination_preserves_all_get_state(self):
         self.many()
-        html = self.html('/?q=SYNTHETIC&type=all&from=2024-01-01&to=2024-12-31&sort=oldest&tz=America%2FLos_Angeles')
+        html = self.html('/activities?q=SYNTHETIC&type=all&from=2024-01-01&to=2024-12-31&sort=oldest&tz=America%2FLos_Angeles')
         link = unescape(re.search(r'rel="next" href="([^"]+)"', html).group(1))
         self.assertEqual(parse_qs(urlsplit(link).query), dict(q=['SYNTHETIC'], type=['all'],
             **{'from':['2024-01-01'], 'to':['2024-12-31']}, sort=['oldest'], page=['2'], tz=['America/Los_Angeles']))
@@ -127,9 +127,9 @@ class HistoryTests(unittest.TestCase):
         for q in ('page=-1', 'page=x', 'page=' + '9' * 1000, 'page=0', 'sort=DROP+TABLE',
                   'type=unknown', 'from=bogus', 'to=2024-99-99',
                   'from=2025-01-01&to=2024-01-01', '&'.join('x=1' for _ in range(21))):
-            self.assertIn('Activities', self.html('/?' + q))
-        self.assertIn('No matching activities', self.html('/?q=absent'))
-        self.assertIn('0–0 of 0', self.html('/?q=absent'))
+            self.assertIn('Activities', self.html('/activities?' + q))
+        self.assertIn('No matching activities', self.html('/activities?q=absent'))
+        self.assertIn('0–0 of 0', self.html('/activities?q=absent'))
 
     def test_title_escaping_type_subtype_and_latest_nonempty_policy(self):
         columns = HEADERS + ['Sport Type']
@@ -210,7 +210,7 @@ class HistoryTests(unittest.TestCase):
         self.assertEqual(result['count'], 1)
         self.assertTrue(result['rows'][0]['absolute_time'])
         self.assertEqual(result['rows'][0]['date_day'], '2024-01-01')
-        self.assertIn('data-local-time', self.html('/?from=2024-01-01&to=2024-01-01&tz=America%2FLos_Angeles'))
+        self.assertIn('data-local-time', self.html('/activities?from=2024-01-01&to=2024-01-01&tz=America%2FLos_Angeles'))
         self.assertEqual(browse(self.store, 'from=2024-01-02&to=2024-01-02&tz=America%2FLos_Angeles')['count'], 0)
         self.assertEqual(browse(self.store, 'from=2024-01-02&to=2024-01-02&tz=UTC')['count'], 1)
         self.assertIn('original date text · source date text', self.html())
@@ -242,12 +242,12 @@ class HistoryTests(unittest.TestCase):
         for zone in ('', '../UTC', '/etc/passwd', 'NoSuch/Timezone', '<script>'):
             query='from=2024-01-02&to=2024-01-02&tz='+quote(zone)
             self.assertEqual(browse(self.store,query)['count'],1)
-            self.assertIn('browser timezone',self.html('/?'+query))
+            self.assertIn('browser timezone',self.html('/activities?'+query))
         self.assertEqual(browse(self.store,'from=2024-01-02&to=2024-01-02&tz=UTC')['count'],2)
 
     def test_date_is_dedicated_sibling_region_with_local_time_hook(self):
         self.export([row('1', 'activities/a.tcx')], {'activities/a.tcx':TCX})
-        html=self.html('/?tz=America%2FLos_Angeles')
+        html=self.html('/activities?tz=America%2FLos_Angeles')
         identity=re.search(r'<div class="row-identity">(.*?)</div>',html,re.S).group(1)
         date_region=re.search(r'<div class="row-date">(.*?)</div>',html,re.S).group(1)
         self.assertNotIn('<time',identity)

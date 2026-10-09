@@ -1,43 +1,17 @@
 # STATUS.md
 
-**Product:** RideWorks.
+**Product:** RideWorks. Phase 1, Phase 2 and STRAVA-004 accepted / complete. Phase 3 active; Phase 4/5/6 not started.
 
-**Phase 1:** accepted / complete.
+**Current task:** P3-01, `in_progress` / `ready_for_review` at HARD — Analyst in PR #19. Owner Gate 1 approved; Analyst acceptance pending.
 
-**Phase 2 — Historical context and performance history:** accepted / complete.
+**Branch / PR:** `task/p3-01-dashboard` / [draft PR #19](https://github.com/k14krug/rideworks/pull/19). Refreshed main `23ac11d`; Analyst JIT `473a173` / Phase 3 contract `18fb186`; runtime `6d9160e`.
 
-**STRAVA-004 — Strava activity-stream enrichment and FIT comparison:** accepted / complete.
+**Delivered:** Owner-approved Recent Mileage consolidates This Week and Last 7 Days, retaining neutral prior-seven-day comparison and unchanged calculations. Exactly three top cards; desktop mileage values side-by-side with an internal divider, phone stacked. Annual goal information stays in Mileage Progress.
 
-**Current Performance policy:** `virtual-power-evidence-v2` / `best-average-power-v1` / 1,200 s.
+**Verification:** 285 full / 24 focused dashboard tests pass. Fresh live and disposable synthetic Chromium check desktop/phone three-card geometry, LA/Tokyo boundaries, independent SQL/Decimal mileage/Performance, actual bars/needed line, tooltip behavior and restart. Exact goal tuple, 1,422 artifact hashes and 1,441 v1 rows preserved; integrity/FKs pass. Zero external API calls during this correction. Evidence: `reports/P3-01/verification.md` / `acceptance.json`.
 
-**Phase 3 — Useful dashboard:** active implementation boundary.
+**Preserved state:** Completed eight-ID enrichment; LA YTD 1,631.195462250 mi, 120 contributors / zero unavailable. Owner-confirmed 2,200-mi goal unchanged; Performance 1,028 eligible / zero pending. Current local This Week 26.3 mi / Last 7 Days 74.8 mi, 20.1 mi less than prior seven. Difference versus approximate 1,631-mi reference is within whole-mile rounding; exact current Strava equality remains unverified.
 
-**Acceptance contract:** `docs/PHASE_3_ACCEPTANCE.md`.
+**Review app:** [Home](http://127.0.0.1:8771/), [Activities](http://127.0.0.1:8771/activities), [Settings goal](http://127.0.0.1:8771/settings#annual-goal).
 
-**Current task:** P3-01 — Useful dashboard and annual mileage goal.
-
-**JIT:** `docs/tasks/P3-01.md`.
-
-**Owner decisions:** Virtual Ride and outdoor Ride mileage both count toward the annual cycling mileage goal. Dashboard mileage uses the accepted purpose-specific distance evidence order: understood file-backed distance first, then current Strava API summary distance; unspecified CSV units are never guessed. Annual mileage is the first narrow goal; no generic goal engine.
-
-**Planned Phase 3 subset:** Home dashboard at `/`, Activities at `/activities`, annual mileage goal setting, YTD goal/pace, last-7-day mileage, recent cycling Activities, current 42-day best/latest eligible 20-minute result, compact mileage/Performance views and deterministic explainable insights.
-
-**Deferred:** Current FTP history, Fitness Score/Trend, Training Load, Next Workout/Plan, training-state recommendations, adaptive planning, full arbitrary-duration power curve, AI surfaces.
-
-**Current implementation task:** P3-01 is ready for invocation.
-
-**Allowed invocation:** `/TASK P3-01` or `/AUTOTASK P3-01`.
-
-**Phase 4:** not started.
-
-
-**Owner correction — 2026-10-07:** PR #19 remains at HARD — Owner. Remove duplicate YTD goal top card and replace it with This Week Miles. Keep annual goal information only under Mileage Progress; add miles remaining + needed average mi/week. Weekly chart: completed bars = actual, current bar = needed weekly average going forward, overlay historical/current needed-mi/week line. Replace delayed native SVG hover with immediate miles-only tooltip. Add Avg Pwr to Recent Activities using file summary first, then current API summary fallback. Re-present HARD — Owner after correction.
-
-
-**Owner correction — current-week bar (2026-10-07):** Latest Owner decision supersedes the prior mixed-bar rule. All mileage bars represent actual cycling miles. Historical bars are completed-week actuals; the current bar is actual Monday-through-today mileage and must match This Week Miles. The green line alone represents needed average miles/week going forward. Re-present HARD — Owner after this minor correction.
-
-
-**Owner correction — Targeted historical summary enrichment (2026-10-08):** The eight unresolved 2026 YTD distance omissions are all outdoor Ride Activities with GPX + export evidence and established Strava IDs, but no retained known-unit distance/API summary. Owner authorized at most eight direct Strava `GET /activities/{id}` summary requests using existing `activity:read_all`, sequentially and through the existing summary allowlist. No historical list crawl, stream requests, fuzzy matching, CSV-unit guessing or GPX-derived distance. After enrichment, independently reconcile YTD mileage against the Owner-reported ~1,631 mi; explain any residual before Owner approval. Verify normal future Sync now already supplies API distance/duration fallback for newly synchronized GPX rides.
-
-
-**Owner correction — consolidate Recent Mileage (2026-10-08):** Replace the separate This Week Miles and Last 7 Days top cards with one Recent Mileage card containing both submetrics and the prior-7-day comparison. Do not fill the freed space with another invented metric. Top summary becomes three cards: Recent Mileage, Current 42-day best, Latest eligible 20-minute ride. Owner approved the proposed visual arrangement. Re-present HARD — Owner after implementation.
+**Next action:** HARD — Analyst review of PR #19 against the final P3-01 JIT and Phase 3 acceptance contract. No merge, next task or Phase 4/5/6 until Analyst acceptance.

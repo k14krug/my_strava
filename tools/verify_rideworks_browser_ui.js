@@ -15,7 +15,7 @@ async (page) => {
     const parts=new Intl.DateTimeFormat('en-CA',{year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(stamp));
     return ['year','month','day'].map(type => parts.find(part => part.type===type).value).join('-');
   },sample.start);
-  await page.goto(base);
+  await page.goto(base+'/activities');
   await waitForLocalQuery(page);
   const first = await links();
   check(first.length === 30, 'Unbounded default page');
@@ -49,7 +49,7 @@ async (page) => {
     check(JSON.stringify(await links())===JSON.stringify(ordered), 'Sort not stable');
   }
   for (const [fmt,sample] of Object.entries(samples)) {
-    await page.goto(base+'/?type=all&q='+encodeURIComponent(sample.title));
+    await page.goto(base+'/activities?type=all&q='+encodeURIComponent(sample.title));
     await waitForLocalQuery(page);
     await page.locator('a.activity-row[href="/activities/'+sample.id+'"]').click();
     check((await page.locator('h1').textContent())===sample.title, 'Review title changed');
@@ -75,7 +75,7 @@ async (page) => {
     try {
       const probe=await context.newPage();
       const day=await calendarDay(probe,boundary);
-      const route=base+'/?type=all&q='+encodeURIComponent(boundary.title)+'&from='+day+'&to='+day;
+      const route=base+'/activities?type=all&q='+encodeURIComponent(boundary.title)+'&from='+day+'&to='+day;
       await probe.goto(route);
       await waitForLocalQuery(probe);
       const anchor=probe.locator('a.activity-row[href="/activities/'+boundary.id+'"]');
@@ -97,7 +97,7 @@ async (page) => {
         check(await probe.locator('a.activity-row[href="/activities/'+boundary.id+'"]').count()===0,'UTC day incorrectly matched local-day filter');
       }
       const unknown=samples['CSV-only'];
-      await probe.goto(base+'/?type=all&q='+encodeURIComponent(unknown.title)+'&from='+unknown.date+'&to='+unknown.date);
+      await probe.goto(base+'/activities?type=all&q='+encodeURIComponent(unknown.title)+'&from='+unknown.date+'&to='+unknown.date);
       await waitForLocalQuery(probe);
       const unknownDate=probe.locator('a.activity-row[href="/activities/'+unknown.id+'"] .row-date');
       check((await unknownDate.textContent()).includes(unknown.date),'Unknown source day shifted');

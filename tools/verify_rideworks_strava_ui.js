@@ -2,7 +2,7 @@
 async (page) => {
   const base=BASE_URL,links=REVIEW_LINKS;
   const check=(condition,message)=>{if(!condition)throw new Error(message);};
-  await page.goto(base+'/?type=all');await page.waitForSelector('.activity-row');
+  await page.goto(base+'/activities?type=all');await page.waitForSelector('.activity-row');
   check(await page.locator('.activity-row').count()===3,'Unexpected synthetic Activity count');
   await page.locator('a.activity-row[href="'+links.thin+'"]').click();await page.waitForSelector('.review-unavailable');
   check(await page.locator('h1').textContent()==='Synthetic API-only ride','API-only title unavailable');
@@ -30,7 +30,7 @@ async (page) => {
   await page.screenshot({path:'output/playwright/p2-05-synthetic-rich-desktop.png',fullPage:true});
   await page.goto(base+'/performance');await page.waitForSelector('.performance-trend',{state:'attached'});
   check(JSON.parse(await page.locator('#performance-points').textContent()).length===2,'File-backed results missing or summary watts entered Performance');
-  await page.goto(base+'/?q=API&type=cycling&sort=oldest');await page.waitForSelector('.activity-row');
+  await page.goto(base+'/activities?q=API&type=cycling&sort=oldest');await page.waitForSelector('.activity-row');
   check(await page.locator('.activity-row').count()===2,'API title/filter/sort integration changed');
   return {status:'passed',mode:'isolated_synthetic',api_only_thin:true,enriched_fit_rich:true,
     native_chart_best20_unchanged:true,old_export_and_new_api_titles_inspectable:true,browser_local_api_date:true,
