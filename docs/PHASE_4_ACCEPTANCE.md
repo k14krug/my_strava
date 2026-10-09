@@ -107,9 +107,11 @@ open-ended and **no inferred value before the first date**.
 
 This is **new evidence**, not a contradiction of the previous retained-source
 inventory. Distinguish a reported Strava FTP setting from independently
-validated physiological threshold. Keep individual entries/screenshot private,
-retain source and date semantics, and do not treat the FTP history as already
-persisted in RideWorks.
+validated physiological threshold. The Owner subsequently **approved
+committing the 66 date/value entries** to the public RideWorks repo; PR #23
+tracks them at `data/athlete/strava_ftp_history.csv` with a provenance README.
+The original screenshot remains private. Do not treat this tracked dataset as
+already persisted in the running RideWorks athlete-state store.
 
 Before accepting P4-01's model recommendation, require a revised comparison
 with this dated FTP series and a separate evaluation of recording-gap/timer
