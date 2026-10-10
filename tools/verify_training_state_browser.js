@@ -20,6 +20,10 @@ async (page) => {
   for(const name of ['Fitness','Fatigue'])assert(await page.getByRole('checkbox',{name,exact:true}).isChecked(),name+' visible by default');
   assert(!(await page.getByRole('checkbox',{name:'Form',exact:true}).isChecked()),'Form hidden by default');
   assert((await read()).sourceCount===2,'initial chart renders Fitness and Fatigue only');
+  await page.getByRole('checkbox',{name:'Form',exact:true}).check();
+  assert((await read()).sourceCount===3,'Form can be enabled from initial state');
+  await page.getByRole('checkbox',{name:'Form',exact:true}).uncheck();
+  assert((await read()).sourceCount===2,'Form can be disabled without changing other lines');
   const geometry=async(mobile)=>{
     const g=await page.locator('#training-chart').evaluate(c=>({height:c.clientHeight,viewHeight:c.viewBox.baseVal.height,
       plot: +c.dataset.plotBottom- +c.dataset.plotTop,strip:+c.dataset.stripBottom,
@@ -45,10 +49,11 @@ async (page) => {
   assert((await read()).sourceCount===3,'all line toggles on');
   for(const name of ['6 weeks','3 months','12 months','All history']){await page.getByRole('button',{name,exact:true}).click();await sync();}
   const targets=await page.evaluate(()=>{const d=JSON.parse(document.querySelector('#training-state-data').textContent).days;
-    return {multi:d.findLast(p=>p.rides.length>1)?.day,missing:d.findLast(p=>p.unscored)?.day,noRecord:d.findLast(p=>p.no_record)?.day,summary:d.findLast(p=>p.rides.some(r=>r.selected.method==='hr'&&r.hr.evidence_kind==='summary'&&r.hr.stream_rejections.length))?.day};});
+    return {multi:d.findLast(p=>p.rides.length>1)?.day,missing:d.findLast(p=>p.unscored)?.day,noRecord:d.findLast(p=>p.no_record)?.day,session:d.findLast(p=>p.rides.some(r=>r.selected.method==='session_power'))?.day,summary:d.findLast(p=>p.rides.some(r=>r.selected.method==='hr'&&r.hr.evidence_kind==='summary'&&r.hr.stream_rejections.length))?.day};});
   for(const [kind,date] of Object.entries(targets)){assert(!!date,kind+' fixture present');if(!date)continue;
     await page.locator('#training-date').fill(date);await page.locator('#training-date').dispatchEvent('change');const x=await sync();
     if(kind==='summary')assert((await page.locator('#training-day-detail').textContent()).includes('HR summary estimate')&&(await page.locator('#training-day-detail').textContent()).includes('unverified'),'summary fallback label and uncertainty in persistent inspection');
+    if(kind==='session')assert((await page.locator('#training-day-detail').textContent()).includes('Estimated session power')&&(await page.locator('#training-day-detail').textContent()).includes('representativeness and pause semantics unverified'),'session estimate label and uncertainty in persistent inspection');
     if(kind==='multi')assert(x.links.length>1,'multi-ride day links');
     if(kind==='missing')assert((await page.locator('#training-day-detail').textContent()).includes('unavailable'),'unscored evidence remains unavailable');
     if(kind==='noRecord')assert((await page.locator('#training-day-detail').textContent()).includes('rest is not established'),'no-record is not rest');
@@ -74,12 +79,16 @@ async (page) => {
     assert(t.text.includes(expected.rides.length+' recorded'),'hover ride count');
     for(const ride of expected.rides){
       assert(t.text.includes(ride.title),'hover full ride title');
-      const candidate=ride.selected.method==='hr'?ride.hr:ride.power;
+      const candidate=ride.selected.method==='session_power'?ride.session_power:ride.selected.method==='hr'?ride.hr:ride.power;
       if(candidate.source?.format)assert(t.text.includes(candidate.source.format),'hover selected source format');
     }
     if(expected.rides.some(r=>r.selected.method==='hr'&&r.hr.evidence_kind==='summary')){
       assert(t.text.includes('HR summary estimate'),'hover summary estimate label');
       assert(t.text.includes('active coverage and pause treatment unverified'),'hover summary uncertainty');
+    }
+    if(expected.rides.some(r=>r.selected.method==='session_power')){
+      assert(t.text.includes('Estimated session power'),'hover selected session estimate class');
+      assert(t.text.includes('representativeness and pause semantics unverified'),'hover session uncertainty');
     }
     if(expected.unscored)assert(t.text.includes('Stress unavailable'),'hover missing stress explicit');
     return point;
@@ -115,6 +124,8 @@ async (page) => {
   for(const route of ['/','/performance','/activities']){await page.goto('http://127.0.0.1:8772'+route);assert((await page.title()).includes('RideWorks'),'retained route '+route);}
   await page.goto('http://127.0.0.1:8772/training-state');await page.waitForSelector('#training-date');
   await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'All history',exact:true}).click();
+  assert((await read()).sourceCount===2,'fresh phone page has only Fitness/Fatigue paths');
+  assert(!(await page.getByRole('checkbox',{name:'Form',exact:true}).isChecked()),'fresh phone Form checkbox unchecked');
   await geometry(true);
   await sync();const x=await read();assert(x.width<=x.viewport,'phone has no horizontal overflow');
   await page.locator('#training-chart').focus();
@@ -161,6 +172,8 @@ async (page) => {
   for(const width of [320,390]){
     const context=await page.context().browser().newContext({viewport:{width,height:844},hasTouch:true,isMobile:true,timezoneId:'America/Los_Angeles'});
     const touchPage=await context.newPage();await touchPage.goto('http://127.0.0.1:8772/training-state');await touchPage.waitForSelector('#training-date');
+    assert(await touchPage.locator('#training-chart [data-series]').count()===2,'fresh touch page renders two lines');
+    assert(!(await touchPage.getByRole('checkbox',{name:'Form',exact:true}).isChecked()),'fresh touch page defaults Form off');
     for(const range of ['3 months','12 months']){
       await touchPage.getByRole('button',{name:range,exact:true}).click();await touchPage.locator('#training-chart').scrollIntoViewIfNeeded();
       for(const region of ['trend','strip']){

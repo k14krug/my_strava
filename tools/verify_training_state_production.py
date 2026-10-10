@@ -63,13 +63,17 @@ def verify(data,store):
             assert math.isclose(d[f'window{n}']['stress'],math.fsum(p['stress'] for p in window),abs_tol=1e-10)
             assert math.isclose(d[f'window{n}']['work_kj'],math.fsum(p['work_kj'] for p in window),abs_tol=1e-10)
         for ride in d['rides']:
-            hr=ride['hr'];power=ride['power'];selected=ride['selected']
+            hr=ride['hr'];power=ride['power'];selected=ride['selected'];session=ride.get('session_power',{})
             if hr['stress'] is not None:
                 s=hr['settings'];r=(hr['mean_hr']-s['resting_hr'])/(s['max_hr']-s['resting_hr']);threshold=(s['threshold_hr']-s['resting_hr'])/(s['max_hr']-s['resting_hr'])
                 expected=100*hr['active_seconds']/3600*(r*math.exp(1.92*r))/(threshold*math.exp(1.92*threshold))
                 assert math.isclose(expected,hr['stress'],rel_tol=1e-12);hr_checks+=1
-            if selected['method']=='hr':assert selected['stress']==hr['stress'] and power['status'] not in ('calculated','corrected_estimate')
+            if selected['method']=='hr':assert selected['stress']==hr['stress'] and power['status'] not in ('calculated','corrected_estimate') and session.get('stress') is None
             if selected['method']=='power':assert selected['stress']==power['stress']
+            if selected['method']=='session_power':
+                assert selected['stress']==session['stress'] and power['status'] not in ('calculated','corrected_estimate')
+                assert session['status']=='session_estimate' and session['representativeness']['passes']
+                assert not session['whole_session_verified'] and session['samples_invented']==0
             if selected['stress'] is None:assert selected['status']=='unavailable'
             if not power.get('source') or power.get('observed_work_kj') is None:continue
             source=power['source']
@@ -137,7 +141,8 @@ def main():
             for kind in ('Virtual Ride','Ride')}
     after=preservation(a.data_dir,a.baseline_dir);assert before==after
     rides=[r for d in data['days'] for r in d['rides']]
-    report=dict(version=data['version'],power_source_policy=data['power_source_policy'],coverage=data['coverage'],coverage_by_activity_type=cohorts,verification=checks,preservation=after,
+    report=dict(version=data['version'],power_source_policy=data['power_source_policy'],session_power_policy=data['session_power_policy'],
+                session_power_method=data['session_power_method'],selection_policy=data['selection_policy'],coverage=data['coverage'],coverage_by_activity_type=cohorts,verification=checks,preservation=after,
                 hr_candidate_reasons=dict(Counter(c.get('reason') or 'usable' for r in rides for c in r['hr_candidates'])),
                 model_period_rides=len(rides),
                 power_candidate_classes_in_model_period=dict(Counter(r['power']['status'] for r in rides)),
