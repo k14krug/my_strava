@@ -4,6 +4,7 @@ Stress eligibility is independent of best-20 Performance. The cache is replaceab
 original/source evidence remains authoritative. No network access occurs here.
 """
 from collections import Counter, defaultdict
+from bisect import bisect_right
 import csv
 from datetime import date, datetime, timedelta, timezone
 from hashlib import sha256
@@ -19,8 +20,13 @@ from .goals import browser_zone
 from .history import presentation
 from .performance import classification, file_power_present, input_signature
 
-VERSION = 'training-state-v3'
+VERSION = 'training-state-v4'
 POWER_SOURCE_POLICY = 'virtual-recorded-stress-evidence-v1'
+SESSION_POWER_METHOD = 'elevate-time-buffer-session-pss-v1'
+SESSION_POWER_POLICY = 'distributed-observations-v1'
+SELECTION_POLICY = 'recorded-session-hr-partial-v1'
+SESSION_REFERENCE_COMMIT = 'df9e2cebf5055d28b652628c8654a701845935cc'
+SESSION_PARAMETERS = dict(total_floor=.8,local_floor=.5,window_seconds=300,min_segment_seconds=600)
 HR_SOURCE_POLICY = 'same-source-hr-summary-fallback-v2'
 POWER_METHOD = 'recorded-power-stress-v1'
 HR_METHOD = 'threshold-normalized-average-hr-v1'
@@ -247,6 +253,140 @@ def power_candidate(times, powers, *, ftp, source, events=(), summary=None, dura
     return result | dict(reason='incomplete_power_scope')
 
 
+def session_unavailable(reason, *, ftp, source=None):
+    return dict(method=SESSION_POWER_METHOD,source_policy=SESSION_POWER_POLICY,
+        reference_commit=SESSION_REFERENCE_COMMIT,parameters=dict(SESSION_PARAMETERS),
+        status='unavailable',class_label='Estimated session power',stress=None,reason=reason,
+        scope='estimated session power; representativeness and pause semantics unverified',
+        source=source,ftp=ftp,whole_session_verified=False,samples_invented=0,
+        weighted_power=None,limitations=[])
+
+
+def session_distribution(times, intervals):
+    """Union of actual watt bins, with exact sliding-window minima and edges.
+
+    Only verified timer intervals may compress this screening clock. Without
+    verified scope, intervals contains the whole source-reported elapsed span.
+    No bin represents a gap or an assumed active/moving second.
+    """
+    segments=[];offset=0.
+    for a,b in intervals:
+        for t in times:
+            lo=max(a,t);hi=min(b,t+1)
+            if hi>lo:segments.append((offset+lo-a,offset+hi-a))
+        offset+=b-a
+    merged=[]
+    for a,b in sorted(segments):
+        if merged and a<=merged[-1][1]:merged[-1]=(merged[-1][0],max(b,merged[-1][1]))
+        else:merged.append((a,b))
+    starts=[a for a,b in merged];prefix=[0.]
+    for a,b in merged:prefix.append(prefix[-1]+b-a)
+    def observed_until(t):
+        i=bisect_right(starts,t)-1
+        return 0. if i<0 else prefix[i]+min(t,merged[i][1])-merged[i][0]
+    width=min(SESSION_PARAMETERS['window_seconds'],offset)
+    boundaries=[0.,offset-width]
+    for a,b in merged:boundaries.extend((a,b,a-width,b-width))
+    windows=[(observed_until(s+width)-observed_until(s),s) for s in boundaries if 0<=s<=offset-width]
+    least,start=min(windows) if windows else (0.,0.)
+    total=prefix[-1]/offset if offset else 0.;local=least/width if width else 0.
+    holes=[];last=0.
+    for a,b in merged:
+        if a>last:holes.append(dict(start_seconds=last,end_seconds=a,seconds=a-last))
+        last=b
+    if last<offset:holes.append(dict(start_seconds=last,end_seconds=offset,seconds=offset-last))
+    reason='insufficient_distributed_observations' if total<SESSION_PARAMETERS['total_floor']-1e-12 else 'concentrated_recording_omission' if local<SESSION_PARAMETERS['local_floor']-1e-12 else None
+    return dict(policy=SESSION_POWER_POLICY,parameters=dict(SESSION_PARAMETERS),passes=reason is None,
+        reason=reason,timeline_seconds=offset,observed_seconds=prefix[-1],observed_fraction=total,
+        worst_window_start_seconds=start,worst_window_seconds=width,worst_window_observed_seconds=least,
+        worst_window_observed_fraction=local,omissions=holes,
+        longest_omission_seconds=max((h['seconds'] for h in holes),default=0),representativeness_proven=False)
+
+
+def session_buffer_fourths(points):
+    """Pinned Elevate convention: sample means, check before adding time delta.
+
+    Nonoverlapping batches; skip first point and discard unfinished final batch.
+    Actual timestamps trigger emission; missing samples are never generated.
+    """
+    elapsed=0.;buffer=[];fourths=[]
+    for i in range(1,len(points)):
+        buffer.append(points[i][1])
+        if elapsed>=30:
+            fourths.append((math.fsum(buffer)/len(buffer))**4)
+            elapsed=0.;buffer=[]
+        elapsed+=points[i][0]-points[i-1][0]
+    return fourths
+
+
+def session_power_candidate(times,powers,*,duration,elapsed_duration,ftp,source,
+                            events=(),summary=None,timeline_start=0,duration_tolerance=0,
+                            duration_basis='same-source reported active seconds',known_omitted_effort=False):
+    """Approved approximate model input, separate from P4-01 observed evidence."""
+    result=session_unavailable(None,ftp=ftp,source=source)
+    result.update(duration_seconds=duration,elapsed_seconds=elapsed_duration,duration_basis=duration_basis)
+    def reject(reason):return result|dict(reason=reason)
+    if len(times)!=len(powers) or not times:return reject('empty_or_unpaired_power')
+    if any(not finite(t) for t in times) or any(b<=a for a,b in zip(times,times[1:])):return reject('invalid_or_ambiguous_timing')
+    if any(p is not None and (not finite(p) or p<0) for p in powers):return reject('invalid_watts')
+    result['missing_watt_samples_excluded']=sum(p is None for p in powers)
+    points=[(t,p) for t,p in zip(times,powers) if p is not None]
+    if not points:return reject('no_available_watts')
+    if not finite(ftp.get('value')) or ftp['value']<=0:return reject('missing_dated_ftp')
+    if not finite(duration) or not finite(elapsed_duration) or not 0<duration<=elapsed_duration+duration_tolerance:return reject('unsupported_or_implausible_duration')
+    if points[-1][0]-points[0][0]>elapsed_duration+1:return reject('recording_exceeds_reported_elapsed')
+    intervals,problem,verified=timer_scope(events,summary or {})
+    result.update(timer_boundaries_verified=verified,timer_problem=problem,timer_intervals=len(intervals or []))
+    if any(e['event']=='timer' for e in events) and intervals is None:return reject('contradictory_or_unresolved_timer')
+    if intervals and abs(math.fsum(b-a for a,b in intervals)-duration)>1:return reject('timer_reported_duration_conflict')
+    if not verified and not finite(timeline_start):return reject('unsupported_elapsed_timeline_origin')
+    if finite(timeline_start) and (points[0][0]<timeline_start-1 or points[-1][0]>timeline_start+elapsed_duration+1):return reject('power_outside_reported_elapsed_timeline')
+    if intervals and finite(timeline_start) and (intervals[0][0]<timeline_start-1 or intervals[-1][1]>timeline_start+elapsed_duration+1):return reject('timer_outside_reported_elapsed_timeline')
+    groups=[]
+    if intervals:
+        for a,b in intervals:
+            active=[(t,p) for t,p in points if a<=t and t+1<=b]
+            if not active:return reject('unobserved_active_timer_interval')
+            groups.append(active)
+    else:groups=[points]
+    active_times=[t for g in groups for t,p in g]
+    result['observed_watt_bins']=len(active_times)
+    result['known_pause_samples_excluded']=len(points)-len(active_times)
+    timeline=intervals if verified else [(timeline_start,timeline_start+elapsed_duration)]
+    screen=session_distribution(active_times,timeline)
+    result.update(representativeness=screen,distribution_time_basis='verified active timer intervals' if verified else 'same-source elapsed timeline; pause scope unverified')
+    if known_omitted_effort:return reject('known_omitted_workout_effort')
+    if not screen['passes']:return reject(screen['reason'])
+    longest=run=0;previous=None
+    for group in groups:
+        run=0;previous=None
+        for t,p in group:
+            run=run+1 if previous is not None and t==previous+1 else 1
+            longest=max(longest,run);previous=t
+    result['longest_continuous_observed_seconds']=longest
+    if longest<SESSION_PARAMETERS['min_segment_seconds']:return reject('no_accepted_600_second_observed_segment')
+    if len(active_times)>elapsed_duration+1:return reject('observed_bins_exceed_elapsed_duration')
+    fourths=[value for group in groups for value in session_buffer_fourths(group)]
+    if not fourths:return reject('no_complete_time_buffer')
+    weighted=(math.fsum(fourths)/len(fourths))**.25
+    limitations=['Distribution guardrails do not prove unknown gap intensity or complete session measurement',
+        'Sample means and time-triggered batches are approximate; missing watts are not reconstructed']
+    if not verified:limitations.append('Reported moving/timer duration and pause scope are not independently verified')
+    if len(active_times)>duration+1:limitations.append('Watt bins may include nonmoving time; count is not active-duration proof')
+    return result|dict(status='session_estimate',reason=None,weighted_power=weighted,buffer_count=len(fourths),
+        stress=100*duration/3600*(weighted/ftp['value'])**2,limitations=limitations)
+
+
+def choose_session_power(candidates,power,ftp):
+    if power.get('reason') in ('multiple_usable_power_sources','multiple_power_sources_unresolved'):
+        return session_unavailable('conflicting_recorded_power_sources',ftp=ftp)
+    usable=[c for c in candidates if c['stress'] is not None]
+    if len(usable)>1:return session_unavailable('multiple_eligible_session_power_sources',ftp=ftp)
+    if usable:return usable[0]
+    if len(candidates)==1:return candidates[0]
+    return session_unavailable('no_unambiguous_eligible_session_power',ftp=ftp)
+
+
 def hr_stream(times, hrs, *, settings, source, events=(), summary=None, duration=None, segment_starts=()):
     """Measured native endpoints; trapezoidal time-weighted mean, no filled samples.
 
@@ -364,9 +504,13 @@ def choose_hr(candidates, settings):
                 reason='ambiguous_hr_sources' if preferred else 'no_usable_hr',settings=settings)
 
 
-def selected_stress(power, hr):
+def selected_stress(power, hr, session_power=None):
     if power.get('status') in ('calculated','corrected_estimate'):
         return dict(method='power', stress=power['stress'], status=power['status'], scope=power['scope'])
+    if session_power and session_power.get('stress') is not None:
+        return dict(method='session_power',stress=session_power['stress'],status='session_estimate',
+            scope=session_power['scope'],method_version=SESSION_POWER_METHOD,
+            selection_reason='qualifying_measured_session_power_before_hr_or_partial')
     if hr.get('stress') is not None:
         return dict(method='hr', stress=hr['stress'], status='hr_estimate', scope=hr['scope'])
     if power.get('status') == 'partial':
@@ -380,10 +524,17 @@ def source_ref(native):
 
 
 def evaluate_power(store, snapshot, ftp):
+    """Public recorded-interval view; preserve the accepted P4-01 contract."""
+    power,candidates,_=evaluate_power_sources(store,snapshot,ftp)
+    return power,candidates
+
+
+def evaluate_power_sources(store, snapshot, ftp):
     """Trusted recorded-power candidates without a best-20 window prerequisite.
 
     Keep native/API precedence and ambiguity explicit. This does not introduce
-    session estimation or change accepted interval/timer/gap calculations.
+    interval/timer/gap changes. Separate session candidates share these trust
+    checks rather than rediscovering or ranking alternate power sources.
     """
     unavailable = dict(status='unavailable', stress=None, method=POWER_METHOD,
         observed_work_kj=None, observed_seconds=0, missing_seconds=None, excluded_short_seconds=0)
@@ -392,8 +543,8 @@ def evaluate_power(store, snapshot, ftp):
         return unavailable | dict(reason=reason, source=source)
     if cohort['activity_type'] != 'Virtual Ride':
         reason = 'outdoor_ride_excluded' if cohort['activity_type']=='Ride' else 'non_virtual_or_ambiguous_classification'
-        return rejected(reason) | dict(eligibility=dict(eligible=False, reason=reason, policy=POWER_SOURCE_POLICY)), []
-    candidates = []
+        return rejected(reason) | dict(eligibility=dict(eligible=False, reason=reason, policy=POWER_SOURCE_POLICY)), [], [session_unavailable(reason,ftp=ftp)]
+    candidates = [];sessions=[]
     for metadata in snapshot['sources']:
         if metadata['source']['kind'] in ('strava_api','strava_export'):
             continue
@@ -416,9 +567,15 @@ def evaluate_power(store, snapshot, ftp):
         except (ValueError,TypeError) as exc:
             raise IntegrityError('Invalid timestamp in current native extraction') from exc
         if any(t.tzinfo is None for t in stamps):
-            candidates.append(rejected('native_timestamp_timezone_unknown',ref)); continue
+            candidates.append(rejected('native_timestamp_timezone_unknown',ref))
+            sessions.append(session_unavailable('native_timestamp_timezone_unknown',ftp=ftp,source=ref));continue
         candidates.append(power_candidate([epoch(r['timestamp']) for r in records],[r['power'] for r in records],
             ftp=ftp,source=ref,events=native['events'],summary=native['summary']))
+        summary=native['summary']
+        sessions.append(session_power_candidate([epoch(r['timestamp']) for r in records],[r['power'] for r in records],
+            ftp=ftp,source=ref,duration=summary.get('total_timer_time'),elapsed_duration=summary.get('total_elapsed_time'),
+            timeline_start=epoch(summary.get('start_time')),events=native['events'],summary=summary,
+            duration_tolerance=1 if ref['format']=='FIT' else 0,duration_basis='same-source reported timer seconds'))
     if not file_power_present(snapshot):
         summaries=[s for s in snapshot['sources'] if s['source']['kind']=='strava_api' and s['source']['is_current']]
         observations=[s for s in store.strava_stream_evidence(snapshot['activity']['activity_id']) if s['is_current']]
@@ -444,8 +601,12 @@ def evaluate_power(store, snapshot, ftp):
             elif any(p is not None and (type(p) is not int or p<0) for p in watts['data']): reason='api_stream_invalid_power'
             else:
                 candidates.append(power_candidate(time['data'],watts['data'],ftp=ftp,source=ref,duration=values.get('moving_time')))
+                sessions.append(session_power_candidate(time['data'],watts['data'],ftp=ftp,source=ref,
+                    duration=values.get('moving_time'),elapsed_duration=values.get('elapsed_time'),timeline_start=0,
+                    duration_basis='Strava API moving_time (same-source reported moving seconds)'))
                 reason=None
-        if reason is not None: candidates.append(rejected(reason,ref))
+        if reason is not None:
+            candidates.append(rejected(reason,ref));sessions.append(session_unavailable(reason,ftp=ftp,source=ref))
     usable=[c for c in candidates if c['stress'] is not None]
     if len(usable)>1:
         chosen=rejected('multiple_usable_power_sources')
@@ -456,11 +617,12 @@ def evaluate_power(store, snapshot, ftp):
     else:
         chosen=rejected('multiple_power_sources_unresolved' if candidates else 'no_native_power_api_fallback_blocked')
     chosen=chosen | dict(eligibility=dict(eligible=bool(len(usable)==1),reason=chosen.get('reason'),policy=POWER_SOURCE_POLICY))
-    return chosen,candidates
+    return chosen,candidates,sessions
 
 
 def calculate_ride(store, snapshot, row, ftp, settings):
-    power,power_candidates=evaluate_power(store,snapshot,ftp)
+    power,power_candidates,session_candidates=evaluate_power_sources(store,snapshot,ftp)
+    session_power=choose_session_power(session_candidates,power,ftp)
     candidates = []
     for metadata in snapshot['sources']:
         if metadata['source']['kind'] in ('strava_api','strava_export'):
@@ -508,8 +670,11 @@ def calculate_ride(store, snapshot, row, ftp, settings):
                 summary.update(stress=None,status='unavailable',reason='invalid_api_hr_summary')
             candidates.append(summary)
     hr=choose_hr(candidates,settings)
-    selected=selected_stress(power,hr)
-    return dict(version=VERSION, power_source_policy=POWER_SOURCE_POLICY, hr_source_policy=HR_SOURCE_POLICY, activity_id=row['activity_id'], selected=selected, power=power, power_candidates=power_candidates, hr=hr,
+    selected=selected_stress(power,hr,session_power)
+    return dict(version=VERSION, power_source_policy=POWER_SOURCE_POLICY, hr_source_policy=HR_SOURCE_POLICY,
+                session_power_policy=SESSION_POWER_POLICY,selection_policy=SELECTION_POLICY,
+                session_power=session_power,session_power_candidates=session_candidates,
+                activity_id=row['activity_id'], selected=selected, power=power, power_candidates=power_candidates, hr=hr,
                 hr_candidates=candidates, ftp=ftp, hr_settings=settings)
 
 
@@ -536,7 +701,8 @@ def ride_results(store, zone_name, *, as_of=None, hr_history=None, ftp_source=No
             streams=[dict(r) for r in store.connection.execute('''SELECT s.source_id,s.summary_source_id,s.observation_sha256
                 FROM strava_stream_sources s JOIN strava_stream_current c ON c.source_id=s.source_id
                 WHERE s.activity_id=? ORDER BY s.source_id''',(row['activity_id'],))]
-            signature=sha256(json.dumps([VERSION,POWER_SOURCE_POLICY,HR_SOURCE_POLICY,input_signature(snapshot,store),streams,ftp,settings,digest],sort_keys=True).encode()).hexdigest()
+            signature=sha256(json.dumps([VERSION,POWER_SOURCE_POLICY,SESSION_POWER_METHOD,SESSION_POWER_POLICY,SELECTION_POLICY,SESSION_REFERENCE_COMMIT,
+                SESSION_PARAMETERS,HR_SOURCE_POLICY,input_signature(snapshot,store),streams,ftp,settings,digest],sort_keys=True).encode()).hexdigest()
             saved=store.connection.execute('SELECT input_signature,result_json FROM training_stress_cache WHERE activity_id=?',(row['activity_id'],)).fetchone()
             if saved and saved[0]==signature:
                 result=json.loads(saved[1])
@@ -548,6 +714,8 @@ def ride_results(store, zone_name, *, as_of=None, hr_history=None, ftp_source=No
             rows.append(result|dict(day=day.isoformat(),title=row['title'],timezone_unknown=not row['absolute_time']))
     return rows, dict(today=today.isoformat(),timezone=zone_name,as_of=as_of.isoformat(),excluded=dict(excluded),
                       ftp_source_sha256=digest,version=VERSION,power_source_policy=POWER_SOURCE_POLICY,model_method=MODEL_METHOD,
+                      session_power_method=SESSION_POWER_METHOD,session_power_policy=SESSION_POWER_POLICY,session_power_reference_commit=SESSION_REFERENCE_COMMIT,
+                      selection_policy=SELECTION_POLICY,session_power_parameters=SESSION_PARAMETERS,
                       hr_method=HR_METHOD,hr_source_policy=HR_SOURCE_POLICY,hr_default_assumptions=DEFAULT_HR)
 
 

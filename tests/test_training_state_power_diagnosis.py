@@ -1,4 +1,4 @@
-"""Synthetic diagnostic checks; no production source policy changes."""
+"""Synthetic source diagnosis alongside the approved production selector."""
 from datetime import datetime, timezone
 from pathlib import Path
 import tempfile
@@ -55,7 +55,7 @@ class PowerDiagnosisTests(TestCase):
         self.assertEqual(sources[0]['diagnostic_power']['stress'],25)
         self.assertFalse(evaluate(self.store,snapshot)['eligible'])
 
-    def test_long_api_gap_passes_best20_but_hr_wins_over_partial(self):
+    def test_long_api_gap_passes_best20_and_selects_approved_session_estimate(self):
         snapshot = self.api(list(range(2500))+list(range(2634,2809)))
         self.assertTrue(evaluate(self.store,snapshot)['eligible'])
         sources, checks = self.diagnose(snapshot); power = sources[0]['diagnostic_power']
@@ -63,7 +63,10 @@ class PowerDiagnosisTests(TestCase):
         self.assertEqual(power['missing_seconds'],134); self.assertEqual(power['excluded_short_seconds'],175)
         self.assertEqual(checks,1); self.assertAlmostEqual(power['stress'],2500/36)
         result = calculate_ride(self.store,snapshot,presentation(snapshot),FTP,DEFAULT_HR)
-        self.assertEqual(result['selected']['method'],'hr')
+        self.assertEqual(result['selected']['method'],'session_power')
+        self.assertAlmostEqual(result['selected']['stress'],2675/36)
+        self.assertTrue(result['session_power']['representativeness']['passes'])
+        self.assertFalse(result['session_power']['whole_session_verified'])
         self.assertEqual(result['power']['stress'],power['stress'])
 
     def test_short_api_power_candidate_does_not_require_best20(self):

@@ -322,7 +322,7 @@ class ApiAndRecalculationTests(TestCase):
         settings=dict(effective_from='2026-01-01',effective_until_exclusive=None,resting_hr=50,max_hr=170,threshold_hr=145,basis='Synthetic accepted dated evidence')
         r,dated=self.result(hr_history=[settings]);self.assertEqual(r['hr']['settings']['status'],'dated');self.assertNotEqual(changed,dated)
 
-    def test_api_stream_power_observed_only_hr_prefers_partial_no_double_count(self):
+    def test_api_stream_power_session_precedes_hr_no_double_count(self):
         from rideworks.strava_streams import persist
         def stream(values):return dict(data=values,original_size=len(values),resolution='high',series_type='time')
         self.item.update(type='VirtualRide',sport_type='VirtualRide',device_watts=True,average_heartrate=143,moving_time=3600)
@@ -330,13 +330,15 @@ class ApiAndRecalculationTests(TestCase):
         times=list(range(1800))+list(range(1805,3600));powers=[200]*len(times);hrs=[143]*len(times)
         persist(self.store,123,dict(time=stream(times),watts=stream(powers),heartrate=stream(hrs)))
         r,d=self.result();self.assertEqual(r['power']['status'],'partial')
-        self.assertEqual(r['selected']['method'],'hr');self.assertAlmostEqual(r['selected']['stress'],100)
+        self.assertEqual(r['selected']['method'],'session_power');self.assertAlmostEqual(r['hr']['stress'],100)
+        self.assertAlmostEqual(r['selected']['stress'],100*(200/r['ftp']['value'])**2)
         self.assertEqual(r['power']['corrected_seconds'],0)
         self.assertEqual(r['power']['observed_work_kj'],719)
         self.assertEqual(d['days'][-9]['stress'],r['selected']['stress'])
         # A changed current HR stream invalidates training stress without changing Performance inputs.
         persist(self.store,123,dict(time=stream(times),watts=stream(powers),heartrate=stream([120]*len(times))))
-        other,_=self.result();self.assertNotEqual(other['selected']['stress'],r['selected']['stress'])
+        other,_=self.result();self.assertNotEqual(other['hr']['stress'],r['hr']['stress'])
+        self.assertEqual(other['selected'],r['selected'])
 
     def test_bad_hr_stream_retained_beside_independently_eligible_summary(self):
         from rideworks.strava_streams import persist

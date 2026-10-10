@@ -65,7 +65,8 @@ class PowerSourceTests(TestCase):
         self.assertFalse(evaluate(self.store,s)['eligible'])
         r=self.result(s);self.assertEqual(r['power']['status'],'partial');self.assertEqual(len(r['power']['intervals']),2)
         self.assertAlmostEqual(r['power']['stress'],1780/36)
-        self.assertEqual(r['selected']['method'],'power')
+        self.assertEqual(r['selected']['method'],'session_power')
+        self.assertAlmostEqual(r['selected']['stress'],50)
 
     def test_competing_native_stress_sources_rejected_without_ranking(self):
         a=self.native();self.native(power=250,activity_id=a['activity_id'])
@@ -78,10 +79,14 @@ class PowerSourceTests(TestCase):
         s=self.api(list(range(900)),device=False);r=self.result(s)
         self.assertEqual(r['power']['reason'],'api_device_watts_not_confirmed');self.assertEqual(r['selected']['method'],'hr')
 
-    def test_api_gap_retains_hr_precedence_without_session_estimator(self):
+    def test_api_gap_selects_approved_session_estimate_preserving_partial_evidence(self):
         s=self.api(list(range(900))+list(range(905,1800)))
         r=self.result(s);self.assertEqual(r['power']['status'],'partial');self.assertEqual(r['power']['corrected_seconds'],0)
-        self.assertEqual(r['selected']['method'],'hr');self.assertNotIn('session_estimate',r)
+        self.assertEqual(r['selected']['method'],'session_power')
+        self.assertEqual(r['selected']['status'],'session_estimate')
+        self.assertAlmostEqual(r['selected']['stress'],1795/36)
+        self.assertEqual(r['power']['observed_work_kj'],359)
+        self.assertFalse(r['session_power']['whole_session_verified'])
 
     def test_native_power_blocks_api_fallback(self):
         s=self.api(list(range(900)));identity=s['activity']['activity_id']

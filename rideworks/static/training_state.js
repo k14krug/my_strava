@@ -21,7 +21,8 @@
   let keyboardInspection = false;
   const colors = {fitness: '#2563eb', fatigue: '#b77815', form: '#078675'};
   const classes = {calculated: 'Calculated power interval', corrected_estimate: 'Estimated FIT interval',
-    hr_estimate: 'HR estimate', partial: 'Partial power', unavailable: 'Stress unavailable'};
+    session_estimate:'Estimated session power',hr_estimate: 'HR estimate', partial: 'Partial power', unavailable: 'Stress unavailable'};
+  const selectedEvidence = ride => ride.selected.method==='session_power' ? ride.session_power : ride.selected.method==='hr' ? ride.hr : ride.power;
   const stressClass = ride => ride.selected.method==='hr' && ride.hr.evidence_kind==='summary' ? 'HR summary estimate' : classes[ride.selected.status];
   const fmt = v => v == null ? 'Unavailable' : v.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
   const node = (tag, text, className) => {
@@ -54,12 +55,13 @@
       node('p',`Fitness ${fmt(d.fitness)} · Fatigue ${fmt(d.fatigue)} · Form ${fmt(d.form)} (start of day)`));
     if(d.no_record) tooltip.append(node('p','No recorded ride; rest is not established.'));
     for(const ride of d.rides) {
-      const evidence=ride.selected.method==='hr'?ride.hr:ride.power;
+      const evidence=selectedEvidence(ride);
       const formats=ride.selected.stress==null?[...new Set(ride.hr_candidates.map(c=>c.source?.format).filter(Boolean))].join(', '):evidence.source?.format;
       tooltip.append(node('p',ride.title,'training-tooltip-title'),
         node('p',`${stressClass(ride)}${ride.selected.stress==null?'':` · ${fmt(ride.selected.stress)} stress`}${formats?` · ${ride.selected.stress==null?'Evidence: ':''}${formats}`:''}`));
     }
     if(d.rides.some(r=>r.selected.method==='hr' && r.hr.evidence_kind==='summary')) tooltip.append(node('p','HR summary: active coverage and pause treatment unverified.'));
+    if(d.rides.some(r=>r.selected.method==='session_power')) tooltip.append(node('p','Session power estimate: representativeness and pause semantics unverified.'));
     if(d.unscored) tooltip.append(node('p',`${d.unscored} ${d.unscored===1?'ride':'rides'}: Stress unavailable. Zero numeric model contribution.`));
     tooltip.hidden=false;
     const box=tooltip.getBoundingClientRect();
@@ -151,11 +153,12 @@
     for (const ride of day.rides) {
       const article=node('article',null,'training-ride');
       const link=node('a',ride.title); link.href=`/activities/${ride.activity_id}`; article.append(link);
-      const description=ride.selected.method==='hr' && ride.hr.evidence_kind==='summary' ? ride.selected.scope : `${stressClass(ride)} · ${ride.selected.scope}`;
+      const description=ride.selected.method==='session_power' ? 'Estimated session power · representativeness and pause semantics unverified' : ride.selected.method==='hr' && ride.hr.evidence_kind==='summary' ? ride.selected.scope : `${stressClass(ride)} · ${ride.selected.scope}`;
       article.append(node('p',`${fmt(ride.selected.stress)} · ${description}`));
       if (ride.selected.status==='unavailable') article.append(node('p','Zero numeric model contribution; stress evidence remains unavailable.'));
       const inspection=node('details'), summary=node('summary','Source and calculation'); inspection.append(summary);
       const evidence={selected:ride.selected,power:ride.power,power_candidates:ride.power_candidates,power_source_policy:ride.power_source_policy,hr:ride.hr,hr_candidates:ride.hr_candidates,
+        session_power:ride.session_power,session_power_candidates:ride.session_power_candidates,session_power_policy:ride.session_power_policy,selection_policy:ride.selection_policy,
         ftp:ride.ftp,hr_settings:ride.hr_settings,version:ride.version,timezone_unknown:ride.timezone_unknown};
       inspection.append(node('pre',JSON.stringify(evidence,null,2))); article.append(inspection); detail.append(article);
     }
