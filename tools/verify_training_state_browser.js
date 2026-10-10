@@ -17,6 +17,9 @@ async (page) => {
   await page.setViewportSize({width:1280,height:900});
   await page.goto('http://127.0.0.1:8772/training-state');await page.waitForSelector('#training-date');
   await sync();
+  for(const name of ['Fitness','Fatigue'])assert(await page.getByRole('checkbox',{name,exact:true}).isChecked(),name+' visible by default');
+  assert(!(await page.getByRole('checkbox',{name:'Form',exact:true}).isChecked()),'Form hidden by default');
+  assert((await read()).sourceCount===2,'initial chart renders Fitness and Fatigue only');
   const geometry=async(mobile)=>{
     const g=await page.locator('#training-chart').evaluate(c=>({height:c.clientHeight,viewHeight:c.viewBox.baseVal.height,
       plot: +c.dataset.plotBottom- +c.dataset.plotTop,strip:+c.dataset.stripBottom,
