@@ -1,6 +1,6 @@
 # Phase 4 Acceptance — Training State
 
-**Status:** active design/implementation phase; Owner authorized on 2026-10-08  
+**Status:** **accepted/complete 2026-10-10** — P4-01 and P4-02 accepted after independently reviewed model, running Training State v4, validated October 7 power-stress response and final default-hidden Form correction. [PR #24](https://github.com/k14krug/rideworks/pull/24).  
 **Phase goal:** Answer **“Where am I now?”** using transparent longitudinal training evidence before RideWorks attempts workout planning.
 
 ## 1. Roadmap decision
@@ -241,3 +241,11 @@ The exact UI is deliberately not fixed before P4-01 model selection.
 Phase 5 planning must not begin automatically after P4-01 or Phase 4.
 
 Workout completion/failure patterns were previously listed as a training-state candidate input. Because planning now follows Training State, they are **not a Phase 4 v1 dependency**. They may enrich the state model later after Phase 5 produces real planned-versus-actual evidence.
+
+## 13. Final acceptance disposition — 2026-10-10
+
+**P4-02/Phase 4 accepted.** The completed [Training State implementation](../reports/P4-02/session-power-implementation.md) provides versioned daily Fitness/Fatigue/start-of-day Form from qualified recorded power, explicitly labeled estimated session power and HR fallback, with historical FTP and source/evidence inspection. October 7's structured interval workout now selects the approved Elevate-style session power estimate and updates actual modeled Fitness/Fatigue; September 16's outdoor HR fallback remains. The rider accepted the result, with the sole final Form-default change implemented and verified: Fitness/Fatigue checked, Form unchecked by default while retaining independent toggles. The 600px/400px interactive plot, date selection, aligned stress strip, selected rides and work/stress distinction meet the rider-facing Phase 4 goal.
+
+**Verification basis:** Dex-reported 383 passing Python tests, 506 general and 614 representative Chromium assertions; 1,418 fresh computations equal cached v4 results. No edits to 1,422 retained source originals, historical FTP or the approved Elevate reference; Performance and other existing routes preserved. The Analyst inspected the pushed implementation, selection results and source-neutral verification report. Private detailed ride evidence remains local to the development environment. Unknown/unavailable historical training evidence remains disclosed rather than presented as fully measured.
+
+**Boundary:** Phase 5 workout intent/outcome and initial planning is a separate pending phase. Completion of Phase 4 is not authorization to implement planning or Phase 6 adaptive scheduling.
