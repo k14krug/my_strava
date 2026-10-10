@@ -137,7 +137,7 @@ def main():
             for kind in ('Virtual Ride','Ride')}
     after=preservation(a.data_dir,a.baseline_dir);assert before==after
     rides=[r for d in data['days'] for r in d['rides']]
-    report=dict(version=data['version'],coverage=data['coverage'],coverage_by_activity_type=cohorts,verification=checks,preservation=after,
+    report=dict(version=data['version'],power_source_policy=data['power_source_policy'],coverage=data['coverage'],coverage_by_activity_type=cohorts,verification=checks,preservation=after,
                 hr_candidate_reasons=dict(Counter(c.get('reason') or 'usable' for r in rides for c in r['hr_candidates'])),
                 model_period_rides=len(rides),
                 power_candidate_classes_in_model_period=dict(Counter(r['power']['status'] for r in rides)),

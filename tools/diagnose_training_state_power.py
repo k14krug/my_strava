@@ -20,7 +20,7 @@ from rideworks.history import presentation
 from rideworks.performance import evaluate, file_power_present
 from rideworks.store import Store
 from rideworks.training_state import (calculate_ride, daily_series, epoch, finite,
-    ftp_history, ftp_on, hr_context, power_candidate, source_ref)
+    ftp_history, ftp_on, hr_context, power_candidate, source_ref, VERSION, POWER_SOURCE_POLICY)
 from tools.compare_training_state_elevate import read_reference
 from tools.verify_training_state_production import preservation, readonly
 
@@ -233,7 +233,7 @@ def main():
         current_selected_classes=dict(Counter(c['ride']['selected']['status'] for c in blocked)),
         affected_rides_in_windows={str(n):sum(date.fromisoformat(c['ride']['day']) >= date.fromisoformat(days[-1]['day'])-timedelta(days=n-1)
             for c in blocked) for n in (90,365)})
-    aggregate = dict(diagnostic_only=True, calculation_version='training-state-v2',
+    aggregate = dict(diagnostic_only=True, calculation_version=VERSION,power_source_policy=POWER_SOURCE_POLICY,
         selection='Predeclared local dates/source workout descriptions; independent of selected stress ranking',
         representative_cases=len(matches), case_roles=dict(Counter(c['role'] for m in matches for c in m['roles'])),
         performance_statuses=dict(Counter('eligible' if m['performance']['eligible'] else m['performance']['reason'] for m in matches)),

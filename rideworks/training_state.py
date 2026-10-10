@@ -1,6 +1,6 @@
 """Versioned cycling stress, source candidates and exact rider-local daily model.
 
-Performance eligibility is consumed, never changed. The cache is replaceable;
+Stress eligibility is independent of best-20 Performance. The cache is replaceable;
 original/source evidence remains authoritative. No network access occurs here.
 """
 from collections import Counter, defaultdict
@@ -17,9 +17,10 @@ import math
 from .errors import IntegrityError
 from .goals import browser_zone
 from .history import presentation
-from .performance import evaluate, input_signature
+from .performance import classification, file_power_present, input_signature
 
-VERSION = 'training-state-v2'
+VERSION = 'training-state-v3'
+POWER_SOURCE_POLICY = 'virtual-recorded-stress-evidence-v1'
 HR_SOURCE_POLICY = 'same-source-hr-summary-fallback-v2'
 POWER_METHOD = 'recorded-power-stress-v1'
 HR_METHOD = 'threshold-normalized-average-hr-v1'
@@ -378,33 +379,94 @@ def source_ref(native):
                 format=native['source']['content_format'], artifact_sha256=native['source'].get('sha256'))
 
 
-def calculate_ride(store, snapshot, row, ftp, settings):
-    power = dict(status='unavailable', stress=None, method=POWER_METHOD, reason='power_ineligible',
-                 observed_work_kj=None, observed_seconds=0, missing_seconds=None, excluded_short_seconds=0)
-    eligible = evaluate(store,snapshot)  # Same accepted evidence boundary; no persisted Performance mutation.
-    native_by_id = {}
-    if eligible['eligible']:
-        if eligible['extraction_id']:
-            native = store.get_source(eligible['source_id']); native_by_id[eligible['source_id']] = native
-            times = [epoch(r['timestamp']) for r in native['records']]
-            powers = [r['power'] for r in native['records']]
-            power = power_candidate(times,powers,ftp=ftp,source=source_ref(native),
-                                    events=native['events'],summary=native['summary'])
+def evaluate_power(store, snapshot, ftp):
+    """Trusted recorded-power candidates without a best-20 window prerequisite.
+
+    Keep native/API precedence and ambiguity explicit. This does not introduce
+    session estimation or change accepted interval/timer/gap calculations.
+    """
+    unavailable = dict(status='unavailable', stress=None, method=POWER_METHOD,
+        observed_work_kj=None, observed_seconds=0, missing_seconds=None, excluded_short_seconds=0)
+    cohort = classification(snapshot)
+    def rejected(reason, source=None):
+        return unavailable | dict(reason=reason, source=source)
+    if cohort['activity_type'] != 'Virtual Ride':
+        reason = 'outdoor_ride_excluded' if cohort['activity_type']=='Ride' else 'non_virtual_or_ambiguous_classification'
+        return rejected(reason) | dict(eligibility=dict(eligible=False, reason=reason, policy=POWER_SOURCE_POLICY)), []
+    candidates = []
+    for metadata in snapshot['sources']:
+        if metadata['source']['kind'] in ('strava_api','strava_export'):
+            continue
+        extraction=metadata['extraction']; sid=metadata['source']['source_id']
+        if not extraction or not extraction.get('extraction_id'):
+            raise IntegrityError('Power candidate has no current extraction')
+        counts=store.connection.execute('SELECT COUNT(*),COUNT(power) FROM records WHERE extraction_id=?',
+                                        (extraction['extraction_id'],)).fetchone()
+        if tuple(counts)!=(extraction['record_count'],extraction['power_present']):
+            raise IntegrityError('Native record counts do not match current extraction')
+        if not extraction['power_present']:
+            continue
+        native=store.get_source(sid); records=native['records']; ref=source_ref(native)
+        if len(records)!=extraction['record_count'] or sum(r['power'] is not None for r in records)!=extraction['power_present']:
+            raise IntegrityError('Native record counts do not match current extraction')
+        if any(r['power'] is not None and (type(r['power']) is not int or r['power']<0) for r in records):
+            raise IntegrityError('Unexpected native power in stress candidate')
+        try:
+            stamps=[datetime.fromisoformat(r['timestamp']) for r in records if r['timestamp'] is not None]
+        except (ValueError,TypeError) as exc:
+            raise IntegrityError('Invalid timestamp in current native extraction') from exc
+        if any(t.tzinfo is None for t in stamps):
+            candidates.append(rejected('native_timestamp_timezone_unknown',ref)); continue
+        candidates.append(power_candidate([epoch(r['timestamp']) for r in records],[r['power'] for r in records],
+            ftp=ftp,source=ref,events=native['events'],summary=native['summary']))
+    if not file_power_present(snapshot):
+        summaries=[s for s in snapshot['sources'] if s['source']['kind']=='strava_api' and s['source']['is_current']]
+        observations=[s for s in store.strava_stream_evidence(snapshot['activity']['activity_id']) if s['is_current']]
+        reason='api_power_stream_unavailable'; ref=None
+        if len(summaries)!=1 or len(observations)!=1:
+            if len(summaries)>1 or len(observations)>1: reason='api_current_source_ambiguous'
         else:
-            observation = next(s for s in store.strava_stream_evidence(row['activity_id'])
-                               if s['source_id']==eligible['api_evidence']['stream_source_id'])
-            streams=observation['streams']
-            power = power_candidate(streams['time']['data'],streams['watts']['data'],ftp=ftp,
-                                    source=dict(format='Strava API stream',**eligible['api_evidence']),
-                                    duration=next(s['summary']['values'].get('moving_time') for s in snapshot['sources']
-                                                  if s['source']['source_id']==eligible['api_evidence']['summary_source_id']))
-    power['eligibility'] = {k:eligible[k] for k in ('eligible','reason','policy')}
+            api=summaries[0]; observation=observations[0]; values=api['summary']['values']; streams=observation['streams']
+            ref=dict(format='Strava API stream',evidence_kind='Strava API stream',stream_source_id=observation['source_id'],
+                summary_source_id=api['source']['source_id'],related_summary_source_id=observation['summary_source_id'],
+                observation_sha256=observation['observation_sha256'],mapping_version=observation['mapping_version'],
+                device_watts=values.get('device_watts'),start_date=observation['start_date'],metadata=observation['metadata'])
+            time,watts=streams.get('time'),streams.get('watts')
+            if observation['summary_source_id']!=api['source']['source_id']: reason='api_stream_summary_not_current'
+            elif values.get('device_watts') is not True: reason='api_device_watts_not_confirmed'
+            elif time is None or watts is None: pass
+            elif any(s['resolution']!='high' for s in (time,watts)): reason='api_stream_not_high_resolution'
+            elif any(s['original_size']!=len(s['data']) for s in (time,watts)): reason='api_stream_not_full_length'
+            elif len(time['data'])!=len(watts['data']) or any(time[k]!=watts[k] for k in ('original_size','resolution','series_type')):
+                reason='api_stream_pairing_ambiguous'
+            elif any(type(t) is not int or t<0 for t in time['data']) or any(b<=a for a,b in zip(time['data'],time['data'][1:])):
+                reason='api_stream_invalid_timing'
+            elif any(p is not None and (type(p) is not int or p<0) for p in watts['data']): reason='api_stream_invalid_power'
+            else:
+                candidates.append(power_candidate(time['data'],watts['data'],ftp=ftp,source=ref,duration=values.get('moving_time')))
+                reason=None
+        if reason is not None: candidates.append(rejected(reason,ref))
+    usable=[c for c in candidates if c['stress'] is not None]
+    if len(usable)>1:
+        chosen=rejected('multiple_usable_power_sources')
+    elif usable:
+        chosen=usable[0]
+    elif len(candidates)==1:
+        chosen=candidates[0]
+    else:
+        chosen=rejected('multiple_power_sources_unresolved' if candidates else 'no_native_power_api_fallback_blocked')
+    chosen=chosen | dict(eligibility=dict(eligible=bool(len(usable)==1),reason=chosen.get('reason'),policy=POWER_SOURCE_POLICY))
+    return chosen,candidates
+
+
+def calculate_ride(store, snapshot, row, ftp, settings):
+    power,power_candidates=evaluate_power(store,snapshot,ftp)
     candidates = []
     for metadata in snapshot['sources']:
         if metadata['source']['kind'] in ('strava_api','strava_export'):
             continue
         sid = metadata['source']['source_id']
-        native = native_by_id.get(sid) or store.get_source(sid)
+        native = store.get_source(sid)
         times = [epoch(r['timestamp']) for r in native['records']]
         hrs = [r['heart_rate'] for r in native['records']]
         summary = native['summary']
@@ -447,7 +509,7 @@ def calculate_ride(store, snapshot, row, ftp, settings):
             candidates.append(summary)
     hr=choose_hr(candidates,settings)
     selected=selected_stress(power,hr)
-    return dict(version=VERSION, hr_source_policy=HR_SOURCE_POLICY, activity_id=row['activity_id'], selected=selected, power=power, hr=hr,
+    return dict(version=VERSION, power_source_policy=POWER_SOURCE_POLICY, hr_source_policy=HR_SOURCE_POLICY, activity_id=row['activity_id'], selected=selected, power=power, power_candidates=power_candidates, hr=hr,
                 hr_candidates=candidates, ftp=ftp, hr_settings=settings)
 
 
@@ -474,7 +536,7 @@ def ride_results(store, zone_name, *, as_of=None, hr_history=None, ftp_source=No
             streams=[dict(r) for r in store.connection.execute('''SELECT s.source_id,s.summary_source_id,s.observation_sha256
                 FROM strava_stream_sources s JOIN strava_stream_current c ON c.source_id=s.source_id
                 WHERE s.activity_id=? ORDER BY s.source_id''',(row['activity_id'],))]
-            signature=sha256(json.dumps([VERSION,HR_SOURCE_POLICY,input_signature(snapshot,store),streams,ftp,settings,digest],sort_keys=True).encode()).hexdigest()
+            signature=sha256(json.dumps([VERSION,POWER_SOURCE_POLICY,HR_SOURCE_POLICY,input_signature(snapshot,store),streams,ftp,settings,digest],sort_keys=True).encode()).hexdigest()
             saved=store.connection.execute('SELECT input_signature,result_json FROM training_stress_cache WHERE activity_id=?',(row['activity_id'],)).fetchone()
             if saved and saved[0]==signature:
                 result=json.loads(saved[1])
@@ -485,7 +547,7 @@ def ride_results(store, zone_name, *, as_of=None, hr_history=None, ftp_source=No
                     (row['activity_id'],signature,json.dumps(result,sort_keys=True,allow_nan=False)))
             rows.append(result|dict(day=day.isoformat(),title=row['title'],timezone_unknown=not row['absolute_time']))
     return rows, dict(today=today.isoformat(),timezone=zone_name,as_of=as_of.isoformat(),excluded=dict(excluded),
-                      ftp_source_sha256=digest,version=VERSION,model_method=MODEL_METHOD,
+                      ftp_source_sha256=digest,version=VERSION,power_source_policy=POWER_SOURCE_POLICY,model_method=MODEL_METHOD,
                       hr_method=HR_METHOD,hr_source_policy=HR_SOURCE_POLICY,hr_default_assumptions=DEFAULT_HR)
 
 
