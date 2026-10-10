@@ -17,6 +17,7 @@
     return index < 0 ? days.length-1 : index;
   };
   let range = '3months', first = rangeFirst(range), selected = days.length - 1;
+  let hoverGuide = null, hoverPoints = [], yFor = null;
   const colors = {fitness: '#2563eb', fatigue: '#b77815', form: '#078675'};
   const classes = {calculated: 'Calculated power interval', corrected_estimate: 'Estimated FIT interval',
     hr_estimate: 'HR estimate', partial: 'Partial power', unavailable: 'Stress unavailable'};
@@ -34,7 +35,53 @@
   let plotWidth = 920, left = 55;
   const px = i => left + plotWidth * (i-first) / Math.max(1, days.length-1-first);
   const sourceText = counts => Object.entries(counts).map(([key,count]) => `${count} ${classes[key]}`).join(' · ') || 'No scored rides';
+  const tooltip = node('div',null,'training-tooltip');
+  tooltip.id='training-tooltip'; tooltip.setAttribute('role','tooltip'); tooltip.hidden=true;
+  document.body.append(tooltip); chart.setAttribute('aria-describedby',tooltip.id);
+  function hideInspection() {
+    tooltip.hidden=true;
+    if(hoverGuide) hoverGuide.setAttribute('visibility','hidden');
+    for(const point of hoverPoints) point.setAttribute('visibility','hidden');
+  }
+  function showInspection(index, position) {
+    const d=days[index]; tooltip.replaceChildren(node('strong',d.day)); tooltip.dataset.day=d.day;
+    tooltip.append(node('p',`${d.rides.length} recorded ${d.rides.length===1?'ride':'rides'} · ${fmt(d.stress)} selected model stress`),
+      node('p',`Fitness ${fmt(d.fitness)} · Fatigue ${fmt(d.fatigue)} · Form ${fmt(d.form)} (start of day)`));
+    if(d.no_record) tooltip.append(node('p','No recorded ride; rest is not established.'));
+    for(const ride of d.rides) {
+      const evidence=ride.selected.method==='hr'?ride.hr:ride.power;
+      const formats=ride.selected.stress==null?[...new Set(ride.hr_candidates.map(c=>c.source?.format).filter(Boolean))].join(', '):evidence.source?.format;
+      tooltip.append(node('p',ride.title,'training-tooltip-title'),
+        node('p',`${classes[ride.selected.status]}${ride.selected.stress==null?'':` · ${fmt(ride.selected.stress)} stress`}${formats?` · ${ride.selected.stress==null?'Evidence: ':''}${formats}`:''}`));
+    }
+    if(d.unscored) tooltip.append(node('p',`${d.unscored} ${d.unscored===1?'ride':'rides'}: Stress unavailable. Zero numeric model contribution.`));
+    tooltip.hidden=false;
+    const box=tooltip.getBoundingClientRect();
+    const x=position.x+14+box.width<=innerWidth-8?position.x+14:position.x-box.width-14;
+    const y=position.y+14+box.height<=innerHeight-8?position.y+14:position.y-box.height-14;
+    tooltip.style.left=Math.max(8,Math.min(x,innerWidth-box.width-8))+'px';
+    tooltip.style.top=Math.max(8,Math.min(y,innerHeight-box.height-8))+'px';
+    hoverGuide.setAttribute('x1',px(index));hoverGuide.setAttribute('x2',px(index));
+    hoverGuide.setAttribute('visibility','visible');
+    for(const point of hoverPoints) {
+      point.setAttribute('cx',px(index));point.setAttribute('cy',yFor(d[point.dataset.line]));
+      point.setAttribute('visibility','visible');
+    }
+  }
+  function focusedInspection() {
+    const point=chart.createSVGPoint();point.x=px(selected);point.y=110;
+    const position=point.matrixTransform(chart.getScreenCTM());
+    showInspection(selected,{x:position.x,y:position.y});
+  }
+  function chartPosition(event) {
+    const point=chart.createSVGPoint();point.x=event.clientX;point.y=event.clientY;
+    return point.matrixTransform(chart.getScreenCTM().inverse());
+  }
+  function nearest(point) {
+    return Math.max(first,Math.min(days.length-1,first+Math.round((point.x-left)/plotWidth*(days.length-1-first))));
+  }
   function render() {
+    hideInspection();
     const day = days[selected], lines = enabled(), visible = days.slice(first);
     dateInput.value = day.day; dateInput.min = days[first].day; dateInput.max = days.at(-1).day;
     for (const key of ['fitness','fatigue','form']) {
@@ -49,7 +96,7 @@
     const values = visible.flatMap(d => lines.map(key => d[key]));
     let low = Math.min(0,...values), high = Math.max(1,...values);
     const pad = Math.max(2,(high-low)*.08); low -= pad; high += pad;
-    const py = value => 245 - 220 * (value-low)/(high-low);
+    const py = value => 245 - 220 * (value-low)/(high-low); yFor=py;
     for (let i=0;i<=4;i++) {
       const value = low+(high-low)*i/4, y=py(value);
       svg('line',{x1:left,x2:right,y1:y,y2:y,class:'chart-grid'});
@@ -66,6 +113,11 @@
       svg('circle',{cx:px(selected),cy:py(day[key]),r:4,fill:colors[key]});
     }
     svg('line',{x1:px(selected),x2:px(selected),y1:20,y2:355,class:'chart-cursor'});
+    hoverGuide=svg('line',{x1:0,x2:0,y1:20,y2:355,class:'training-hover-guide',visibility:'hidden'});
+    hoverPoints=lines.map(key=>{
+      const circle=svg('circle',{cx:0,cy:0,r:4,fill:colors[key],visibility:'hidden','data-line':key,class:'training-hover-point'});
+      return circle;
+    });
     svg('text',{x:left,y:280},'Daily selected stress');
     const maximum = Math.max(1,...visible.map(d => d.stress));
     const width = Math.max(.4,Math.min(12,plotWidth/visible.length*.75));
@@ -107,24 +159,29 @@
     }
   }
   function select(index) { selected=Math.max(first,Math.min(days.length-1,index)); render(); }
-  function pointer(event) {
-    const bounds=chart.getBoundingClientRect(), x=event.clientX-bounds.left;
-    select(first+Math.round((x-left)/plotWidth*(days.length-1-first)));
-  }
-  chart.addEventListener('pointerdown',event=>{pointer(event);chart.focus();});
-  chart.addEventListener('pointermove',event=>{
-    if(event.buttons===1) {pointer(event);return;}
-    const bounds=chart.getBoundingClientRect(), x=event.clientX-bounds.left;
-    const index=Math.max(first,Math.min(days.length-1,first+Math.round((x-left)/plotWidth*(days.length-1-first))));
-    const d=days[index];
-    document.querySelector('#training-chart-readout').textContent=`Inspect ${d.day} · Fitness ${fmt(d.fitness)} · Fatigue ${fmt(d.fatigue)} · Form ${fmt(d.form)} · ${fmt(d.stress)} stress. Click to select.`;
+  function pointer(event) { select(nearest(chartPosition(event))); }
+  chart.addEventListener('pointerdown',event=>{
+    pointer(event);chart.focus();
+    showInspection(selected,{x:event.clientX,y:event.clientY});
   });
-  chart.addEventListener('pointerleave',render);
+  chart.addEventListener('pointermove',event=>{
+    if(event.pointerType==='touch') return;
+    const point=chartPosition(event);
+    if(point.x<left || point.x>left+plotWidth || point.y<20 || point.y>360) {hideInspection();return;}
+    if(event.buttons===1) pointer(event);
+    showInspection(nearest(point),{x:event.clientX,y:event.clientY});
+  });
+  chart.addEventListener('pointerleave',hideInspection);
+  chart.addEventListener('pointercancel',hideInspection);
+  chart.addEventListener('focus',focusedInspection);
+  chart.addEventListener('blur',hideInspection);
+  window.addEventListener('scroll',hideInspection,{passive:true});
   new ResizeObserver(render).observe(chart);
   chart.addEventListener('keydown',event=>{
     const movement={ArrowLeft:-1,ArrowRight:1,ArrowUp:7,ArrowDown:-7};
-    if (event.key in movement) {event.preventDefault();select(selected+movement[event.key]);}
-    if (event.key==='Home' || event.key==='End') {event.preventDefault();select(event.key==='Home'?first:days.length-1);}
+    if (event.key in movement) {event.preventDefault();select(selected+movement[event.key]);focusedInspection();}
+    if (event.key==='Home' || event.key==='End') {event.preventDefault();select(event.key==='Home'?first:days.length-1);focusedInspection();}
+    if(event.key==='Escape') hideInspection();
   });
   dateInput.addEventListener('change',()=>{const i=days.findIndex(d=>d.day===dateInput.value);if(i>=first)select(i);else render();});
   for (const input of document.querySelectorAll('[data-line]')) input.addEventListener('change',render);

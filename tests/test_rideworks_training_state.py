@@ -1,4 +1,5 @@
 """Synthetic independent math, provenance, timing and retained-store checks."""
+import csv
 from datetime import date, datetime, timedelta, timezone
 import json
 import math
@@ -8,6 +9,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from fit_fixture import make_fit
+from rideworks.errors import IntegrityError
 from rideworks.store import Store
 from rideworks.performance import rebuild_performance, performance_history
 from rideworks.training_state import (DEFAULT_HR, daily_series, ftp_history, ftp_on, hr_context,
@@ -68,6 +70,30 @@ class MathTests(TestCase):
                 self.assertEqual(ftp_on(history,before)['value'],history[i-1]['ftp_watts'])
         self.assertEqual(ftp_on(history,'2099-01-01')['value'],history[-1]['ftp_watts'])
         self.assertEqual(ftp_on(history,history[0]['effective_from_date'],False)['status'],'date_uncertain')
+
+    def test_updated_ftp_record_length_and_strict_intervals(self):
+        header=['effective_from_date','effective_until_date_exclusive','ftp_watts']
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'approved.csv'
+            with Path('data/athlete/strava_ftp_history.csv').open() as handle:
+                rows=list(csv.DictReader(handle))
+            rows[-1]['effective_until_date_exclusive']='2026-10-10'
+            rows.append(dict(zip(header,['2026-10-10','',190])))
+            def write(values):
+                with path.open('w',newline='') as handle:
+                    writer=csv.DictWriter(handle,fieldnames=header);writer.writeheader();writer.writerows(values)
+            write(rows)
+            history,digest=ftp_history(path)
+            self.assertEqual(len(history),67)
+            self.assertNotEqual(digest,ftp_history()[1])
+            self.assertEqual(ftp_on(history,'2026-10-10')['value'],190)
+            for update in [dict(effective_from_date='2026-09-01'),dict(ftp_watts='0'),
+                           dict(ftp_watts='190.5'),dict(effective_until_date_exclusive='2027-01-01'),
+                           dict(effective_from_date='not-a-date')]:
+                write(rows[:-1]+[rows[-1]|update])
+                with self.assertRaises(IntegrityError):ftp_history(path)
+            write([])
+            with self.assertRaises(IntegrityError):ftp_history(path)
 
     def test_exact_exponential_decay_prior_form_and_zero_seed(self):
         rows=daily_series([ride('2026-01-01',100),ride('2026-01-02',None,'2','unavailable')],'2026-02-12')
@@ -188,6 +214,24 @@ class StoreTests(TestCase):
             self.assertEqual(reopened.connection.execute('PRAGMA user_version').fetchone()[0],8)
             self.assertEqual(reopened.connection.execute('PRAGMA integrity_check').fetchone()[0],'ok')
             training_state(reopened,'America/Los_Angeles',as_of=when)
+
+    def test_explicit_updated_ftp_source_invalidates_cached_scores(self):
+        when=datetime(2026,10,9,tzinfo=timezone.utc)
+        first=training_state(self.store,'America/Los_Angeles',as_of=when)
+        path=self.root/'approved-ftp.csv'
+        # Synthetic dated setting covers the synthetic activity, deliberately supplied.
+        path.write_text('effective_from_date,effective_until_date_exclusive,ftp_watts\n2000-01-01,,250\n')
+        with patch('rideworks.training_state.calculate_ride',wraps=__import__('rideworks.training_state',fromlist=['calculate_ride']).calculate_ride) as calc:
+            updated=training_state(self.store,'America/Los_Angeles',as_of=when,ftp_source=path)
+            self.assertEqual(calc.call_count,1)
+        self.assertNotEqual(first['ftp_source_sha256'],updated['ftp_source_sha256'])
+        self.assertEqual(updated['days'][0]['rides'][0]['ftp']['value'],250)
+        self.assertAlmostEqual(updated['days'][0]['stress'],1200/36*(200/250)**2)
+        with patch('rideworks.training_state.calculate_ride',side_effect=AssertionError('updated source cache should match')):
+            self.assertEqual(updated,training_state(self.store,'America/Los_Angeles',as_of=when,ftp_source=path))
+        with patch('rideworks.training_state.calculate_ride',wraps=__import__('rideworks.training_state',fromlist=['calculate_ride']).calculate_ride) as calc:
+            self.assertEqual(first,training_state(self.store,'America/Los_Angeles',as_of=when))
+            self.assertEqual(calc.call_count,1)
 
     def test_page_routes_safe_help_navigation_and_home(self):
         app=Application(self.root/'store')
