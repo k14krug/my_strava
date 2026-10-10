@@ -62,3 +62,16 @@ The Owner approved the [screen design](P4-02-training-state-screen.md) and HR re
 ---
 
 **Provenance:** Owner priorities, source choices, explicit retrospective HR assumptions, selection of HR over materially partial power, and longitudinal-model/missing-stress defaults: October 9, 2026 RideWorks conversation. Elevate/Sauce formula details: reference-code research; paired-stress/daily-series observations: exploratory local-only Elevate export analysis. Versioned fixed-coefficient HRSS recipe and specific recording-quality checks: **Analyst's transparent v1 implementation specification**, not a measured HR threshold or vendor-parity guarantee.
+
+## Owner-authorized external-reference privacy exception — 2026-10-09
+
+The Owner explicitly authorized committing the exact unchanged Elevate CSV
+[`fitness_trend_export.2026.10.9-15.58.52.csv`](../../data/reference/elevate/fitness_trend_export.2026.10.9-15.58.52.csv)
+with its [provenance and limitations](../../data/reference/elevate/README.md).
+This later instruction supersedes the earlier CSV prohibition for this one file
+only. Original mockup HTML, screenshots, other exports and private activity data
+remain local-only. The final 14 export days are projections and are excluded
+from completed-training comparisons. Elevate results/settings are a benchmark,
+never RideWorks production truth or initialization; the approved RideWorks FTP
+history remains authoritative. JIT invocation, scope and Analyst/Owner gates
+are unchanged.

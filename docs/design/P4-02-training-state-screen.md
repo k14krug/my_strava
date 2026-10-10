@@ -44,3 +44,16 @@ The chart is the dominant feature. The selected-day and workload panels can appe
 ## Implementation boundary
 
 This is a UI design decision, **not** a framework, schema, charting-library or deployment decision. Build a native-feeling RideWorks page with real sources and data. The local mockup's exported Elevate values, ride names, screenshots, and HTML must **not** be committed or reused as production fixtures. P4-02 needs a separate JIT and explicit start authorization. Owner visual acceptance will be sought again on the running real-data application.
+
+## Owner-authorized external-reference privacy exception — 2026-10-09
+
+The Owner explicitly authorized committing the exact unchanged Elevate CSV
+[`fitness_trend_export.2026.10.9-15.58.52.csv`](../../data/reference/elevate/fitness_trend_export.2026.10.9-15.58.52.csv)
+with its [provenance and limitations](../../data/reference/elevate/README.md).
+This later instruction supersedes the earlier CSV prohibition for this one file
+only. Original mockup HTML, screenshots, other exports and private activity data
+remain local-only. The final 14 export days are projections and are excluded
+from completed-training comparisons. Elevate results/settings are a benchmark,
+never RideWorks production truth or initialization; the approved RideWorks FTP
+history remains authoritative. JIT invocation, scope and Analyst/Owner gates
+are unchanged.
