@@ -3,13 +3,14 @@
 **Product:** RideWorks.
 
 **Current task:** P4-02 — Longitudinal Training State and Fitness Trend.
-**State:** ready_for_review at Gate 1 — HARD — Analyst; TASKS remains in_progress.
+**State:** ready_for_review after addressing Analyst reviews 5477830562 and 5479107493 under the 2026-10-10 `/TASK P4-02` continuation. Gate 1 remains HARD and not cleared.
 **Branch:** `task/p4-02-training-state`; [draft PR #24](https://github.com/k14krug/rideworks/pull/24).
 **Authority:** Explicit `/TASK P4-02` on 2026-10-09; Analyst-finalized `/TASK only` JIT, resolved Owner HR/model/source gate and approved screen.
 **Delivered:** Versioned selected stress with dated FTP, approved HR assumptions, FIT/API/partial/unavailable distinctions; deterministic Fitness/Fatigue/prior-day Form; interactive Training State and compact Home link; cache migration/invalidation. Owner-authorized original Elevate reference and narrow privacy exception committed unchanged.
-**Verification:** 334 full / 23 focused Python tests; 86 Chromium assertions including mobile touch emulation; independent 3,053 daily-model, 1,022 observed-power and 803 HR-formula checks. All 20 existing tables/1,422 originals preserved. Home, Performance and Activities evidence retained. Wheel FTP resources verified outside checkout.
+**Verification:** 341 full Python tests; 25 Training State / 5 diagnostic tests; 255 Chromium assertions including floating hover, phone edges and mobile touch; independent 3,053 daily-model, 1,022 observed-power and 803 HR-formula checks. All 20 existing tables/1,422 originals preserved. Home, Performance and Activities evidence retained. Wheel FTP resources verified outside checkout.
 **Findings:** 1,079/1,418 cycling rides scored; 339 unavailable, including 118 before usable model history. 131 FIT estimates; API observed-only. Only 7/148 outdoor rides pass HR/duration rules; 141 remain unscored and require specific Analyst source-policy review. Elevate comparison excludes 14 projections and confirms arithmetic within rounding; differing history/settings/evidence cause score disagreement.
 **Review app:** `http://127.0.0.1:8772/training-state` on a verified private store copy. Existing production store/server retained.
-**Evidence:** [P4-02 verification](reports/P4-02/verification.md).
-**Review needed:** Analyst assessment of outdoor HR/duration coverage and code/data/browser acceptance. Owner usefulness/visual acceptance follows.
-**Next action:** Analyst Gate 1 review. Only after explicit authorization, proceed to Owner Gate 2. No merge, accepted/done state, Phase 4 closeout or Phase 5/6 start.
+**Review follow-up:** Floating hover/guide and FTP row-limit fixes delivered. Read-only outdoor diagnostics reconcile 2018 HR census; summary alternatives recover 3 recent rides, explicit partial alternatives 34 (overlapping). Production HR scores remain unchanged. Owner-requested detailed ride report/screenshots stay local-only.
+**Evidence:** [Review follow-up](reports/P4-02/review-followup.md); [initial verification](reports/P4-02/verification.md).
+**Review needed:** Analyst code/data/browser review and JIT clarification of summary fallback despite a defective stream, supported active duration/pause semantics, and any partial HR class/precedence. Material HR eligibility changes require Owner decision; final usefulness/visual acceptance follows Gate 1.
+**Next action:** Await Analyst Gate 1 review and source-policy clarification plus Owner decision before changing HR eligibility. No gate crossing, acceptance, merge or later phase.
