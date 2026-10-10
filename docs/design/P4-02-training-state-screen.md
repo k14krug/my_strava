@@ -1,6 +1,6 @@
 # P4-02 — Training State screen design
 
-**Status:** **Owner-approved visual and interaction direction (2026-10-09)**. Not a production implementation approval or Phase 4 acceptance.
+**Status:** **Owner-approved visual and interaction direction**, with a **taller trend-chart requirement added 2026-10-10**. Not a production implementation approval or Phase 4 acceptance.
 
 **Requirements:** [P4-02 decision record](P4-02-training-state-direction.md), [accepted P4-01 DESIGN-003](DESIGN-003-training-state-model.md), [Phase 4 acceptance](../PHASE_4_ACCEPTANCE.md), and [product requirements](../PRODUCT_REQUIREMENTS.md).
 
@@ -19,19 +19,19 @@ A simple, useful single-rider view of training consistency, model-based Fitness,
 1. **Heading:** Training State; succinct subtitle; unobtrusive **How these numbers work** disclosure.
 2. **Date range:** 6 weeks / **3 months default** / 12 months / All history. No future projected dates.
 3. **Selected-day values:** three compact displays with **Fitness** (blue, 42-day), **Fatigue** (amber, 7-day), **Form · start of day** (teal). One decimal and change versus seven days earlier when available.
-4. **Main interactive chart:** three independently toggleable daily lines on shared calendar axis, all enabled by default, negative Form permitted, clearly visible Form-zero axis/reference, selected-day vertical guide, readable hover/focus state.
+4. **Main interactive chart:** three independently toggleable daily lines on shared calendar axis, all enabled by default, negative Form permitted, clearly visible Form-zero axis/reference, selected-day vertical guide, readable hover/focus state. **Increase the actual trend-plot height substantially**: the current SVG reserves only ~220 units for the line plot, limiting readability. A desktop target around **380–430 CSS px of trend plot** (rather than ~220) with its daily stress strip still below, and a **mobile target around 280–340 px of line plot**, are practical acceptance targets rather than a framework/layout mandate. The chart must remain legible in the 3-month and 12-month ranges.
 5. **Daily selected-training-stress strip:** aligned horizontally with trend chart, source-distinguishing bars for qualified power, HR estimate, other/mixed or partial stress, and quiet markers for recorded activities with unknown stress. No-record days are not automatically labeled rest.
 6. **Selected day:** persistent details (not just floating tooltip): local calendar date, daily selected model stress, each RideWorks activity title/link, selected stress, calculation source, and concise partial/unavailable flag; identify multi-ride days without double-counting methods.
 7. **Recent workload:** trailing selected-date 7-/42-day **stress totals** and **distinct observed work kJ** subtotals with contributor/omission counts and source quality. Do not equate the units or present observed partial totals as complete training.
 
-The chart is the dominant feature. The selected-day and workload panels can appear side by side on desktop and stack on narrow screens.
+The chart is the dominant feature **by vertical as well as horizontal area**. Increase the trend line plotting region rather than adding whitespace or only enlarging the overall SVG container. Keep the synchronized daily-stress strip clearly visible with sufficient room for date labels. The selected-day and workload panels can appear side by side on desktop and stack on narrow screens.
 
 ## Interaction and display behavior
 
 - Click, touch, or keyboard-focus and arrow keys select actual dates; selection persists without hover. Selecting a past date updates the three metric values, seven-day changes, detail panel, and trailing totals together.
 - Switching time range retains the selected date when visible, otherwise selects the latest date; the latest calendar day is valid even when no ride occurred.
 - All history may be *render*-downsampled if necessary, but computations and day inspection use exact daily data. No future projection or fixed Elevate-style training-zone/overload labels.
-- Narrow screens retain usable date selection, synchronized chart/stress strip, readable small metric displays, and stacked lower panels. Maintain keyboard and non-color-only legends.
+- Narrow screens retain usable date selection, synchronized chart/stress strip, readable small metric displays, and stacked lower panels. Maintain keyboard and non-color-only legends. The taller plot must not distort axes, clip labels/tooltip or hover guide, or break pointer-to-date mapping when the SVG/chart dimensions change. Verify actual desktop and narrow-screen browser layout.
 - Prefer informational language, no medical or workout-prescription interpretation; include a short how-it-works explanation and source details on inspection.
 
 ## Model-display semantics (already decided elsewhere)
