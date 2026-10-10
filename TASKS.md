@@ -343,7 +343,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1, Phase 2, STRAVA-004 and Phase 3 are accepted and complete. No implementation task is currently active.
+Phase 1, Phase 2, STRAVA-004 and Phase 3 are accepted and complete. P4-02 is the current implementation task.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
@@ -402,7 +402,7 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ## Phase 4 — Training state
 
-**Status:** active — P4-01 research/design accepted; P4-02 design and implementation authorization pending.
+**Status:** **done — accepted 2026-10-10.** P4-01 model evaluation and P4-02 rider-facing Training State implementation accepted. Phase 5 is the next design/planning area; no new implementation task has begun.
 
 **Acceptance contract:** `docs/PHASE_4_ACCEPTANCE.md`
 
@@ -442,19 +442,21 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### P4-02 — Longitudinal training-state experience
 
-**Status:** pending — screen and HR/model policy Owner-approved; Analyst-finalized JIT committed; awaiting explicit `/TASK P4-02` authorization
+**Status:** **done — Analyst Gate 1 and Owner Gate 2 accepted 2026-10-10.** Training State v4 is approved, including the estimated session-power selector and Form initially unchecked. [Acceptance record](https://github.com/k14krug/rideworks/pull/24).
 
 **Purpose:** Produce a useful, repeatable Fitness/Fatigue/Form view for this recreational rider, grounded in qualified measured-power stress, a practical approximate HR-based fallback, the approved dated FTP history, and explicit source quality.
 
 **Owner-confirmed design context:** [P4-02 training-state direction](docs/design/P4-02-training-state-direction.md), read together with accepted [DESIGN-003](docs/design/DESIGN-003-training-state-model.md) and the [Phase 4 acceptance contract](docs/PHASE_4_ACCEPTANCE.md). The October 9 follow-on conversation supports HRSS-style outdoor fallback and a 42-/7-day interactive longitudinal chart. The Owner subsequently approved the **pragmatic Elevate-style unscored-ride numerical contribution of zero** (retain original missing-stress evidence), **prior-day Form**, a **zero initial seed**, and **no v1 projections/fixed training zones**. The Owner approved using **58 bpm resting / approximately 158 bpm max** and modeled **143 bpm threshold** as **explicit retrospective assumptions** for older rides without dated HR evidence, plus prioritizing adequately covering HR stress over materially partial power. The JIT specifies a simple versioned fixed-coefficient HRSS recipe; these inputs are assumptions, not historical measurements. This is **not** an implementation authorization.
 
-**Next gate:** The [screen design](docs/design/P4-02-training-state-screen.md) is Owner-approved and the [final P4-02 JIT](docs/tasks/P4-02.md) resolves its HR decision gate. Dex may start **only on a new explicit `/TASK P4-02` invocation**; after implementation, stop at HARD — Analyst and HARD — Owner review gates. Do not start automatically.
+**Acceptance evidence:** [P4-02 final implementation verification](reports/P4-02/session-power-implementation.md) confirms actual selected Elevate-style estimated session PSS on the 2026-10-07 structured interval workout (instead of old HR-only selection), same-day Fitness/Fatigue and next-day Form response, preserved 2026-09-16 outdoor HR stress, all candidate/source provenance, and 28 ride source-selection improvements. The Owner accepted the visible result and requested Form initially unchecked, which is implemented and browser-verified. Dex reported **383 Python tests, 506 general / 614 representative browser assertions, 1,418 fresh/cache parity checks, source/FTP/benchmark preservation and unchanged Performance**. Analyst reviewed the committed code and safe aggregate evidence; no additional private raw-data import or future-planning implementation is part of this task. Phase 4 acceptance applies to the v1 feature with its documented incomplete-data limitations.
 
-**Dependency:** P4-01 accepted; P4-02 design and JIT finalized; explicit implementation invocation pending.
+**Dependency:** P4-01 accepted; P4-02 accepted and complete.
 
 ### Phase 5 — Workout intent, outcome, and initial planning
 
-Planning now follows Training State. It is not started.
+**Status:** pending — next project phase after accepted Phase 4. First establish rider-facing workout intent/outcome and initial planning requirements; no architecture or implementation authorized by Phase 4 closeout.
+
+Planning now follows Training State. It has not started.
 
 ### Phase 6 — Adaptive planning
 
