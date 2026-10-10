@@ -145,7 +145,8 @@ def main():
                 known_limitations=['Recorded interval is not whole session','HR formula is a retrospective model',
                   'HR threshold/max assumptions can exclude values outside modeled range',
                   'Unscored rides retain unavailable evidence; model contribution is zero',
-                  'HR stream coverage >=99%, adjacent measured intervals <=15s, duration alignment <=max(1s,1%)'])
+                  'HR stream coverage >=99%, adjacent measured intervals <=15s, duration alignment <=max(1s,1%); independent same-source summary fallback does not claim stream completeness',
+                  'HR summaries use reported moving/timer/lap duration; mean active scope and pause treatment are unverified'])
     a.output.parent.mkdir(parents=True,exist_ok=True);a.output.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n')
     print(json.dumps(report,indent=2))
 

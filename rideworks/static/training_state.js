@@ -21,6 +21,7 @@
   const colors = {fitness: '#2563eb', fatigue: '#b77815', form: '#078675'};
   const classes = {calculated: 'Calculated power interval', corrected_estimate: 'Estimated FIT interval',
     hr_estimate: 'HR estimate', partial: 'Partial power', unavailable: 'Stress unavailable'};
+  const stressClass = ride => ride.selected.method==='hr' && ride.hr.evidence_kind==='summary' ? 'HR summary estimate' : classes[ride.selected.status];
   const fmt = v => v == null ? 'Unavailable' : v.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
   const node = (tag, text, className) => {
     const result = document.createElement(tag); if (text != null) result.textContent = text;
@@ -52,8 +53,9 @@
       const evidence=ride.selected.method==='hr'?ride.hr:ride.power;
       const formats=ride.selected.stress==null?[...new Set(ride.hr_candidates.map(c=>c.source?.format).filter(Boolean))].join(', '):evidence.source?.format;
       tooltip.append(node('p',ride.title,'training-tooltip-title'),
-        node('p',`${classes[ride.selected.status]}${ride.selected.stress==null?'':` · ${fmt(ride.selected.stress)} stress`}${formats?` · ${ride.selected.stress==null?'Evidence: ':''}${formats}`:''}`));
+        node('p',`${stressClass(ride)}${ride.selected.stress==null?'':` · ${fmt(ride.selected.stress)} stress`}${formats?` · ${ride.selected.stress==null?'Evidence: ':''}${formats}`:''}`));
     }
+    if(d.rides.some(r=>r.selected.method==='hr' && r.hr.evidence_kind==='summary')) tooltip.append(node('p','HR summary: active coverage and pause treatment unverified.'));
     if(d.unscored) tooltip.append(node('p',`${d.unscored} ${d.unscored===1?'ride':'rides'}: Stress unavailable. Zero numeric model contribution.`));
     tooltip.hidden=false;
     const box=tooltip.getBoundingClientRect();
@@ -141,7 +143,8 @@
     for (const ride of day.rides) {
       const article=node('article',null,'training-ride');
       const link=node('a',ride.title); link.href=`/activities/${ride.activity_id}`; article.append(link);
-      article.append(node('p',`${fmt(ride.selected.stress)} · ${classes[ride.selected.status]} · ${ride.selected.scope}`));
+      const description=ride.selected.method==='hr' && ride.hr.evidence_kind==='summary' ? ride.selected.scope : `${stressClass(ride)} · ${ride.selected.scope}`;
+      article.append(node('p',`${fmt(ride.selected.stress)} · ${description}`));
       if (ride.selected.status==='unavailable') article.append(node('p','Zero numeric model contribution; stress evidence remains unavailable.'));
       const inspection=node('details'), summary=node('summary','Source and calculation'); inspection.append(summary);
       const evidence={selected:ride.selected,power:ride.power,hr:ride.hr,hr_candidates:ride.hr_candidates,

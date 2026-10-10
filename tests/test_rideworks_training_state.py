@@ -338,13 +338,42 @@ class ApiAndRecalculationTests(TestCase):
         persist(self.store,123,dict(time=stream(times),watts=stream(powers),heartrate=stream([120]*len(times))))
         other,_=self.result();self.assertNotEqual(other['selected']['stress'],r['selected']['stress'])
 
-    def test_bad_hr_stream_does_not_bypass_coverage_with_source_average(self):
+    def test_bad_hr_stream_retained_beside_independently_eligible_summary(self):
         from rideworks.strava_streams import persist
         def stream(values):return dict(data=values,original_size=len(values),resolution='high',series_type='time')
         self.apply();persist(self.store,123,dict(time=stream([0,1800,3599]),heartrate=stream([143]*3)))
         data=training_state(self.store,'America/Los_Angeles',as_of=self.now)
-        self.assertEqual(data['coverage']['scored'],0);self.assertEqual(data['coverage']['selected_classes'],{'unavailable':1})
+        self.assertEqual(data['coverage']['scored'],1)
+        ride=data['days'][0]['rides'][0]
+        self.assertEqual(ride['selected']['stress'],100)
+        self.assertEqual(ride['hr']['evidence_kind'],'summary')
+        self.assertFalse(ride['hr']['completeness_verified'])
+        self.assertEqual(ride['hr']['pause_treatment'],'unverified')
+        self.assertEqual(ride['hr']['stream_rejections'][0]['reason'],'insufficient_hr_coverage')
+        self.assertIsNone(ride['hr_candidates'][0]['stress'])
+        self.assertEqual(ride['hr']['duration_basis'],'Strava API moving_time (reported moving seconds)')
 
+
+    def test_summary_invalid_fields_and_unknown_duration_never_rescued_by_sparse_stream(self):
+        from rideworks.strava_streams import persist
+        def stream(values):return dict(data=values,original_size=len(values),resolution='high',series_type='time')
+        valid=dict(self.item)
+        for changes in [dict(has_heartrate=False),dict(average_heartrate=None),dict(average_heartrate=158),
+                        dict(moving_time=0),dict(moving_time=3601),dict(elapsed_time=None)]:
+            self.item=valid|changes;self.apply()
+            persist(self.store,123,dict(time=stream([0,1800,3599]),heartrate=stream([143]*3)))
+            data=training_state(self.store,'America/Los_Angeles',as_of=self.now)
+            self.assertEqual(data['coverage']['scored'],0,changes)
+
+    def test_valid_api_stream_precedes_conflicting_summary_mean(self):
+        from rideworks.strava_streams import persist
+        def stream(values):return dict(data=values,original_size=len(values),resolution='high',series_type='time')
+        self.item['average_heartrate']=120;self.apply()
+        persist(self.store,123,dict(time=stream(list(range(3600))),heartrate=stream([143]*3600)))
+        ride,_=self.result()
+        self.assertEqual(ride['selected']['stress'],100)
+        self.assertEqual(ride['hr']['evidence_kind'],'stream')
+        self.assertFalse(any(c['evidence_kind']=='summary' for c in ride['hr_candidates']))
 
     def test_historical_ftp_calendar_does_not_change_with_browser_timezone(self):
         from rideworks.strava_streams import persist
@@ -357,3 +386,68 @@ class ApiAndRecalculationTests(TestCase):
         self.assertEqual(rides[0]['ftp']['calendar_date'],'2019-07-17')
         self.assertIsNone(rides[0]['ftp']['value'])
         self.assertIsNone(rides[0]['power']['stress'])
+
+
+class SummarySourceTests(TestCase):
+    def native(self,kind='TCX',**kwargs):
+        return dict(source=dict(source_id='synthetic',content_format=kind),extraction={},
+                    summary={},events=[],xml_context=dict(lap_summaries=[dict(avg_heart_rate=143,total_time_seconds=3600)]))|kwargs
+
+    def test_tcx_single_lap_summary_does_not_assert_active_coverage_or_synthesize_work(self):
+        from rideworks.training_state import native_hr_summary
+        bad=hr_stream([0,1800,3599],[143]*3,settings=DEFAULT_HR,source=dict(format='TCX'),duration=3600)
+        result=native_hr_summary(self.native(),DEFAULT_HR,[bad])
+        self.assertAlmostEqual(result['stress'],100)
+        self.assertEqual(result['source']['lap_index'],0)
+        self.assertIsNone(result['coverage'])
+        self.assertFalse(result['mean_active_scope_verified'])
+        self.assertIn('unverified',result['scope'])
+        self.assertEqual(result['stream_rejections'],[bad])
+        self.assertEqual(selected_stress(dict(status='partial',stress=20,scope='partial'),result)['stress'],100)
+        self.assertEqual(selected_stress(dict(status='calculated',stress=20,scope='recorded'),result)['stress'],20)
+        self.assertNotIn('observed_work_kj',result)
+
+    def test_missing_or_multi_lap_summaries_never_paired_or_combined(self):
+        from rideworks.training_state import native_hr_summary
+        for laps in [[],[dict(avg_heart_rate=143)],[dict(total_time_seconds=3600)],
+                     [dict(avg_heart_rate=143,total_time_seconds=0)],
+                     [dict(avg_heart_rate=143,total_time_seconds=1800)]*2]:
+            self.assertIsNone(native_hr_summary(self.native(xml_context=dict(lap_summaries=laps)),DEFAULT_HR)['stress'])
+        self.assertIsNone(native_hr_summary(self.native('GPX'),DEFAULT_HR)['stress'])
+
+    def test_fit_reported_timer_summary_compatibility_and_known_pause(self):
+        from rideworks.training_state import native_hr_summary
+        events=timer(0,1800)+timer(1860,3660)
+        native=self.native('FIT',summary=session(3660)|dict(avg_heart_rate=143,total_timer_time=3600),events=events)
+        result=native_hr_summary(native,DEFAULT_HR)
+        self.assertEqual(result['stress'],100)
+        self.assertEqual(result['reported_duration_seconds'],3600)
+        uncertain=native_hr_summary(native|dict(events=events[:-1]),DEFAULT_HR)
+        self.assertEqual(uncertain['stress'],100)
+        self.assertEqual(uncertain['pause_treatment'],'unverified')
+        for update in [dict(total_timer_time=4000),dict(total_elapsed_time=float('nan')),dict(total_timer_time=3500)]:
+            self.assertIsNone(native_hr_summary(native|dict(summary=native['summary']|update),DEFAULT_HR)['stress'])
+
+    def test_competing_summary_sources_are_ambiguous_and_supported_stream_preferred(self):
+        from rideworks.training_state import choose_hr
+        one=hr_summary(143,3600,settings=DEFAULT_HR,source=dict(format='TCX',source_id='one'))
+        two=hr_summary(120,3600,settings=DEFAULT_HR,source=dict(format='Strava API summary',source_id='two'))
+        self.assertEqual(choose_hr([one,two],DEFAULT_HR)['reason'],'ambiguous_hr_sources')
+        stream=hr_stream(list(range(3600)),[143]*3600,duration=3600,settings=DEFAULT_HR,source=dict(format='FIT',source_id='three'))
+        self.assertEqual(choose_hr([one,two,stream],DEFAULT_HR),stream)
+        other=stream|dict(source=dict(format='TCX',source_id='four'),stress=50)
+        self.assertEqual(choose_hr([stream,other],DEFAULT_HR)['reason'],'ambiguous_hr_sources')
+
+    def test_source_policy_version_recalculates_old_cache_then_reuses_it(self):
+        with tempfile.TemporaryDirectory() as directory,Store(directory) as store:
+            from rideworks.strava_api import apply_observations,normalize
+            item=dict(id=123,name='Synthetic outdoor',type='Ride',sport_type='Ride',start_date='2026-10-01T12:00:00Z',moving_time=3600,elapsed_time=3600,has_heartrate=True,average_heartrate=143)
+            apply_observations(store,[normalize(item)],321,1791500000)
+            when=datetime(2026,10,9,tzinfo=timezone.utc)
+            with patch('rideworks.training_state.VERSION','training-state-v1'):
+                old=training_state(store,'UTC',as_of=when)
+            with patch('rideworks.training_state.calculate_ride',wraps=__import__('rideworks.training_state',fromlist=['calculate_ride']).calculate_ride) as calc:
+                new=training_state(store,'UTC',as_of=when);self.assertEqual(calc.call_count,1)
+            self.assertNotEqual(old['version'],new['version'])
+            with patch('rideworks.training_state.calculate_ride',side_effect=AssertionError('cache must reuse new policy')):
+                self.assertEqual(new,training_state(store,'UTC',as_of=when))

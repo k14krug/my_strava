@@ -19,7 +19,8 @@ from .goals import browser_zone
 from .history import presentation
 from .performance import evaluate, input_signature
 
-VERSION = 'training-state-v1'
+VERSION = 'training-state-v2'
+HR_SOURCE_POLICY = 'same-source-hr-summary-fallback-v2'
 POWER_METHOD = 'recorded-power-stress-v1'
 HR_METHOD = 'threshold-normalized-average-hr-v1'
 MODEL_METHOD = 'daily-exponential-42-7-prior-form-v1'
@@ -252,7 +253,7 @@ def hr_stream(times, hrs, *, settings, source, events=(), summary=None, duration
     1 s bin follows the native-bin convention. Known pauses are never bridged.
     Duration must align with recorded span/timer to within max(1s,1%).
     """
-    result = dict(method=HR_METHOD, status='unavailable', stress=None, source=source,
+    result = dict(method=HR_METHOD, evidence_kind='stream', source_policy=HR_SOURCE_POLICY, status='unavailable', stress=None, source=source,
                   settings=settings, mean_hr=None, active_seconds=None, coverage=None,
                   scope='full recorded active HR estimate', duration_choice=None)
     if len(times) != len(hrs) or not times:
@@ -311,13 +312,55 @@ def hr_stream(times, hrs, *, settings, source, events=(), summary=None, duration
                          reason=None if stress is not None else 'invalid_hr_parameters')
 
 
-def hr_summary(mean, seconds, *, settings, source):
+def hr_summary(mean, seconds, *, settings, source, duration_basis='same-source reported active duration',
+               stream_rejections=()):
     stress = hrss(mean,seconds,settings)
-    return dict(method=HR_METHOD, status='estimated' if stress is not None else 'unavailable',
+    return dict(method=HR_METHOD, evidence_kind='summary', source_policy=HR_SOURCE_POLICY,
+                status='estimated' if stress is not None else 'unavailable',
                 stress=stress, source=source, settings=settings, mean_hr=mean, active_seconds=seconds,
-                coverage=None, scope='source summary active-duration estimate',
-                duration_choice='same-source measured mean HR and active duration',
+                reported_duration_seconds=seconds, coverage=None, completeness_verified=False,
+                pause_treatment='unverified', mean_active_scope_verified=False,
+                scope='HR summary estimate; completeness and pause treatment unverified',
+                duration_choice=duration_basis, duration_basis=duration_basis,
+                stream_rejections=list(stream_rejections),
                 reason=None if stress is not None else 'invalid_hr_summary')
+
+
+def native_hr_summary(native, settings, stream_rejections=()):
+    """Independently eligible reported fields, never recording span as active time."""
+    summary=native['summary'];source=source_ref(native);kind=source['format']
+    if kind=='FIT':
+        mean=summary.get('avg_heart_rate');seconds=summary.get('total_timer_time')
+        basis='FIT total_timer_time (reported timer-active seconds)'
+        elapsed=summary.get('total_elapsed_time')
+        compatible=elapsed is None or finite(elapsed) and elapsed>0 and finite(seconds) and seconds<=elapsed
+        intervals,_,_=timer_scope(native['events'],summary)
+        if intervals and finite(seconds):
+            compatible &= abs(math.fsum(b-a for a,b in intervals)-seconds)<=max(1,seconds*.01)
+    elif kind=='TCX' and len(native.get('xml_context',{}).get('lap_summaries',[]))==1:
+        lap=native['xml_context']['lap_summaries'][0]
+        mean=lap.get('avg_heart_rate');seconds=lap.get('total_time_seconds')
+        source=source|dict(lap_index=0)
+        basis='TCX single-lap TotalTimeSeconds (reported lap seconds; active/pause semantics unverified)'
+        compatible=True
+    else:
+        return hr_summary(None,None,settings=settings,source=source,stream_rejections=stream_rejections)|dict(reason='unsupported_native_hr_summary')
+    result=hr_summary(mean,seconds,settings=settings,source=source,duration_basis=basis,
+                      stream_rejections=stream_rejections)
+    if not compatible:
+        result.update(stress=None,status='unavailable',reason='incompatible_hr_summary_duration')
+    return result
+
+
+def choose_hr(candidates, settings):
+    """Supported streams precede summary estimates; competing sources stay ambiguous."""
+    available=[c for c in candidates if c['stress'] is not None]
+    streams=[c for c in available if c['evidence_kind']=='stream']
+    preferred=streams or available
+    if len(preferred)==1:
+        return preferred[0]
+    return dict(method=HR_METHOD,source_policy=HR_SOURCE_POLICY,status='unavailable',stress=None,
+                reason='ambiguous_hr_sources' if preferred else 'no_usable_hr',settings=settings)
 
 
 def selected_stress(power, hr):
@@ -373,36 +416,38 @@ def calculate_ride(store, snapshot, row, ftp, settings):
                               summary=summary,duration=duration,
                               segment_starts=native.get('xml_context',{}).get('segment_start_record_indexes',[]))
         candidates.append(candidate)
-        # Don't bypass defective/missing stream coverage using its average.
-        if not any(h is not None for h in hrs):
-            mean = summary.get('avg_heart_rate')
-            if len(laps)==1 and mean is None:
-                mean=laps[0].get('avg_heart_rate')
-            candidates.append(hr_summary(mean,duration,settings=settings,source=source_ref(native)))
+        if candidate['stress'] is None:
+            candidates.append(native_hr_summary(native,settings,[candidate]))
     apis = [s for s in snapshot['sources'] if s['source']['kind']=='strava_api' and s['source']['is_current']]
-    if len(apis)==1:
-        api=apis[0]; values=api['summary']['values']
-        ref=dict(source_id=api['source']['source_id'],format='Strava API summary')
+    for api in apis:
+        values=api['summary']['values']
+        ref=dict(source_id=api['source']['source_id'],format='Strava API summary',
+                 artifact_sha256=api['source'].get('sha256'))
         observations=[s for s in store.strava_stream_evidence(row['activity_id']) if s['is_current'] and s['summary_source_id']==ref['source_id']]
-        stream_present=False
+        source_streams=[]
         for observation in observations:
             streams=observation['streams']
-            if 'heartrate' in streams:
-                stream_present=True
-                if 'time' in streams and all(s['resolution']=='high' and s['original_size']==len(s['data']) for s in (streams['time'],streams['heartrate'])):
-                    candidates.append(hr_stream(streams['time']['data'],streams['heartrate']['data'],settings=settings,
-                                                source=ref|dict(format='Strava API stream',stream_source_id=observation['source_id'],
-                                                                observation_sha256=observation['observation_sha256']),duration=values.get('moving_time')))
-        # Summary fallback is traceable measured HR, never CSV's unknown duration units.
-        if not stream_present and values.get('has_heartrate') is True and finite(values.get('moving_time')) and finite(values.get('elapsed_time')) and 0 < values['moving_time'] <= values['elapsed_time']:
-            candidates.append(hr_summary(values.get('average_heartrate'),values['moving_time'],settings=settings,source=ref))
-    available = [c for c in candidates if c['stress'] is not None]
-    # Multiple usable native sources need a decision; do not arbitrarily rank them.
-    native_available = [c for c in available if c['source']['format'] in ('FIT','TCX','GPX')]
-    hr = (native_available[0] if len(native_available)==1 else available[0] if not native_available and len(available)==1
-          else dict(method=HR_METHOD,status='unavailable',stress=None,reason='ambiguous_hr_sources' if available else 'no_usable_hr',settings=settings))
+            if 'heartrate' not in streams:
+                continue
+            stream_ref=ref|dict(format='Strava API stream',stream_source_id=observation['source_id'],
+                                observation_sha256=observation['observation_sha256'])
+            if 'time' in streams and all(s['resolution']=='high' and s['original_size']==len(s['data']) for s in (streams['time'],streams['heartrate'])):
+                candidate=hr_stream(streams['time']['data'],streams['heartrate']['data'],settings=settings,
+                                    source=stream_ref,duration=values.get('moving_time'))
+            else:
+                candidate=dict(method=HR_METHOD,evidence_kind='stream',source_policy=HR_SOURCE_POLICY,
+                    source=stream_ref,stress=None,status='unavailable',
+                    reason='missing_hr_stream_time' if 'time' not in streams else 'unsupported_hr_stream_resolution')
+            source_streams.append(candidate);candidates.append(candidate)
+        if not any(c['stress'] is not None for c in source_streams):
+            summary=hr_summary(values.get('average_heartrate'),values.get('moving_time'),settings=settings,source=ref,
+                               duration_basis='Strava API moving_time (reported moving seconds)',stream_rejections=source_streams)
+            if not (values.get('has_heartrate') is True and finite(values.get('moving_time')) and finite(values.get('elapsed_time')) and 0 < values['moving_time'] <= values['elapsed_time']):
+                summary.update(stress=None,status='unavailable',reason='invalid_api_hr_summary')
+            candidates.append(summary)
+    hr=choose_hr(candidates,settings)
     selected=selected_stress(power,hr)
-    return dict(version=VERSION, activity_id=row['activity_id'], selected=selected, power=power, hr=hr,
+    return dict(version=VERSION, hr_source_policy=HR_SOURCE_POLICY, activity_id=row['activity_id'], selected=selected, power=power, hr=hr,
                 hr_candidates=candidates, ftp=ftp, hr_settings=settings)
 
 
@@ -429,7 +474,7 @@ def ride_results(store, zone_name, *, as_of=None, hr_history=None, ftp_source=No
             streams=[dict(r) for r in store.connection.execute('''SELECT s.source_id,s.summary_source_id,s.observation_sha256
                 FROM strava_stream_sources s JOIN strava_stream_current c ON c.source_id=s.source_id
                 WHERE s.activity_id=? ORDER BY s.source_id''',(row['activity_id'],))]
-            signature=sha256(json.dumps([VERSION,input_signature(snapshot,store),streams,ftp,settings,digest],sort_keys=True).encode()).hexdigest()
+            signature=sha256(json.dumps([VERSION,HR_SOURCE_POLICY,input_signature(snapshot,store),streams,ftp,settings,digest],sort_keys=True).encode()).hexdigest()
             saved=store.connection.execute('SELECT input_signature,result_json FROM training_stress_cache WHERE activity_id=?',(row['activity_id'],)).fetchone()
             if saved and saved[0]==signature:
                 result=json.loads(saved[1])
@@ -441,7 +486,7 @@ def ride_results(store, zone_name, *, as_of=None, hr_history=None, ftp_source=No
             rows.append(result|dict(day=day.isoformat(),title=row['title'],timezone_unknown=not row['absolute_time']))
     return rows, dict(today=today.isoformat(),timezone=zone_name,as_of=as_of.isoformat(),excluded=dict(excluded),
                       ftp_source_sha256=digest,version=VERSION,model_method=MODEL_METHOD,
-                      hr_method=HR_METHOD,hr_default_assumptions=DEFAULT_HR)
+                      hr_method=HR_METHOD,hr_source_policy=HR_SOURCE_POLICY,hr_default_assumptions=DEFAULT_HR)
 
 
 def daily_series(rides, today):

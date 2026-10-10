@@ -23,9 +23,10 @@ async (page) => {
   assert((await read()).sourceCount===3,'all line toggles on');
   for(const name of ['6 weeks','3 months','12 months','All history']){await page.getByRole('button',{name,exact:true}).click();await sync();}
   const targets=await page.evaluate(()=>{const d=JSON.parse(document.querySelector('#training-state-data').textContent).days;
-    return {multi:d.findLast(p=>p.rides.length>1)?.day,missing:d.findLast(p=>p.unscored)?.day,noRecord:d.findLast(p=>p.no_record)?.day};});
+    return {multi:d.findLast(p=>p.rides.length>1)?.day,missing:d.findLast(p=>p.unscored)?.day,noRecord:d.findLast(p=>p.no_record)?.day,summary:d.findLast(p=>p.rides.some(r=>r.selected.method==='hr'&&r.hr.evidence_kind==='summary'&&r.hr.stream_rejections.length))?.day};});
   for(const [kind,date] of Object.entries(targets)){assert(!!date,kind+' fixture present');if(!date)continue;
     await page.locator('#training-date').fill(date);await page.locator('#training-date').dispatchEvent('change');const x=await sync();
+    if(kind==='summary')assert((await page.locator('#training-day-detail').textContent()).includes('HR summary estimate')&&(await page.locator('#training-day-detail').textContent()).includes('unverified'),'summary fallback label and uncertainty in persistent inspection');
     if(kind==='multi')assert(x.links.length>1,'multi-ride day links');
     if(kind==='missing')assert((await page.locator('#training-day-detail').textContent()).includes('unavailable'),'unscored evidence remains unavailable');
     if(kind==='noRecord')assert((await page.locator('#training-day-detail').textContent()).includes('rest is not established'),'no-record is not rest');
@@ -52,6 +53,10 @@ async (page) => {
       assert(t.text.includes(ride.title),'hover full ride title');
       const candidate=ride.selected.method==='hr'?ride.hr:ride.power;
       if(candidate.source?.format)assert(t.text.includes(candidate.source.format),'hover selected source format');
+    }
+    if(expected.rides.some(r=>r.selected.method==='hr'&&r.hr.evidence_kind==='summary')){
+      assert(t.text.includes('HR summary estimate'),'hover summary estimate label');
+      assert(t.text.includes('active coverage and pause treatment unverified'),'hover summary uncertainty');
     }
     if(expected.unscored)assert(t.text.includes('Stress unavailable'),'hover missing stress explicit');
     return point;
