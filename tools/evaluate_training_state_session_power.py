@@ -5,6 +5,7 @@ Compare a pinned Elevate time-buffer method with recorded evidence and explain
 duration/representativeness risks. Published output contains only aggregates.
 """
 import argparse
+from bisect import bisect_right
 from collections import Counter
 from copy import deepcopy
 from datetime import date, datetime, timedelta, timezone
@@ -21,7 +22,20 @@ from rideworks.training_state import daily_series, epoch, finite, timer_scope
 from tools.diagnose_training_state_power import bins, table_digest, response
 from tools.compare_training_state_elevate import read_reference
 
-METHOD='diagnostic-elevate-time-buffer-session-pss-v1'
+METHOD='diagnostic-elevate-time-buffer-session-pss-v2'
+REPRESENTATIVENESS='diagnostic-distributed-observations-v1'
+SCREEN_VARIANTS={
+    'proposed':dict(total_floor=.8,local_floor=.5,window_seconds=300),
+    'total_70_percent':dict(total_floor=.7,local_floor=.5,window_seconds=300),
+    'total_90_percent':dict(total_floor=.9,local_floor=.5,window_seconds=300),
+    'total_95_percent':dict(total_floor=.95,local_floor=.5,window_seconds=300),
+    'total_99_percent':dict(total_floor=.99,local_floor=.5,window_seconds=300),
+    'local_40_percent':dict(total_floor=.8,local_floor=.4,window_seconds=300),
+    'local_60_percent':dict(total_floor=.8,local_floor=.6,window_seconds=300),
+    'local_75_percent':dict(total_floor=.8,local_floor=.75,window_seconds=300),
+    'window_180_seconds':dict(total_floor=.8,local_floor=.5,window_seconds=180),
+    'window_600_seconds':dict(total_floor=.8,local_floor=.5,window_seconds=600),
+}
 REFERENCE_COMMIT='df9e2cebf5055d28b652628c8654a701845935cc'
 REFERENCE_SOURCE_SHA256='8fd699848e597a307b1d1adaffe19f5b99a149412d39bcd35a5e4e87806dd909'
 
@@ -47,12 +61,56 @@ def reference_np(times,powers):
     return (math.fsum(values)/len(values))**.25 if values else None
 
 
-def estimate(times,powers,*,duration,elapsed_duration,ftp,events=(),summary=None,known_omitted_effort=False,duration_tolerance=0):
+def distribution_screen(times,intervals,*,total_floor=.8,local_floor=.5,window_seconds=300):
+    """Observed half-open bins only; no missing sample/pause reconstruction.
+
+    Closed timers define an active-time axis. Without them the caller supplies
+    the full same-source elapsed timeline, NOT the shorter moving-time value.
+    Test every sliding window exactly: extrema occur at bin boundaries or those
+    boundaries minus window width. Include leading/trailing omissions.
+    """
+    segments=[];offset=0.
+    for a,b in intervals:
+        for t in times:
+            lo=max(a,t);hi=min(b,t+1)
+            if hi>lo:segments.append((offset+lo-a,offset+hi-a))
+        offset+=b-a
+    merged=[]
+    for a,b in sorted(segments):
+        if merged and a<=merged[-1][1]:merged[-1]=(merged[-1][0],max(b,merged[-1][1]))
+        else:merged.append((a,b))
+    starts=[a for a,b in merged];prefix=[0.]
+    for a,b in merged:prefix.append(prefix[-1]+b-a)
+    def observed_until(t):
+        i=bisect_right(starts,t)-1
+        return 0. if i<0 else prefix[i]+min(t,merged[i][1])-merged[i][0]
+    width=min(window_seconds,offset)
+    boundaries=[0.,offset-width]
+    for a,b in merged:boundaries.extend((a,b,a-width,b-width))
+    windows=[(observed_until(s+width)-observed_until(s),s)
+             for s in boundaries if 0<=s<=offset-width]
+    least,start=min(windows) if windows else (0.,0.)
+    total=prefix[-1]/offset if offset else 0.;local=least/width if width else 0.
+    holes=[];last=0.
+    for a,b in merged:
+        if a>last:holes.append(dict(start_seconds=last,end_seconds=a,seconds=a-last))
+        last=b
+    if last<offset:holes.append(dict(start_seconds=last,end_seconds=offset,seconds=offset-last))
+    reason='insufficient_distributed_observations' if total<total_floor-1e-12 else 'concentrated_recording_omission' if local<local_floor-1e-12 else None
+    return dict(policy=REPRESENTATIVENESS,passes=reason is None,reason=reason,
+        total_floor=total_floor,local_floor=local_floor,window_seconds=width,
+        timeline_seconds=offset,observed_seconds=prefix[-1],observed_fraction=total,
+        worst_window_start_seconds=start,worst_window_observed_seconds=least,
+        worst_window_observed_fraction=local,omissions=holes,
+        longest_omission_seconds=max((h['seconds'] for h in holes),default=0),
+        representativeness_proven=False)
+
+
+def estimate(times,powers,*,duration,elapsed_duration,ftp,events=(),summary=None,known_omitted_effort=False,duration_tolerance=0,timeline_start=0):
     result=dict(method=METHOD,status='unavailable',stress=None,scope='estimated session; representativeness unverified',
         duration_seconds=duration,elapsed_seconds=elapsed_duration,weighted_power=None,buffer_count=0,
         samples_invented=0,whole_session_verified=False,observed_recording=bins(times,powers),limitations=[])
     def reject(reason):return result|dict(reason=reason)
-    if known_omitted_effort:return reject('known_omitted_workout_effort')
     if len(times)!=len(powers) or not times:return reject('empty_or_unpaired_power')
     if any(not finite(t) for t in times) or any(b<=a for a,b in zip(times,times[1:])):return reject('invalid_or_ambiguous_timing')
     if any(p is not None and (not finite(p) or p<0) for p in powers):return reject('invalid_watts')
@@ -75,6 +133,16 @@ def estimate(times,powers,*,duration,elapsed_duration,ftp,events=(),summary=None
             groups.append(points)
     else:groups=[list(zip(times,powers))]
     active_times=[t for g in groups for t,p in g];active_powers=[p for g in groups for t,p in g]
+    if not intervals and not finite(timeline_start):return reject('unsupported_elapsed_timeline_origin')
+    timeline=intervals or [(timeline_start,timeline_start+elapsed_duration)]
+    # Raw samples after a verified stop remain valid source evidence, excluded
+    # from the active estimate rather than mistaken for a timing contradiction.
+    if finite(timeline_start) and (times[0]<timeline_start-1 or times[-1]>timeline_start+elapsed_duration+1):return reject('power_outside_reported_elapsed_timeline')
+    screens={name:distribution_screen(active_times,timeline,**parameters) for name,parameters in SCREEN_VARIANTS.items()}
+    result.update(representativeness=screens['proposed'],screen_sensitivity=screens,
+        distribution_time_basis='verified active timer intervals' if intervals else 'same-source elapsed timeline; pauses unverified')
+    if known_omitted_effort:return reject('known_omitted_workout_effort')
+    if not screens['proposed']['passes']:return reject(screens['proposed']['reason'])
     evidence=bins(active_times,active_powers)
     if not any(r['seconds']>=600 for r in evidence['continuous_runs']):return reject('no_accepted_600_second_observed_segment')
     if len(active_times)>elapsed_duration+1:return reject('observed_bins_exceed_elapsed_duration')
@@ -93,6 +161,7 @@ def estimate(times,powers,*,duration,elapsed_duration,ftp,events=(),summary=None
     if not intervals:result['limitations'].append('No explicit timer events; moving duration/pause semantics are unverified')
     if len(active_times)>duration+1:result['limitations'].append('Recorded samples include time outside reported movement; sample count is not active-duration proof')
     result['limitations'].append('Batch mean weights samples equally; elapsed gaps can change emission timing without supplying missing watts')
+    result['limitations'].append('Distribution screening excludes severe omissions but cannot establish unknown gap intensity or physiological accuracy')
     return result
 
 
@@ -103,7 +172,13 @@ def synthetic_cases():
     for label,removed in [('complete',set()),('missing_hard',set(range(600,690))),
                           ('missing_recovery',set(range(900,990))),('high_density_missing_hard',set(range(600,630))),
                           ('uniform_sparse',set(range(3600))-set(range(0,3600,10))),
-                          ('clustered_sparse',set(range(600,3000)))]:
+                          ('clustered_sparse',set(range(600,3000))),
+                          ('one_600_second_segment',set(range(600,3600))),
+                          ('distributed_omissions',set(range(600,3600,5))),
+                          ('same_fraction_concentrated_omissions',set(range(1200,1800))),
+                          ('missing_start',set(range(600))),
+                          ('missing_end',set(range(3000,3600))),
+                          ('unknown_hard_omission',set(range(600,690)))]:
         t=[t for t in times if t not in removed];w=[powers[i] for i in t]
         omitted_hard=label in ('missing_hard','high_density_missing_hard','clustered_sparse')
         candidate=estimate(t,w,duration=3600,elapsed_duration=3600,ftp=200,known_omitted_effort=omitted_hard)
@@ -133,14 +208,14 @@ def source_candidate(store,ride):
         observation=next(o for o in store.strava_stream_evidence(ride['activity_id']) if o['source_id']==ref['stream_source_id'])
         times=observation['streams']['time']['data'];powers=observation['streams']['watts']['data']
         values=store.get_source(ref['summary_source_id'])['summary']['values']
-        duration=values.get('moving_time');elapsed=values.get('elapsed_time');events=[];summary={}
+        duration=values.get('moving_time');elapsed=values.get('elapsed_time');events=[];summary={};origin=0
         basis='same-source API moving_time / elapsed_time'
     else:
         native=store.get_source(ref['source_id']);times=[epoch(r['timestamp']) for r in native['records']];powers=[r['power'] for r in native['records']]
-        summary=native['summary'];events=native['events'];duration=summary.get('total_timer_time');elapsed=summary.get('total_elapsed_time')
+        summary=native['summary'];events=native['events'];duration=summary.get('total_timer_time');elapsed=summary.get('total_elapsed_time');origin=epoch(summary.get('start_time'))
         basis='same-source FIT total_timer_time / total_elapsed_time'
     result=estimate(times,powers,duration=duration,elapsed_duration=elapsed,ftp=ride['ftp']['value'],events=events,summary=summary,
-                    duration_tolerance=1 if ref['format']=='FIT' else 0)
+                    duration_tolerance=1 if ref['format']=='FIT' else 0,timeline_start=origin)
     result.update(source=ref,duration_basis=basis)
     return result,times,powers
 
@@ -211,7 +286,14 @@ def main():
         estimator_method=METHOD,estimator_production_enabled=False,reference_commit=REFERENCE_COMMIT,
         reference_source_sha256=hashlib.sha256(a.reference_source.read_bytes()).hexdigest(),reference_np_oracle_checks=len(actual),
         case_roles=dict(Counter(e['role'] for e in examples)),session_candidate_reasons=dict(Counter(e['session_candidate'].get('reason') or 'diagnostic_candidate' for e in examples)),
-        synthetic=[{k:r[k] for k in ('case','observed_fraction','relative_error_against_complete','known_missing_hard_interval')}|dict(reason=r['estimate'].get('reason')) for r in synthetic],
+        representativeness_policy=REPRESENTATIVENESS,screen_parameters=SCREEN_VARIANTS,
+        representativeness_sensitivity={name:dict(
+            real_cases_evaluated=sum('screen_sensitivity' in e['session_candidate'] for e in examples),
+            real_cases_passing=sum(e['session_candidate'].get('screen_sensitivity',{}).get(name,{}).get('passes',False) for e in examples),
+            synthetic_cases_passing=sum(r['estimate'].get('screen_sensitivity',{}).get(name,{}).get('passes',False) for r in synthetic)) for name in SCREEN_VARIANTS},
+        synthetic=[{k:r[k] for k in ('case','observed_fraction','relative_error_against_complete','known_missing_hard_interval')}|dict(
+            reason=r['estimate'].get('reason'),distribution={k:v for k,v in r['estimate'].get('representativeness',{}).items() if k!='omissions'},
+            sensitivity={name:s['passes'] for name,s in r['estimate'].get('screen_sensitivity',{}).items()}) for r in synthetic],
         windows=windows,diagnostic_database_and_cache_unchanged=True,
         endpoint_after_decoupling_minus_before={k:after['data']['days'][-1][k]-before['data']['days'][-1][k] for k in ('fitness','fatigue','form')},
         diagnostic_scenario_endpoint_minus_decoupling={k:scenario_days[-1][k]-after['data']['days'][-1][k] for k in ('fitness','fatigue','form')},
