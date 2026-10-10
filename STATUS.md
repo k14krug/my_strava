@@ -2,7 +2,7 @@
 
 **Product:** RideWorks.
 **Current task:** P4-02 — Longitudinal Training State and Fitness Trend.
-**State:** ready_for_review after the revised same-source HR summary correction and behavioral validation. HARD — Analyst Gate 1 remains uncleared.
+**State:** in_progress — **HARD — Analyst Gate 1 cleared** for Owner review of the corrected P4-02 experience; **HARD — Owner Gate 2 pending**. The task and Phase 4 remain unaccepted.
 **Branch:** `task/p4-02-training-state`; [draft PR #24](https://github.com/k14krug/rideworks/pull/24).
 **Authority:** Latest explicit `/TASK P4-02`; revised Analyst JIT and design direction at `010eff5`. Invocation remains `/TASK only`; Owner Gate 2 follows Analyst authorization.
 **Delivered:** Existing Training State, hover/selection and FTP update implementation retained. Versioned independent same-source HR summary fallback now works with defective streams; source/mean/duration, rejected coverage and unverified completeness/pause semantics remain inspectable. Power rules, source originals and approved FTP remain unchanged; no partial HR default.
@@ -11,4 +11,4 @@
 **Privacy/reference:** Approved original Elevate CSV unchanged and integrity-verified; 14 projections excluded. Vendor results/settings never production inputs; approved dated FTP authoritative. Private Activity cases, before/after details and screenshots stay local-only.
 **Review app:** `http://127.0.0.1:8772/training-state` on the verified private copy; existing production store/server retained.
 **Evidence:** [HR summary correction and behavioral validation](reports/P4-02/hr-summary-verification.md); earlier reports remain historical evidence.
-**Next action:** Await HARD — Analyst Gate 1 source/code/data/browser review. No acceptance, merge, Owner Gate 2 or later phase.
+**Next action:** Present the updated Training State page on the existing verified private store copy for **HARD — Owner Gate 2** review, especially the 3-/12-month trends and 2026-09-16 selected ride with method and uncertainty. Explain that 138/148 older/all-history outdoor rides remain unscored. Analyst's Gate 1 review cleared implementation evidence at `10d9cb8` ([PR #24 review](https://github.com/k14krug/rideworks/pull/24#pullrequestreview-5479922069)); local private-store and browser execution were Dex-reported, not re-run by the Analyst. **Do not merge, accept P4-02/Phase 4 or begin Phase 5/6 before Owner approval.**
