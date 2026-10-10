@@ -442,13 +442,13 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### P4-02 — Longitudinal training-state experience
 
-**Status:** in_progress — implementation and 2026-10-10 review follow-ups verified; ready for Gate 1 Analyst review. Production HR policy remains unchanged pending Analyst clarification and Owner decision.
+**Status:** in_progress — HARD — Analyst Gate 1 remains open. Owner's 2026-10-10 comparison clarified priority: approximate HR fallback should recognize significant recorded outdoor rides; revised Analyst JIT allows a narrow same-source HR summary/duration fallback. Dex implementation/reverification pending.
 
 **Purpose:** Produce a useful, repeatable Fitness/Fatigue/Form view for this recreational rider, grounded in qualified measured-power stress, a practical approximate HR-based fallback, the approved dated FTP history, and explicit source quality.
 
 **Owner-confirmed design context:** [P4-02 training-state direction](docs/design/P4-02-training-state-direction.md), read together with accepted [DESIGN-003](docs/design/DESIGN-003-training-state-model.md) and the [Phase 4 acceptance contract](docs/PHASE_4_ACCEPTANCE.md). The October 9 follow-on conversation supports HRSS-style outdoor fallback and a 42-/7-day interactive longitudinal chart. The Owner subsequently approved the **pragmatic Elevate-style unscored-ride numerical contribution of zero** (retain original missing-stress evidence), **prior-day Form**, a **zero initial seed**, and **no v1 projections/fixed training zones**. The Owner approved using **58 bpm resting / approximately 158 bpm max** and modeled **143 bpm threshold** as **explicit retrospective assumptions** for older rides without dated HR evidence, plus prioritizing adequately covering HR stress over materially partial power. The JIT specifies a simple versioned fixed-coefficient HRSS recipe; these inputs are assumptions, not historical measurements. This is **not** an implementation authorization.
 
-**Next gate:** **HARD — Analyst** code/data/test/browser review; [review follow-up and outdoor diagnostics](reports/P4-02/review-followup.md), [initial verification package](reports/P4-02/verification.md). Owner production/visual/usefulness review remains Gate 2 after Analyst authorization. No merge, task acceptance or later-phase start.
+**Next gate:** Dex should pull the latest PR branch, follow the revised [P4-02 JIT](docs/tasks/P4-02.md), implement the explicitly approximate measured same-source HR summary/duration fallback **without overriding power eligibility or importing Elevate scores**, and provide 2026-09-16 and recent-day trend verification, source labels, tests and preservation evidence. Return to **HARD — Analyst** Gate 1. Owner production/visual/usefulness review is Gate 2 only after Analyst release. No merge, task acceptance or later-phase start.
 
 **Dependency:** P4-01 accepted; P4-02 design/JIT finalized and explicit implementation invocation received. Analyst and final Owner review outstanding.
 
