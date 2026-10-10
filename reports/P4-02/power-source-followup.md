@@ -7,6 +7,8 @@ and [updated method/chart direction](https://github.com/k14krug/rideworks/pull/2
 Owner Gate 2 remains unaccepted; PR #24 stays draft. Session estimation is
 **diagnostic-only** and has not changed production selection.
 
+**Later follow-up:** [Second height refinement and distribution-screen proposal](distribution-screen-followup.md) supersedes the dimensions and representativeness proposal below; these results remain historical evidence.
+
 ## Delivered behavior
 
 Training State now evaluates trusted virtual power independently of Performance's
