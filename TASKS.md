@@ -343,7 +343,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1, Phase 2, STRAVA-004 and Phase 3 are accepted and complete. No implementation task is currently active.
+Phase 1, Phase 2, STRAVA-004 and Phase 3 are accepted and complete. P4-02 is the current implementation task.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
@@ -442,15 +442,15 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### P4-02 — Longitudinal training-state experience
 
-**Status:** pending — screen and HR/model policy Owner-approved; Analyst-finalized JIT committed; awaiting explicit `/TASK P4-02` authorization
+**Status:** in_progress — implementation and required verification complete; ready for Gate 1 Analyst review under the explicit 2026-10-09 `/TASK P4-02` invocation.
 
 **Purpose:** Produce a useful, repeatable Fitness/Fatigue/Form view for this recreational rider, grounded in qualified measured-power stress, a practical approximate HR-based fallback, the approved dated FTP history, and explicit source quality.
 
 **Owner-confirmed design context:** [P4-02 training-state direction](docs/design/P4-02-training-state-direction.md), read together with accepted [DESIGN-003](docs/design/DESIGN-003-training-state-model.md) and the [Phase 4 acceptance contract](docs/PHASE_4_ACCEPTANCE.md). The October 9 follow-on conversation supports HRSS-style outdoor fallback and a 42-/7-day interactive longitudinal chart. The Owner subsequently approved the **pragmatic Elevate-style unscored-ride numerical contribution of zero** (retain original missing-stress evidence), **prior-day Form**, a **zero initial seed**, and **no v1 projections/fixed training zones**. The Owner approved using **58 bpm resting / approximately 158 bpm max** and modeled **143 bpm threshold** as **explicit retrospective assumptions** for older rides without dated HR evidence, plus prioritizing adequately covering HR stress over materially partial power. The JIT specifies a simple versioned fixed-coefficient HRSS recipe; these inputs are assumptions, not historical measurements. This is **not** an implementation authorization.
 
-**Next gate:** The [screen design](docs/design/P4-02-training-state-screen.md) is Owner-approved and the [final P4-02 JIT](docs/tasks/P4-02.md) resolves its HR decision gate. Dex may start **only on a new explicit `/TASK P4-02` invocation**; after implementation, stop at HARD — Analyst and HARD — Owner review gates. Do not start automatically.
+**Next gate:** **HARD — Analyst** code/data/test/browser review; [verification package](reports/P4-02/verification.md). Owner production/visual/usefulness review remains Gate 2 after Analyst authorization. No merge, task acceptance or later-phase start.
 
-**Dependency:** P4-01 accepted; P4-02 design and JIT finalized; explicit implementation invocation pending.
+**Dependency:** P4-01 accepted; P4-02 design/JIT finalized and explicit implementation invocation received. Analyst and final Owner review outstanding.
 
 ### Phase 5 — Workout intent, outcome, and initial planning
 

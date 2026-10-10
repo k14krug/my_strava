@@ -2,14 +2,14 @@
 
 **Product:** RideWorks.
 
-**Completed:** Phase 1; Phase 2 historical/performance; STRAVA-004; Phase 3 dashboard; **P4-01 Training-State Model Evaluation (research/design)**.
-
-**Phase 4:** Active — Owner approved and Analyst accepted **DESIGN-003**, P4-01 complete. [PR #23](https://github.com/k14krug/rideworks/pull/23), Analyst review `5475713826`.
-
-**Accepted training-state direction:** Show separate 7-/42-day observed kJ and FTP-relative stress with **calculated recorded interval**, **corrected estimated FIT interval**, **partial >=600 s observed segments**, and **unavailable** evidence classes; surface missing contributors and time. For 1 Hz FIT streams only, each internal gap may be **at most 15 seconds** with **total missing <=1%**, and only when valid timing/source/timer eligibility holds. Preserve observed-only API load; no API gap imputation. Verified timer stops/restarts exclude pause time and reset NP. Full-session labels require session-boundary and calculation verification. Dated FTP/no pre-2019 backfill, original source data, outdoor-power exclusion and Performance-v2 remain unchanged.
-
-**Research record:** 131 FIT of 281 interrupted contributor streams screen as potential interval estimates (two additional API cases excluded); one FIT candidate has corroborating boundary/timer metadata, **zero newly verified corrected whole-session calculations**. 311 local Python tests and 52 Node assertions reported passing, with independent calculation/report checks and preservation of 20 production tables/1,422 originals. Private original streams were not re-executed by the Analyst.
-
-**Current task:** No active implementation task. **P4-02 is pending**, with later Owner-confirmed [training-state design direction](docs/design/P4-02-training-state-direction.md): prioritize consistency over fine precision; use qualified measured-power stress with the approved dated FTP history; explore practical HRSS-style outdoor fallback and an interactive 42-/7-day Fitness/Fatigue/Form chart. Owner now approves Elevate-style numerical zero contributions for rare unscored rides (while preserving unavailable evidence), prior-day Form, 42-/7-day model, zero seed, and no v1 projections/zones. Owner approved approximate HR **rest 58 bpm, max 158 bpm, modeled threshold 143 bpm** as explicitly retrospective modeling assumptions when no better dated HR evidence exists, with an HR-derived whole-ride estimate preferred over materially partial power when coverage is adequate. The dedicated [Training State screen](docs/design/P4-02-training-state-screen.md) is Owner-approved and the [final P4-02 JIT](docs/tasks/P4-02.md) specifies the transparent v1 HRSS calculation and source eligibility. Its Owner HR-policy gate is resolved; **no implementation has begun**. Dex requires a fresh explicit `/TASK P4-02` invocation before starting, then must stop for Analyst and Owner review.  P4-01 research acceptance is not completion of Phase 4 or production approval.
-
-**Phase 5/6:** Not started. Do not begin automatically.
+**Current task:** P4-02 — Longitudinal Training State and Fitness Trend.
+**State:** ready_for_review at Gate 1 — HARD — Analyst; TASKS remains in_progress.
+**Branch:** `task/p4-02-training-state`; draft PR being opened.
+**Authority:** Explicit `/TASK P4-02` on 2026-10-09; Analyst-finalized `/TASK only` JIT, resolved Owner HR/model/source gate and approved screen.
+**Delivered:** Versioned selected stress with dated FTP, approved HR assumptions, FIT/API/partial/unavailable distinctions; deterministic Fitness/Fatigue/prior-day Form; interactive Training State and compact Home link; cache migration/invalidation. Owner-authorized original Elevate reference and narrow privacy exception committed unchanged.
+**Verification:** 334 full / 23 focused Python tests; 86 Chromium assertions including mobile touch emulation; independent 3,053 daily-model, 1,022 observed-power and 803 HR-formula checks. All 20 existing tables/1,422 originals preserved. Home, Performance and Activities evidence retained. Wheel FTP resources verified outside checkout.
+**Findings:** 1,079/1,418 cycling rides scored; 339 unavailable, including 118 before usable model history. 131 FIT estimates; API observed-only. Only 7/148 outdoor rides pass HR/duration rules; 141 remain unscored and require specific Analyst source-policy review. Elevate comparison excludes 14 projections and confirms arithmetic within rounding; differing history/settings/evidence cause score disagreement.
+**Review app:** `http://127.0.0.1:8772/training-state` on a verified private store copy. Existing production store/server retained.
+**Evidence:** [P4-02 verification](reports/P4-02/verification.md).
+**Blockers:** No implementation blocker; substantive Analyst acceptance and Owner usefulness/visual acceptance outstanding.
+**Next action:** Analyst Gate 1 review. Only after explicit authorization, proceed to Owner Gate 2. No merge, accepted/done state, Phase 4 closeout or Phase 5/6 start.
