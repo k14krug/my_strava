@@ -343,7 +343,7 @@ Only one implementation/research task should normally be `in_progress`.
 
 ## Follow-up work
 
-Phase 1, Phase 2, STRAVA-004 and Phase 3 are accepted and complete. P4-02 is the current implementation task.
+Phase 1, Phase 2, STRAVA-004 and Phase 3 and Phase 4 are accepted and complete. P5-01 is the current implementation task.
 
 Manual pairwise ride-to-ride comparison is not a Phase 2 requirement. It remains an optional future interaction if a concrete use case emerges.
 
@@ -454,13 +454,13 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### Phase 5 — Workout intent, outcome, and initial planning
 
-**Status:** pending — Owner product direction established 2026-10-10. Design and JIT are committed; **no Dex implementation invocation or Phase 5 acceptance yet**. Phase 5 follows accepted Phase 4.
+**Status:** in_progress — P5-01 implementation invoked 2026-10-10; not accepted. Design and JIT are committed; **P5-01 implementation invoked; no Phase 5 acceptance yet**. Phase 5 follows accepted Phase 4.
 
 **Design:** [Owner-approved P5-01 rolling training direction](docs/design/P5-01-rolling-training-plan.md) and [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md). Recommendations are rider-local and flexible: **Home suggests today's ride**; **Plan shows today and every intervening date through the next three upcoming hard-session recommendations**. Never recommend Rest/no ride. A past synced missing day can count as assumed rest *only for planning*. No Zwift file management or race discovery.
 
 ### P5-01 — Rolling Training Advisor (Home, Plan and outcome context)
 
-**Status:** pending — implementation ready for controlled invocation; [GitHub issue #25](https://github.com/k14krug/rideworks/issues/25).
+**Status:** in_progress — invoked 2026-10-10 under `/AUTOTASK P5-01`; [GitHub issue #25](https://github.com/k14krug/rideworks/issues/25).
 
 **Purpose:** Deliver explainable next-ride recommendations with Race / Threshold / VO2 / Z2 / Easy / Recovery rotation, current goal-aware coaching context, two-date post-hard recovery, rolling hard-day frequency guardrail, handling of unexpected rides and skipped days, and a dedicated Plan extending through three future hard sessions.
 

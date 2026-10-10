@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from html import escape
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import secrets
 from pathlib import Path
 from time import perf_counter
 from urllib.parse import parse_qs, urlsplit
@@ -18,7 +19,7 @@ from .settings import Settings
 from .performance import POLICY, performance_history
 
 STATIC = Path(__file__).with_name('static')
-ASSETS = {'training_state.js': 'text/javascript', 'home.js': 'text/javascript', 'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml', 'settings.js': 'text/javascript'}
+ASSETS = {'planning.js': 'text/javascript', 'training_state.js': 'text/javascript', 'home.js': 'text/javascript', 'style.css': 'text/css', 'review.js': 'text/javascript', 'performance.js': 'text/javascript', 'mark.svg': 'image/svg+xml', 'settings.js': 'text/javascript'}
 
 
 def duration(seconds):
@@ -92,7 +93,7 @@ def shell(title, content, *, active='activities'):
 <title>{escape(title)} · RideWorks</title><link rel="icon" href="/static/mark.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css"><script src="/static/review.js" defer></script><script src="/static/settings.js" defer></script></head>
 <body><div class="app-header"><a class="brand" href="/" aria-label="RideWorks Home"><img src="/static/mark.svg" alt="" width="44" height="28"><span>RideWorks</span></a></div>
-<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('home')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 10v11h5v-7h4v7h5V10"/></svg>Home</a><a href="/activities"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a><a href="/training-state"{nav_state('training')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 14l4-3 4 5 4-10 4 4"/></svg>Training State</a><a href="/settings"{nav_state('settings')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M2 8h6m1 8h6m1-7h6"/></svg>Settings</a></nav></aside>
+<aside class="sidebar"><nav aria-label="Main"><a href="/"{nav_state('home')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 10v11h5v-7h4v7h5V10"/></svg>Home</a><a href="/activities"{nav_state('activities')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 15l5-6 4 3 5-6"/></svg>Activities</a><a href="/performance"{nav_state('performance')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v17h17M6 16l4-5 4 2 6-9"/></svg>Performance</a><a href="/training-state"{nav_state('training')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 14l4-3 4 5 4-10 4 4"/></svg>Training State</a><a href="/plan"{nav_state('plan')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4ZM8 3v4m8-4v4M4 10h16M8 14h3m2 3h3"/></svg>Plan</a><a href="/settings"{nav_state('settings')}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v16M12 4v16M19 4v16M2 8h6m1 8h6m1-7h6"/></svg>Settings</a></nav></aside>
 <main>{content}</main></body></html>'''
 
 
@@ -550,6 +551,9 @@ class Application:
             if path == '/':
                 from .home import home_page
                 return 200, 'text/html', self.page(store, home_page(store,url.query))
+            if path == '/plan':
+                from .planning_page import plan_page
+                return 200, 'text/html', self.page(store, plan_page(store,url.query,self.settings.nonce))
             if path == '/activities':
                 return 200, 'text/html', self.page(store, activities_page(store, url.query))
             if path == '/training-state':
@@ -575,15 +579,52 @@ class Application:
                     stream_reason=failure[0] if failure else None
                     fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
                     if len(fit_sources) != 1:
-                        return 200, 'text/html', self.page(store, thin_review_page(metadata,streams,stream_reason,recent_context(store,activity_id)))
+                        return 200, 'text/html', self.activity_page(store, thin_review_page(metadata,streams,stream_reason,recent_context(store,activity_id)),activity_id)
                     try:
                         analysis = analyze_activity(store, activity_id)
                     except RideWorksError:
                         html = thin_review_page(metadata,streams,stream_reason)
                     else:
                         html = review_page(analysis, metadata, recent_context(store, activity_id),streams)
-                    return 200, 'text/html', self.page(store, html)
+                    return 200, 'text/html', self.activity_page(store, html,activity_id)
         return self.not_found()
+
+    def activity_page(self,store,html,activity_id):
+        from .planning_page import activity_panel
+        html=html.replace('</main>',activity_panel(store,activity_id,self.settings.nonce)+'</main>',1)
+        return self.page(store,html)
+
+    def post(self,path,body,origin):
+        if not path.startswith('/plan/'):
+            return self.settings.post(path,body,origin)
+        origins={f'http://127.0.0.1:{self.settings.port}',f'http://localhost:{self.settings.port}'}
+        try:
+            values=parse_qs(body.decode('ascii'),max_num_fields=6,strict_parsing=True)
+            if any(len(v)!=1 for v in values.values()): raise ValueError
+            values={k:v[0] for k,v in values.items()}
+            if origin not in origins or not secrets.compare_digest(values.get('nonce','').encode(),self.settings.nonce.encode()):
+                return 403,{},b'Invalid Plan action. Reload Plan and try again.'
+            from .goals import browser_zone
+            from .planning import confirm_intent,set_classification,set_feedback
+            zone=browser_zone(values.get('tz')).key
+            with Store(self.data_dir) as store:
+                if path=='/plan/feedback' and set(values)=={'nonce','tz','day','legs'}:
+                    if values['day']!=datetime.now(timezone.utc).astimezone(browser_zone(zone)).date().isoformat():
+                        raise ValueError('The local date changed. Reload Plan.')
+                    set_feedback(store,zone,values['legs'])
+                elif path=='/plan/intent' and set(values)=={'nonce','tz','day','category'}:
+                    confirm_intent(store,zone,expected_day=values['day'],expected_category=values['category'])
+                elif path=='/plan/classification' and set(values)=={'nonce','tz','activity_id','category','back'}:
+                    if values['back'] not in ('plan','activity'): raise ValueError('Invalid return page.')
+                    set_classification(store,values['activity_id'],values['category'])
+                else:
+                    return 400,{},b'Invalid Plan action.'
+            from urllib.parse import urlencode
+            if values.get('back')=='activity':
+                return 303,{'Location':'/activities/'+values['activity_id']},b''
+            return 303,{'Location':'/plan?'+urlencode({'plan_tz':zone})},b''
+        except (ValueError,UnicodeError):
+            return 400,{},b'Plan inputs changed or are invalid. Reload Plan and try again.'
 
     def page(self, store, html):
         pending = performance_history(store)['pending']
@@ -637,7 +678,7 @@ def create_server(data_dir=None, port=8765, *, debug=False, settings_factory=Set
                     elif self.headers.get_content_type() != 'application/x-www-form-urlencoded':
                         status, content_type, body = 415, 'text/plain', b'Use the Settings form.'
                     else:
-                        status, headers, body = app.settings.post(urlsplit(self.path).path, self.rfile.read(int(size)), self.headers.get('Origin'))
+                        status, headers, body = app.post(urlsplit(self.path).path, self.rfile.read(int(size)), self.headers.get('Origin'))
                         content_type = 'text/plain'
                 elif urlsplit(self.path).path == '/strava/callback':
                     status, headers, body = app.settings.callback(urlsplit(self.path).query)

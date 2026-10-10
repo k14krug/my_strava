@@ -375,3 +375,42 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 .training-tooltip .training-tooltip-title { color:var(--navy); margin-top:8px; }
 .training-hover-guide { stroke:var(--navy); stroke-width:1.2; }
 .training-hover-guide, .training-hover-point { pointer-events:none; }
+
+/* Rolling advisor follows the accepted RideWorks panel and type scale. */
+.next-recommended h2 { margin-bottom:12px; }
+.next-recommended .recommended-type { font-size:22px; margin:0 0 8px; color:var(--navy); }
+.recommended-target { font-weight:600; margin:6px 0; }
+.recommended-reason { font-size:13px; line-height:1.6; margin:8px 0 12px; }
+.plan-caveat, .plan-intent-note { font-size:12px; color:var(--muted); margin:10px 0; }
+.plan-actual { font-size:13px; margin:10px 0; }
+.plan-workspace { max-width:1050px; }
+.plan-context { margin:14px 0 24px; }
+.plan-context p, .plan-help p, .activity-plan-context p { margin:8px 0; font-size:13px; line-height:1.6; }
+.plan-hard-number { font-weight:600; margin:0 0 8px; }
+.plan-days { list-style:none; padding:0; margin:12px 0 24px; border-top:1px solid var(--border); }
+.plan-day { display:grid; grid-template-columns:210px minmax(0,1fr); gap:20px; padding:20px 0; border-bottom:1px solid var(--border); }
+.plan-day h3 { font-size:17px; margin:0; }
+.plan-day p { margin:6px 0; }
+.plan-date { display:flex; flex-direction:column; gap:6px; font-size:13px; }
+.plan-date span { color:var(--muted); font-size:12px; }
+.plan-hard .plan-date strong, .plan-hard h3 { color:var(--blue); }
+.plan-rotation-help { font-size:13px; line-height:1.6; max-width:800px; }
+.plan-feedback, .plan-correction { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.plan-feedback select, .plan-correction select { max-width:100%; padding:8px; background:white; border:1px solid var(--border); border-radius:4px; font:inherit; }
+.plan-feedback label, .plan-correction label { font-size:12px; }
+.plan-intent { margin:12px 0; }
+.plan-history, .plan-help { margin:14px 0; }
+.plan-history-row { padding:14px 0; border-bottom:1px solid var(--border); overflow-wrap:anywhere; }
+.plan-history-row p { font-size:13px; margin:6px 0; }
+.plan-history-row:last-child { border-bottom:0; }
+.activity-plan-context { margin:18px 0; }
+@media(max-width:620px) {
+  .plan-day { grid-template-columns:minmax(0,1fr); gap:12px; padding:16px 0; }
+  .plan-date { flex-direction:row; flex-wrap:wrap; }
+  .plan-date span { width:100%; }
+  .plan-feedback, .plan-correction { align-items:stretch; }
+  .plan-feedback label, .plan-correction label { width:100%; }
+  .next-recommended h2 { font-size:17px; }
+}
+.plan-feedback button, .plan-correction button, .plan-intent button { padding:8px 12px; border:1px solid var(--blue); border-radius:5px; background:var(--blue); color:white; font:inherit; font-size:13px; cursor:pointer; min-height:36px; }
+.plan-feedback button:focus-visible, .plan-correction button:focus-visible, .plan-intent button:focus-visible, .plan-feedback select:focus-visible, .plan-correction select:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }

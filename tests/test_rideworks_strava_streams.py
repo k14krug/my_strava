@@ -357,6 +357,8 @@ class PersistenceTests(unittest.TestCase):
             old.connection.execute("INSERT INTO activities VALUES('synthetic-activity','synthetic-created')")
             for table in ('strava_stream_current','strava_stream_attempts','strava_stream_sources'):
                 old.connection.execute('DROP TABLE '+table)
+            for table in ('planning_feedback','planning_classifications','planning_classification_cache','planning_intents'):
+                old.connection.execute('DROP TABLE '+table)
             old.connection.execute('DROP TABLE training_stress_cache');old.connection.execute('DROP TABLE annual_mileage_goals')
             old.connection.execute('PRAGMA user_version=5')
         broken=module.MIGRATION_6.replace('PRAGMA user_version = 6;','INSERT INTO nonexistent VALUES(1);')
@@ -365,5 +367,5 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual(check.execute('PRAGMA user_version').fetchone()[0],5)
             self.assertEqual(check.execute("SELECT COUNT(*) FROM sqlite_master WHERE name LIKE 'strava_stream_%'").fetchone()[0],0)
         with Store(root) as migrated:
-            self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],8)
+            self.assertEqual(migrated.connection.execute('PRAGMA user_version').fetchone()[0],9)
             self.assertEqual(tuple(migrated.connection.execute('SELECT * FROM activities').fetchone()),('synthetic-activity','synthetic-created'))

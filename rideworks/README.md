@@ -825,3 +825,32 @@ no HR stream exists. Defective HR streams are not bypassed using their summary.
 Verification tools accept private store paths; see `reports/P4-02/verification.md`.
 The Owner-approved Elevate reference is used only by the external comparison tool,
 never by the application, as calculation inputs, or as an initial seed.
+
+## Rolling Training Advisor (P5-01)
+
+Home and `/plan` share rider-local, deterministic recommendations. Plan includes
+all dates through three prospective hard recommendations; actual completed hard
+rides do not count toward those three. Projection assumes suggested hard work
+occurs and legs recover. It never writes predicted stress to Training State.
+
+Sync today for current planning context. Past no-record dates covered by a
+successful sync can count as assumed rest for planning, while source history
+still says no recorded activity. Stale sync or uncertain recent classifications
+makes today's quality suggestion provisional/easier. Future cards remain
+conditional on sync/classification review. `Legs today` is optional and applies
+only to that local date; heavy legs select Recovery.
+
+Observed trusted Virtual Ride power plus dated FTP can suggest VO2, threshold or
+low-intensity stimulus. This is a versioned initial heuristic, not a validated
+physiological classifier. Race titles and HR stress alone never prove a race.
+Use **Correct actual category** in Plan or Activity Review when the workout type
+is known; **Use source inference** clears the separate correction. Original
+measurements and existing training-stress/Performance policies are unchanged.
+
+**I plan to do this** retains an explicit pre-ride, date-level intent and its
+recommendation/basis snapshot. Activity Review compares only with a same-local-date
+confirmation made before the activity start; it does not invent past suggestions
+or uniquely associate multiple same-day rides. Without that confirmation it says
+**No recorded intent**. Schema 9 adds only planning feedback, correction, intent
+and replaceable classification-cache tables. All such personal planning state
+stays in the ignored local data directory.
