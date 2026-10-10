@@ -1,10 +1,9 @@
 # STATUS.md
 
 **Product:** RideWorks.
-**Current task:** P4-02 — Longitudinal Training State and Fitness Trend.
-**State:** **done — P4-02 and Phase 4 accepted 2026-10-10** after Analyst review of installed Training State v4 and Owner final approval.
-**Merged:** [P4-02 PR #24](https://github.com/k14krug/rideworks/pull/24) into `main` as `e406e639227b96cb3bf2950f90897ac53be15055`.
-**Delivered:** Versioned Fitness/Fatigue/start-of-day Form with a 600px desktop / 400px narrow interactive chart, Form hidden by default, source-aware modeled stress, Elevate-inspired power-session estimates when evidence qualifies, dated FTP, HR fallback and separate work/kJ evidence.
-**Acceptance evidence:** [Final implementation report](reports/P4-02/session-power-implementation.md); October 7 selects measured-power-based **estimated session stress** rather than HR summary, same-day model and next-day Form verified; September 16 outdoor HR preserved. 28 ride selections improved. Dex reported 383 passing Python tests, 506 general and 614 representative browser assertions, 1,418 fresh/cache parity matches, intact 20 original tables / 1,422 source artifacts, FTP/reference checks and unchanged Performance.
-**Gate disposition:** HARD — Analyst Gate 1 accepted; HARD — Owner Gate 2 accepted based on reviewed behavior and final Form default. Estimated values retain explicit data-quality uncertainty and documented historical missing-source limitations.
-**Next area:** Phase 5 — Workout intent, outcome and initial planning. **Pending; no new implementation/JIT invoked.** Begin with product requirements and workflow decisions. No Phase 6 start.
+**Current handoff:** **P5-01 — Rolling Training Advisor**; Phase 5 begins with Home, Plan and honest recommendation-versus-actual context.
+**State:** **pending implementation** — Owner direction and Analyst JIT prepared 2026-10-10; **Dex has not yet been invoked**. [P5-01 issue #25](https://github.com/k14krug/rideworks/issues/25).
+**Accepted prior work:** P4-01/P4-02 and Phase 4 accepted/merged in [PR #24](https://github.com/k14krug/rideworks/pull/24), unchanged.
+**Controlling direction:** [P5-01 design](docs/design/P5-01-rolling-training-plan.md), [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md), [implementation JIT](docs/tasks/P5-01.md), revised [product requirements](docs/PRODUCT_REQUIREMENTS.md). **Plan displays today through the next THREE upcoming hard recommendations**, with every intervening day, not a fixed week. Home displays today's same suggestion.
+**Planning behavior:** Never recommend Rest/no ride; skipped past synced days count as assumed rest for planning (never as invented completed rides). Race / Threshold / VO2 types, generally one race plus one structured hard session in about seven days, two post-hard recovery dates with VO2's easier second day. Today's/heavy-legs and unexpectedly completed activities modify the rotation; all projected sessions remain conditional and distinct from actual/confirmed intent. No Zwift file integration or race search.
+**Next action:** Under repository `AGENTS.md`, launch `/TASK P5-01` or `/AUTOTASK P5-01` in Dex. On invocation refresh `main`, begin this *single* pending task, implement and test, then STOP at **HARD — Analyst Gate 1**; Owner Gate 2 on the running Plan later. No Phase 6 or Phase 5 acceptance/merge now.
