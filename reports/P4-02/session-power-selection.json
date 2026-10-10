@@ -1,0 +1,170 @@
+{
+  "after_coverage": {
+    "before_model_start": 118,
+    "days": 3053,
+    "rides": 1418,
+    "scored": 1150,
+    "scored_days": 1025,
+    "selected_classes": {
+      "calculated": 642,
+      "corrected_estimate": 150,
+      "hr_estimate": 183,
+      "partial": 147,
+      "session_estimate": 28,
+      "unavailable": 268
+    }
+  },
+  "all_hr_candidates_preserved": true,
+  "all_recorded_power_and_work_preserved": true,
+  "before_coverage": {
+    "before_model_start": 118,
+    "days": 3053,
+    "rides": 1418,
+    "scored": 1150,
+    "scored_days": 1025,
+    "selected_classes": {
+      "calculated": 642,
+      "corrected_estimate": 150,
+      "hr_estimate": 210,
+      "partial": 148,
+      "unavailable": 268
+    }
+  },
+  "cache": {
+    "changed_signatures": 0,
+    "current_cached_versions": {
+      "training-state-v4": 1418
+    },
+    "fresh_source_recalculations_identical": 1418,
+    "initial_recalculations": 0,
+    "restart_reused_identically": true,
+    "reused_identically": true
+  },
+  "complete_corrected_selections_preserved": true,
+  "diagnostic_only": false,
+  "endpoint_after_minus_before": {
+    "fatigue": 2.8455137388544927,
+    "fitness": 0.926801703504367,
+    "form": -2.333351834628033
+  },
+  "formerly_blocked_117": {
+    "after_selected": {
+      "calculated": 53,
+      "corrected_estimate": 19,
+      "hr_estimate": 4,
+      "partial": 34,
+      "session_estimate": 7
+    },
+    "before_selected": {
+      "calculated": 53,
+      "corrected_estimate": 19,
+      "hr_estimate": 11,
+      "partial": 34
+    },
+    "rides": 117
+  },
+  "independent_source_distribution_and_formula_checks": 32,
+  "mandatory_interval_selects_session_power": true,
+  "mandatory_outdoor_hr_preserved": true,
+  "preservation": {
+    "foreign_key_violations": 0,
+    "integrity": "ok",
+    "original_artifacts_preserved": 1422,
+    "tables_preserved": 20
+  },
+  "projected_reference_days_excluded": 14,
+  "representative_cases": 13,
+  "representative_reference_directions": {
+    "fatigue": {
+      "compared": 13,
+      "different_direction": 1,
+      "same_direction": 12
+    },
+    "fitness": {
+      "compared": 13,
+      "different_direction": 1,
+      "same_direction": 12
+    }
+  },
+  "selection_changes": 28,
+  "selection_policy": "recorded-session-hr-partial-v1",
+  "selection_transitions": {
+    "hr_estimate -> session_estimate": 27,
+    "partial -> session_estimate": 1
+  },
+  "session_candidate_reasons": {
+    "concentrated_recording_omission": 2,
+    "contradictory_or_unresolved_timer": 1,
+    "eligible": 160,
+    "insufficient_distributed_observations": 3,
+    "invalid_or_ambiguous_timing": 2,
+    "missing_dated_ftp": 172,
+    "no_accepted_600_second_observed_segment": 58,
+    "outdoor_ride_excluded": 148,
+    "recording_exceeds_reported_elapsed": 1,
+    "timer_outside_reported_elapsed_timeline": 2,
+    "timer_reported_duration_conflict": 671,
+    "unsupported_or_implausible_duration": 198
+  },
+  "session_power_method": "elevate-time-buffer-session-pss-v1",
+  "session_power_policy": "distributed-observations-v1",
+  "upstream_oracle": {
+    "actual_upstream_buffer_checks": 41,
+    "candidate_checks": 32,
+    "source_sha256": "8fd699848e597a307b1d1adaffe19f5b99a149412d39bcd35a5e4e87806dd909"
+  },
+  "version": "training-state-v4",
+  "windows": {
+    "365": {
+      "after_stress": 8335.096509185007,
+      "before_stress": 8289.614067961134,
+      "changed_rides": 3,
+      "completed_reference_stress": 8869.08,
+      "selected_classes": {
+        "calculated": 100,
+        "corrected_estimate": 28,
+        "hr_estimate": 17,
+        "partial": 10,
+        "session_estimate": 3,
+        "unavailable": 7
+      }
+    },
+    "42": {
+      "after_stress": 1793.4556281622702,
+      "before_stress": 1747.9731869383988,
+      "changed_rides": 3,
+      "completed_reference_stress": 1920.45,
+      "selected_classes": {
+        "calculated": 22,
+        "corrected_estimate": 2,
+        "hr_estimate": 8,
+        "partial": 2,
+        "session_estimate": 3
+      }
+    },
+    "7": {
+      "after_stress": 187.88933544581843,
+      "before_stress": 170.86415648510197,
+      "changed_rides": 2,
+      "completed_reference_stress": 216.75,
+      "selected_classes": {
+        "calculated": 2,
+        "session_estimate": 2
+      }
+    },
+    "90": {
+      "after_stress": 3079.7345899442284,
+      "before_stress": 3034.252148720357,
+      "changed_rides": 3,
+      "completed_reference_stress": 3127.5,
+      "selected_classes": {
+        "calculated": 36,
+        "corrected_estimate": 5,
+        "hr_estimate": 12,
+        "partial": 2,
+        "session_estimate": 3,
+        "unavailable": 1
+      }
+    }
+  }
+}

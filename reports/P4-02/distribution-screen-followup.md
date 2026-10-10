@@ -8,6 +8,8 @@ and representativeness proposal in [the previous report](power-source-followup.m
 Production session-PSS selection is still held; PR #24 remains draft and Owner
 Gate 2 is unaccepted.
 
+**Later implementation:** The Analyst approved this method in JIT §14; [installed session-power selection and verification](session-power-implementation.md) now supersedes its diagnostic-only status. This report retains the prior method-review evidence.
+
 ## Delivered visual behavior
 
 The actual Fitness/Fatigue/Form plot is **600 CSS pixels on desktop and 400 on
