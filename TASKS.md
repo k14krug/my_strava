@@ -442,13 +442,13 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### P4-02 — Longitudinal training-state experience
 
-**Status:** in_progress — revised same-source HR summary correction and behavioral verification complete; ready for HARD — Analyst Gate 1 review. No gate clearance or Owner acceptance.
+**Status:** in_progress — [HARD — Analyst Gate 1 cleared](https://github.com/k14krug/rideworks/pull/24#pullrequestreview-5479922069) at `10d9cb8`; **HARD — Owner Gate 2 pending**. No merge or task/phase acceptance.
 
 **Purpose:** Produce a useful, repeatable Fitness/Fatigue/Form view for this recreational rider, grounded in qualified measured-power stress, a practical approximate HR-based fallback, the approved dated FTP history, and explicit source quality.
 
 **Owner-confirmed design context:** [P4-02 training-state direction](docs/design/P4-02-training-state-direction.md), read together with accepted [DESIGN-003](docs/design/DESIGN-003-training-state-model.md) and the [Phase 4 acceptance contract](docs/PHASE_4_ACCEPTANCE.md). The October 9 follow-on conversation supports HRSS-style outdoor fallback and a 42-/7-day interactive longitudinal chart. The Owner subsequently approved the **pragmatic Elevate-style unscored-ride numerical contribution of zero** (retain original missing-stress evidence), **prior-day Form**, a **zero initial seed**, and **no v1 projections/fixed training zones**. The Owner approved using **58 bpm resting / approximately 158 bpm max** and modeled **143 bpm threshold** as **explicit retrospective assumptions** for older rides without dated HR evidence, plus prioritizing adequately covering HR stress over materially partial power. The JIT specifies a simple versioned fixed-coefficient HRSS recipe; these inputs are assumptions, not historical measurements. This is **not** an implementation authorization.
 
-**Next gate:** **HARD — Analyst Gate 1** review of the [HR summary correction and behavioral validation](reports/P4-02/hr-summary-verification.md). Independently eligible summaries now score the required regression and all three recent outdoor cases; existing power candidates and source originals are preserved. 348 Python tests, 286 general and 76 private representative browser assertions pass. Owner production/visual/usefulness acceptance remains Gate 2 after Analyst authorization; no merge or phase completion.
+**Next gate:** Present the corrected private-copy [Training State implementation and behavior report](reports/P4-02/hr-summary-verification.md) for **HARD — Owner Gate 2** visual/usefulness review. Demonstrate 2026-09-16, recent 3-/12-month trends, selected source and estimated-scope limitations. Full-history outdoor coverage remains only 10/148 scored and must be made clear. Analyst reviewed source and reported verification, but did not access the private localhost runtime. Keep PR #24 draft and P4-02 `in_progress`; no merge or Phase 4 acceptance until Owner approval.
 
 **Dependency:** P4-01 accepted; P4-02 design/JIT finalized and explicit implementation invocation received. Analyst and final Owner review outstanding.
 
