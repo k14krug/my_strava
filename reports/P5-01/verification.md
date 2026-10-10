@@ -1,6 +1,7 @@
 # P5-01 — Rolling Training Advisor verification
 
-Implemented for **HARD — Analyst Gate 1** review; not accepted or merged.
+Implemented on `task/p5-01-rolling-advisor` for **HARD — Analyst Gate 1** review in
+[draft PR #26](https://github.com/k14krug/rideworks/pull/26); not accepted or merged.
 The controlling [JIT](../../docs/tasks/P5-01.md) permits `/AUTOTASK` and requires
 Analyst review followed by Owner review on the running app. Phase 6 remains idle.
 
