@@ -184,7 +184,7 @@ The product should eventually support:
 
 Training planning answers: **What am I supposed to do next?**
 
-Initially this can be simple: show today's intended workout, determine whether it was accomplished, and show tomorrow's workout.
+**Phase 5 owner-directed initial behavior (2026-10-10):** show **today's recommended ride** prominently on Home, and a dedicated **Plan** rotation from today **through the next three upcoming recommended hard-session days**, including the intervening low-intensity days. Use an explainable rolling recommendation, not fixed workout weekdays. **Never recommend a no-ride/rest day**; the rider may independently skip and a past no-record day may be treated as *assumed rest for planning* only when synchronization supports the inference. Distinguish recommendations from rider-confirmed intent and actual completed activity. See [P5-01 design](design/P5-01-rolling-training-plan.md).
 
 Later it should become adaptive: actual workout results, recent performance, recovery/training state, goals, schedule constraints, and changing conditions should be able to alter future recommendations.
 
@@ -357,8 +357,8 @@ The application must eventually represent a planned workout independently from t
 **PLAN-002 — Today's intent**  
 The application should be able to tell what today's workout was intended to accomplish when a workout is planned.
 
-**PLAN-003 — Tomorrow's workout**  
-The application should be able to show tomorrow's planned workout.
+**PLAN-003 — Upcoming rolling rotation**  
+The application should show today's recommended ride and the daily rotation **through the third next upcoming hard-day recommendation**, including all intervening days, with tomorrow naturally included. The user does not have fixed workout weekdays. No Rest/no-ride recommendation is permitted; skip days are assumed rest only as qualified past actual-history context, not as scheduled workouts.
 
 **PLAN-004 — Actual outcome can affect later planning**  
 Later adaptive planning must be capable of changing future workouts based on what actually happened rather than blindly following a static schedule.
@@ -502,7 +502,7 @@ Minimum user-visible outcomes:
 - planned workout/intended purpose represented separately from completed activity;
 - ride review indicates whether key workout goals were achieved;
 - explainable intended-versus-actual findings such as "harder than intended" are supported;
-- tomorrow's workout is shown from the plan;
+- Home shows today's recommended ride; the Plan page shows the full daily rotation from today through the **next three recommended hard-session days**, not a fixed time window. All recommended days have a ride option; past skipped days may count as assumed rest when synced;
 - Phase 4 training state may inform presentation and later planning decisions, but planning remains conceptually separate.
 
 ### Phase 6 — Adaptive planning
