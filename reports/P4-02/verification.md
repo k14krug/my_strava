@@ -3,6 +3,7 @@
 **State:** ready_for_review at **Gate 1 — HARD — Analyst**. `/TASK P4-02`
 was explicitly invoked on 2026-10-09. This is implementation/verification evidence,
 not Analyst acceptance, Owner production/visual acceptance or Phase 4 completion.
+**Branch / PR:** `task/p4-02-training-state` / [draft PR #24](https://github.com/k14krug/rideworks/pull/24).
 
 ## Delivered behavior
 
