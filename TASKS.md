@@ -448,7 +448,7 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 **Owner-confirmed design context:** [P4-02 training-state direction](docs/design/P4-02-training-state-direction.md), read together with accepted [DESIGN-003](docs/design/DESIGN-003-training-state-model.md) and the [Phase 4 acceptance contract](docs/PHASE_4_ACCEPTANCE.md). The October 9 follow-on conversation supports HRSS-style outdoor fallback and a 42-/7-day interactive longitudinal chart. The Owner subsequently approved the **pragmatic Elevate-style unscored-ride numerical contribution of zero** (retain original missing-stress evidence), **prior-day Form**, a **zero initial seed**, and **no v1 projections/fixed training zones**. Owner-supplied current approximate HR is **rest 58 / max 158 bpm**, not established historical HR context. This does **not** establish a finalized HRSS algorithm, per-ride partial-power/HR selection, or production authorization.
 
-**Next gate:** The Analyst must resolve remaining necessary design choices with the Owner and author a separate P4-02 JIT, including its Execution Control/Allowed Invocation, before Dex may implement. Do not begin automatically.
+**Next gate:** Screen [design](docs/design/P4-02-training-state-screen.md) is Owner-approved; [P4-02 JIT draft](docs/tasks/P4-02.md) is committed with /TASK-only control and a HARD — Owner gate on historical HR assumptions and the HR stress/source-choice proposal. After resolving this narrow gate, finalize the JIT and obtain explicit implementation authorization before Dex may start. Do not begin automatically.
 
 **Dependency:** P4-01 accepted; separate P4-02 design/JIT and Owner authorization pending.
 
