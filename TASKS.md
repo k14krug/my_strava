@@ -454,9 +454,19 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### Phase 5 — Workout intent, outcome, and initial planning
 
-**Status:** pending — next project phase after accepted Phase 4. First establish rider-facing workout intent/outcome and initial planning requirements; no architecture or implementation authorized by Phase 4 closeout.
+**Status:** pending — Owner product direction established 2026-10-10. Design and JIT are committed; **no Dex implementation invocation or Phase 5 acceptance yet**. Phase 5 follows accepted Phase 4.
 
-Planning now follows Training State. It has not started.
+**Design:** [Owner-approved P5-01 rolling training direction](docs/design/P5-01-rolling-training-plan.md) and [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md). Recommendations are rider-local and flexible: **Home suggests today's ride**; **Plan shows today and every intervening date through the next three upcoming hard-session recommendations**. Never recommend Rest/no ride. A past synced missing day can count as assumed rest *only for planning*. No Zwift file management or race discovery.
+
+### P5-01 — Rolling Training Advisor (Home, Plan and outcome context)
+
+**Status:** pending — implementation ready for controlled invocation; [GitHub issue #25](https://github.com/k14krug/rideworks/issues/25).
+
+**Purpose:** Deliver explainable next-ride recommendations with Race / Threshold / VO2 / Z2 / Easy / Recovery rotation, current goal-aware coaching context, two-date post-hard recovery, rolling hard-day frequency guardrail, handling of unexpected rides and skipped days, and a dedicated Plan extending through three future hard sessions.
+
+**Scope and acceptance:** [P5-01 JIT](docs/tasks/P5-01.md) and [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md). Include Home/Plan consistent today recommendation, an honest initial Activity Review connection, minimal legs-heavy and ambiguous-classification handling, and real/synthetic behavioral checks. Preserve P4-02 Training State, dated FTP and original source records.
+
+**Allowed invocation:** `/TASK P5-01` or `/AUTOTASK P5-01`; HARD — Analyst Gate 1 and HARD — Owner Gate 2. Prepare/push review evidence before acceptance; no implied background execution.
 
 ### Phase 6 — Adaptive planning
 
