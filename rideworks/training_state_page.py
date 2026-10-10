@@ -33,7 +33,7 @@ def training_page(store, query=''):
 <label class="training-fitness"><input type="checkbox" data-line="fitness" checked>Fitness</label>
 <label class="training-fatigue"><input type="checkbox" data-line="fatigue" checked>Fatigue</label>
 <label class="training-form"><input type="checkbox" data-line="form" checked>Form</label></div>
-<svg id="training-chart" viewBox="0 0 1000 570" tabindex="0" role="group" aria-label="Daily training trend. Left and right arrows select a date; Home and End select range endpoints."></svg>
+<svg id="training-chart" viewBox="0 0 1000 770" tabindex="0" role="group" aria-label="Daily training trend. Left and right arrows select a date; Home and End select range endpoints."></svg>
 <p id="training-chart-readout" class="training-readout"></p>
 <p class="training-strip-legend"><span class="training-power">Power</span><span class="training-hr">HR estimate</span><span class="training-partial">Partial / mixed</span><span>× Unscored ride</span> · daily selected stress</p>
 <p class="training-keyboard">Click or touch to select a day. Use arrow keys on the chart, or choose an exact date.</p></section>

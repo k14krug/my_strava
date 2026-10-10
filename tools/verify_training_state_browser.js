@@ -20,15 +20,20 @@ async (page) => {
   const geometry=async(mobile)=>{
     const g=await page.locator('#training-chart').evaluate(c=>({height:c.clientHeight,viewHeight:c.viewBox.baseVal.height,
       plot: +c.dataset.plotBottom- +c.dataset.plotTop,strip:+c.dataset.stripBottom,
+      cssHeight:c.getBoundingClientRect().height,zero:+c.querySelector('.training-zero').getAttribute('y1'),
+      barTops:[...c.querySelectorAll('rect')].map(b=>+b.getAttribute('y')),
       paths:[...c.querySelectorAll('[data-series]')].map(p=>{const b=p.getBBox();return {top:b.y,bottom:b.y+b.height}}),
       bars:[...c.querySelectorAll('rect')].map(b=>+b.getAttribute('y')+ +b.getAttribute('height')),
       guide:+c.querySelector('.chart-cursor').getAttribute('y2'),scale:c.getScreenCTM().d}));
-    assert(g.plot>=(mobile?280:380)&&g.plot<=(mobile?340:430),'actual trend plot CSS height');
+    assert(g.plot>=(mobile?360:560)&&g.plot<=(mobile?440:640),'actual trend plot CSS height');
     assert(g.height===g.viewHeight,'SVG vertical units map to CSS pixels');
+    assert(g.cssHeight===g.height,'chart height is actual visible CSS height');
     assert(Math.abs(g.scale-1)<1e-7,'narrow SVG avoids aspect-ratio shrinking of actual plot');
     assert(g.guide===g.strip+10&&g.strip<g.height-12,'guide spans aligned plot and strip');
     assert(g.paths.every(p=>p.top>=24&&p.bottom<=25+g.plot+1),'all curves within actual plot');
     assert(g.bars.every(b=>Math.abs(b-g.strip)<1e-8),'stress bars share strip baseline');
+    assert(g.barTops.every(t=>t>=25+g.plot+55),'stress strip remains below trend plot');
+    assert(g.zero>=25&&g.zero<=25+g.plot,'Form zero reference remains inside plot');
   };
   await geometry(false);
   for(const name of ['Fitness','Fatigue','Form']){await page.getByRole('checkbox',{name,exact:true}).uncheck();}
@@ -79,6 +84,7 @@ async (page) => {
   for(const name of ['6 weeks','3 months','12 months','All history']){
     await page.getByRole('button',{name,exact:true}).click();await page.locator('#training-chart').scrollIntoViewIfNeeded();
     await page.waitForTimeout(80);
+    await geometry(false);
     const edges=await page.evaluate(()=>({first:document.querySelector('#training-date').min,last:document.querySelector('#training-date').max}));
     const selected=await page.locator('#training-date').inputValue();
     await hover(edges.first);await hover(edges.last,'strip');
@@ -110,25 +116,67 @@ async (page) => {
   await sync();const x=await read();assert(x.width<=x.viewport,'phone has no horizontal overflow');
   await page.locator('#training-chart').focus();
   for(const key of ['Home','End']){
-    await page.keyboard.press(key);await sync();
+    await page.keyboard.press(key);await sync();await page.waitForTimeout(80);
     const t=await page.locator('#training-tooltip').boundingBox();
     assert(!!t,'phone keyboard overlay visible');
     assert(t&&t.x>=7&&t.y>=7&&t.x+t.width<=383&&t.y+t.height<=837,'phone overlay fits after date change');
   }
+  await page.evaluate(()=>window.scrollBy(0,40));await page.waitForTimeout(80);
+  assert(await page.locator('#training-tooltip').isVisible(),'focused keyboard inspection survives chart scrolling');
   const box=await page.locator('#training-chart').boundingBox();await page.mouse.click(box.x+box.width*.7,box.y+box.height*.4);await sync();
   await page.screenshot({path:'output/playwright/p4-02-phone-final.png',fullPage:true});
   await page.setViewportSize({width:320,height:844});await page.getByRole('button',{name:'3 months',exact:true}).click();
   await geometry(true);assert((await read()).width<=320,'small phone has no horizontal overflow');
+  for(const width of [320,390]){
+    await page.setViewportSize({width,height:844});
+    for(const range of ['3 months','12 months']){
+      await page.getByRole('button',{name:range,exact:true}).click();await geometry(true);
+      await page.locator('#training-chart').scrollIntoViewIfNeeded();
+      const point=await page.locator('#training-chart').evaluate(c=>{
+        const ds=JSON.parse(document.querySelector('#training-state-data').textContent).days;
+        const first=ds.findIndex(d=>d.day===document.querySelector('#training-date').min);
+        const i=first+Math.floor((ds.length-1-first)*.6),p=c.createSVGPoint();
+        p.x=45+(c.viewBox.baseVal.width-60)*(i-first)/(ds.length-1-first);
+        p.y=(+c.dataset.plotTop+ +c.dataset.plotBottom)/2;
+        const s=p.matrixTransform(c.getScreenCTM());return {x:s.x,y:s.y,date:ds[i].day};
+      });
+      await page.mouse.move(point.x,point.y);
+      assert(await page.locator('#training-tooltip').getAttribute('data-day')===point.date,'narrow trend exact hover date');
+      await page.evaluate(()=>window.scrollBy(0,1));await page.waitForTimeout(80);
+      assert(!await page.locator('#training-tooltip').isVisible(),'pointer inspection dismisses on scroll');
+      point.y-=1;
+      await page.mouse.click(point.x,point.y);await sync();
+      assert(await page.locator('#training-date').inputValue()===point.date,'narrow pointer date selection');
+      await page.keyboard.press('ArrowRight');await page.keyboard.press('ArrowLeft');await sync();
+      assert(await page.locator('#training-date').inputValue()===point.date,'narrow keyboard exact date after resize');
+      await page.locator('#training-chart').blur();await page.evaluate(()=>window.scrollTo(0,0));
+      await page.screenshot({path:`output/playwright/p4-02-second-height-${width}-${range==='3 months'?'90':'365'}-private.png`,fullPage:true});
+    }
+  }
   await page.setViewportSize({width:1280,height:900});await page.getByRole('button',{name:'3 months',exact:true}).click();await sync();
   await page.screenshot({path:'output/playwright/p4-02-desktop-final.png',fullPage:true});
-  const context=await page.context().browser().newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,timezoneId:'America/Los_Angeles'});
-  const touchPage=await context.newPage();await touchPage.goto('http://127.0.0.1:8772/training-state');await touchPage.waitForSelector('#training-date');
-  const oldDate=await touchPage.locator('#training-date').inputValue();await touchPage.locator('#training-chart').scrollIntoViewIfNeeded();
-  const touchBox=await touchPage.locator('#training-chart').boundingBox();
-  await touchPage.touchscreen.tap(touchBox.x+touchBox.width*.35,touchBox.y+touchBox.height*.35);
-  const touchDate=await touchPage.locator('#training-date').inputValue();assert(oldDate!==touchDate,'touch selects historical date');
-  assert((await touchPage.locator('#training-day-heading').textContent()).includes(touchDate),'touch synchronizes selected-day details');
-  await context.close();
+  for(const width of [320,390]){
+    const context=await page.context().browser().newContext({viewport:{width,height:844},hasTouch:true,isMobile:true,timezoneId:'America/Los_Angeles'});
+    const touchPage=await context.newPage();await touchPage.goto('http://127.0.0.1:8772/training-state');await touchPage.waitForSelector('#training-date');
+    for(const range of ['3 months','12 months']){
+      await touchPage.getByRole('button',{name:range,exact:true}).click();await touchPage.locator('#training-chart').scrollIntoViewIfNeeded();
+      for(const region of ['trend','strip']){
+        const point=await touchPage.locator('#training-chart').evaluate((c,region)=>{
+          const ds=JSON.parse(document.querySelector('#training-state-data').textContent).days;
+          const first=ds.findIndex(d=>d.day===document.querySelector('#training-date').min);
+          const i=first+Math.floor((ds.length-1-first)*(region==='trend'?.35:.7)),p=c.createSVGPoint();
+          p.x=45+(c.viewBox.baseVal.width-60)*(i-first)/(ds.length-1-first);
+          p.y=region==='trend'?(+c.dataset.plotTop+ +c.dataset.plotBottom)/2:+c.dataset.stripBottom-25;
+          const s=p.matrixTransform(c.getScreenCTM());return {x:s.x,y:s.y,date:ds[i].day};
+        },region);
+        await touchPage.touchscreen.tap(point.x,point.y);
+        assert(await touchPage.locator('#training-date').inputValue()===point.date,'touch exact date on '+region);
+        assert((await touchPage.locator('#training-day-heading').textContent()).includes(point.date),'touch synchronizes selected-day details');
+        assert(await touchPage.locator('#training-tooltip').getAttribute('data-day')===point.date,'touch tooltip exact date');
+      }
+    }
+    await context.close();
+  }
   if(failures.length)throw new Error(JSON.stringify({checks,failures}));
   return {checks,passed:true,ranges:4,lineToggles:3,multiRide:true,unscored:true,noRecord:true,keyboard:true,phone:true,touch:true,stableReview:true,floatingHover:true,hoverPersistence:true,hoverAllRanges:true};
 }

@@ -18,6 +18,7 @@
   };
   let range = '3months', first = rangeFirst(range), selected = days.length - 1;
   let hoverGuide = null, hoverPoints = [], yFor = null;
+  let keyboardInspection = false;
   const colors = {fitness: '#2563eb', fatigue: '#b77815', form: '#078675'};
   const classes = {calculated: 'Calculated power interval', corrected_estimate: 'Estimated FIT interval',
     hr_estimate: 'HR estimate', partial: 'Partial power', unavailable: 'Stress unavailable'};
@@ -34,18 +35,20 @@
   };
   const enabled = () => [...document.querySelectorAll('[data-line]:checked')].map(input => input.dataset.line);
   let plotWidth = 920, left = 55;
-  let geometry = {top:25,bottom:425,stripBottom:530,height:570};
+  let geometry = {top:25,bottom:625,stripBottom:730,height:770};
   const px = i => left + plotWidth * (i-first) / Math.max(1, days.length-1-first);
   const sourceText = counts => Object.entries(counts).map(([key,count]) => `${count} ${classes[key]}`).join(' · ') || 'No scored rides';
   const tooltip = node('div',null,'training-tooltip');
   tooltip.id='training-tooltip'; tooltip.setAttribute('role','tooltip'); tooltip.hidden=true;
   document.body.append(tooltip); chart.setAttribute('aria-describedby',tooltip.id);
   function hideInspection() {
+    keyboardInspection=false;
     tooltip.hidden=true;
     if(hoverGuide) hoverGuide.setAttribute('visibility','hidden');
     for(const point of hoverPoints) point.setAttribute('visibility','hidden');
   }
-  function showInspection(index, position) {
+  function showInspection(index, position, keyboard=false) {
+    keyboardInspection=keyboard;
     const d=days[index]; tooltip.replaceChildren(node('strong',d.day)); tooltip.dataset.day=d.day;
     tooltip.append(node('p',`${d.rides.length} recorded ${d.rides.length===1?'ride':'rides'} · ${fmt(d.stress)} selected model stress`),
       node('p',`Fitness ${fmt(d.fitness)} · Fatigue ${fmt(d.fatigue)} · Form ${fmt(d.form)} (start of day)`));
@@ -74,7 +77,7 @@
   function focusedInspection() {
     const point=chart.createSVGPoint();point.x=px(selected);point.y=(geometry.top+geometry.bottom)/2;
     const position=point.matrixTransform(chart.getScreenCTM());
-    showInspection(selected,{x:position.x,y:position.y});
+    showInspection(selected,{x:position.x,y:position.y},true);
   }
   function chartPosition(event) {
     const point=chart.createSVGPoint();point.x=event.clientX;point.y=event.clientY;
@@ -183,7 +186,13 @@
   chart.addEventListener('pointercancel',hideInspection);
   chart.addEventListener('focus',focusedInspection);
   chart.addEventListener('blur',hideInspection);
-  window.addEventListener('scroll',hideInspection,{passive:true});
+  window.addEventListener('scroll',()=>{
+    // Focus may scroll a tall chart into view after its keyboard readout opens.
+    // Keep that readout anchored; pointer inspection still dismisses on scroll.
+    const bounds=chart.getBoundingClientRect();
+    if(keyboardInspection && document.activeElement===chart && bounds.bottom>0 && bounds.top<innerHeight) focusedInspection();
+    else hideInspection();
+  },{passive:true});
   new ResizeObserver(render).observe(chart);
   chart.addEventListener('keydown',event=>{
     const movement={ArrowLeft:-1,ArrowRight:1,ArrowUp:7,ArrowDown:-7};
