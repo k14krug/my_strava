@@ -2,7 +2,7 @@
 
 **Recorded:** 2026-10-09  
 **Status:** Owner-confirmed source and usability choices, plus **approved practical longitudinal-model defaults** (2026-10-09); HR implementation details and remaining UI choices still require design. **Not a P4-02 JIT or implementation authorization**.  
-**Purpose:** Preserve the rider's recent decisions, the supporting Elevate/Sauce research, and unresolved details for the next design and implementation brief.
+**Purpose:** Preserve the rider's recent decisions, the supporting Elevate/Sauce research, and unresolved details for implementation. The Owner has since **approved the dedicated Training State screen** described in [P4-02 screen design](P4-02-training-state-screen.md) (2026-10-09). The [P4-02 JIT draft](../tasks/P4-02.md) is pending final HR decisions and explicit invocation.
 
 ## 1. Rider goal and standard of usefulness — confirmed
 
@@ -32,7 +32,7 @@ Do **not** automatically apply a universal multiplier to HRSS: preliminary paire
 ## 4. Longitudinal model and interface — calculation defaults approved; interface details open
 
 - **Owner-approved for P4-02 v1:** **42-day Fitness (CTL) / 7-day Fatigue (ATL)** exponentially weighted daily selected stress. Elevate and Sauce use equivalent 42-/7-day update mathematics. Self-comparison and stability, not physiological exactness, justify this choice.
-- Favor an **interactive Fitness / Fatigue / Form longitudinal chart**, inspired by useful parts of Elevate and Sauce, with the daily load and measurement/estimate/missing quality inspectable. Neither reference application is the product specification.
+- **Owner approved the visual/interaction direction**: a dedicated Training State screen with a dominant interactive Fitness/Fatigue/Form chart, aligned daily-stress strip, persistent selected-day ride details, distinct 7-/42-day stress and observed-work context, new navigation and compact Home link. See [screen design](P4-02-training-state-screen.md). Elevate/Sauce remain references, not specifications.
 - **Owner-approved for P4-02 v1:** Follow **Elevate's prior-day Form convention**: today's Form = yesterday's Fitness − yesterday's Fatigue, representing the modeled start-of-day condition. Document the timing clearly in the UI/tooltips; this is not a directly observed recovery measurement.
 - **Owner-approved simple v1 defaults:** Initialize the series to **zero before the first usable historical stress date**, with the early build-up treated as provisional; **omit future projections** in the first release; **do not adopt Elevate's fixed Form training-zone labels/thresholds yet**. Such zones are reference material only, not validated medical, readiness, or overtraining judgments. Subjective recovery context may enrich later interpretation but must not be compulsory.
 - Preserve the distinction between **observed work (kJ)** and **FTP-normalized training stress** from P4-01. The exact placement of these alongside the new Fitness Trend chart remains a P4-02 presentation choice; earlier work/stress display concepts are not a mandate to use large dashboard cards.
@@ -53,11 +53,11 @@ Do **not** automatically apply a universal multiplier to HRSS: preliminary paire
 
 **Now selected for P4-02 v1:** 42-/7-day model; prior-day Form; zero initialization before usable data; no initial projections or fixed training zones; pragmatic Elevate-style zero **numerical contribution** for unscored rides while retaining their unavailable evidence status. **Still open for the P4-02 JIT/design:** exact HRSS calculation, assumptions about historical HR settings (current working HR 58/158 is not dated history), HR-data eligibility, per-ride source selection when only partial power exists, precise daily aggregation/versioning, and final chart interactions/presentation of kJ vs. normalized stress. Avoid inventing additional unknown-state infrastructure solely for rare unscored rides.
 
-**Not authorized here:** production changes, importing FTP/HR data into the running app, creating a P4-02 JIT that assumes unmade choices, implementing P4-02, or starting Phase 5/6.
+**Not authorized here:** production changes, importing FTP/HR data into the running app, implementing P4-02, or starting Phase 5/6. The Analyst has authored a [P4-02 JIT draft](../tasks/P4-02.md) with an explicit HARD — Owner gate for HR assumptions and stress-selection choices. The Owner-approved visual direction is not itself permission to execute the draft.
 
 ## 7. Next step
 
-Prepare the remaining modest P4-02 design around qualified measured-power stress, a transparent approximate HR fallback, the **now-approved practical daily/missing-stress model conventions**, and an interactive 42-/7-day Fitness/Fatigue/Form view. Settle only the HRSS and source-selection details needed for an honest v1, then bring the UI/design to the Owner before authoring the JIT. Revisit outdoor reconstructed power and elaborate HR calibration only if they prove useful.
+The Owner approved the [screen design](P4-02-training-state-screen.md). Resolve the narrow outstanding HR parameter-history and stress-method decision at the HARD — Owner gate in the [draft P4-02 JIT](../tasks/P4-02.md), then finalize the brief for explicit implementation authorization. Revisit outdoor reconstructed power and elaborate HR calibration only if useful.
 
 ---
 
