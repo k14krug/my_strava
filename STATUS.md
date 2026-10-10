@@ -2,7 +2,7 @@
 
 **Product:** RideWorks.
 **Current task:** P4-02 — Longitudinal Training State and Fitness Trend.
-**State:** in_progress — **JIT §13 session-power method approved for implementation** after review of the diagnostic distribution screen (JIT §14). HARD — Analyst implementation gate remains open; HARD — Owner Gate 2 has not accepted the running app.
+**State:** in_progress — **Owner's final Training State visual acceptance is conditional only on Form defaulting to unchecked and verified running-code completion**. Form default is now changed and browser-asserted on the PR branch; Analyst verification of the actual §14 selected session-PSS implementation and current end-to-end regression is still required before marking accepted/complete. No merge yet.
 **Branch:** `task/p4-02-training-state`; [draft PR #24](https://github.com/k14krug/rideworks/pull/24).
 **Authority:** Existing `/TASK P4-02`, latest JIT §14 Analyst authorization for versioned Elevate-style **estimated session PSS** and approved distribution-screen rules. Implementation remains under HARD — Analyst review; no separate task start or automatic merge.
 **Delivered:** Actual trend plot 600 desktop / 400 narrow CSS pixels, aligned stress strip, exact-date pointer/keyboard/touch, keyboard readout anchored during scrolling. Diagnostic-only screen requires >=80% observed elapsed/verified-active time and >=50% of every sliding 300-second window; missing edges and concentrated omissions are included. No numerical production change.
