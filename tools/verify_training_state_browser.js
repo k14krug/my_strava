@@ -17,6 +17,20 @@ async (page) => {
   await page.setViewportSize({width:1280,height:900});
   await page.goto('http://127.0.0.1:8772/training-state');await page.waitForSelector('#training-date');
   await sync();
+  const geometry=async(mobile)=>{
+    const g=await page.locator('#training-chart').evaluate(c=>({height:c.clientHeight,viewHeight:c.viewBox.baseVal.height,
+      plot: +c.dataset.plotBottom- +c.dataset.plotTop,strip:+c.dataset.stripBottom,
+      paths:[...c.querySelectorAll('[data-series]')].map(p=>{const b=p.getBBox();return {top:b.y,bottom:b.y+b.height}}),
+      bars:[...c.querySelectorAll('rect')].map(b=>+b.getAttribute('y')+ +b.getAttribute('height')),
+      guide:+c.querySelector('.chart-cursor').getAttribute('y2'),scale:c.getScreenCTM().d}));
+    assert(g.plot>=(mobile?280:380)&&g.plot<=(mobile?340:430),'actual trend plot CSS height');
+    assert(g.height===g.viewHeight,'SVG vertical units map to CSS pixels');
+    assert(Math.abs(g.scale-1)<1e-7,'narrow SVG avoids aspect-ratio shrinking of actual plot');
+    assert(g.guide===g.strip+10&&g.strip<g.height-12,'guide spans aligned plot and strip');
+    assert(g.paths.every(p=>p.top>=24&&p.bottom<=25+g.plot+1),'all curves within actual plot');
+    assert(g.bars.every(b=>Math.abs(b-g.strip)<1e-8),'stress bars share strip baseline');
+  };
+  await geometry(false);
   for(const name of ['Fitness','Fatigue','Form']){await page.getByRole('checkbox',{name,exact:true}).uncheck();}
   assert((await read()).sourceCount===0,'all line toggles off');
   for(const name of ['Fitness','Fatigue','Form']){await page.getByRole('checkbox',{name,exact:true}).check();}
@@ -31,13 +45,14 @@ async (page) => {
     if(kind==='missing')assert((await page.locator('#training-day-detail').textContent()).includes('unavailable'),'unscored evidence remains unavailable');
     if(kind==='noRecord')assert((await page.locator('#training-day-detail').textContent()).includes('rest is not established'),'no-record is not rest');
   }
-  const hover=async(date,y=110)=>{
-    const point=await page.evaluate(({date,y})=>{
+  const hover=async(date,region='trend')=>{
+    const point=await page.evaluate(({date,region})=>{
       const chart=document.querySelector('#training-chart'),days=JSON.parse(document.querySelector('#training-state-data').textContent).days;
       const first=days.findIndex(d=>d.day===document.querySelector('#training-date').min),i=days.findIndex(d=>d.day===date);
-      const p=chart.createSVGPoint();p.x=45+(chart.viewBox.baseVal.width-60)*(i-first)/Math.max(1,days.length-1-first);p.x+=i===first?.01:i===days.length-1?-.01:0;p.y=y;
+      const p=chart.createSVGPoint();p.x=45+(chart.viewBox.baseVal.width-60)*(i-first)/Math.max(1,days.length-1-first);p.x+=i===first?.01:i===days.length-1?-.01:0;
+      p.y=region==='strip'?+chart.dataset.stripBottom-25:(+chart.dataset.plotTop+ +chart.dataset.plotBottom)/2;
       const screen=p.matrixTransform(chart.getScreenCTM());return {x:screen.x,y:screen.y};
-    },{date,y});
+    },{date,region});
     await page.mouse.move(point.x,point.y);await page.locator('#training-tooltip').waitFor({state:'visible'});
     const t=await page.locator('#training-tooltip').evaluate(el=>({day:el.dataset.day,text:el.textContent,
       x:el.getBoundingClientRect().x,y:el.getBoundingClientRect().y,w:el.offsetWidth,h:el.offsetHeight}));
@@ -66,13 +81,13 @@ async (page) => {
     await page.waitForTimeout(80);
     const edges=await page.evaluate(()=>({first:document.querySelector('#training-date').min,last:document.querySelector('#training-date').max}));
     const selected=await page.locator('#training-date').inputValue();
-    await hover(edges.first);await hover(edges.last,320);
+    await hover(edges.first);await hover(edges.last,'strip');
     assert(await page.locator('#training-date').inputValue()===selected,'hover preserves selected date in '+name);
     await page.mouse.move(5,5);assert(!await page.locator('#training-tooltip').isVisible(),'mouseleave dismisses overlay');
     assert(await page.locator('.training-hover-guide').getAttribute('visibility')==='hidden','mouseleave dismisses hover guide');
   }
   for(const date of Object.values(targets)){
-    const point=await hover(date,320);await page.mouse.click(point.x,point.y);await sync();
+    const point=await hover(date,'strip');await page.mouse.click(point.x,point.y);await sync();
     await page.mouse.move(5,5);assert(!await page.locator('#training-tooltip').isVisible(),'click overlay dismissed on leave');
     assert(await page.locator('#training-date').inputValue()===date,'clicked selection persists after leave');
   }
@@ -91,6 +106,7 @@ async (page) => {
   for(const route of ['/','/performance','/activities']){await page.goto('http://127.0.0.1:8772'+route);assert((await page.title()).includes('RideWorks'),'retained route '+route);}
   await page.goto('http://127.0.0.1:8772/training-state');await page.waitForSelector('#training-date');
   await page.setViewportSize({width:390,height:844});await page.getByRole('button',{name:'All history',exact:true}).click();
+  await geometry(true);
   await sync();const x=await read();assert(x.width<=x.viewport,'phone has no horizontal overflow');
   await page.locator('#training-chart').focus();
   for(const key of ['Home','End']){
@@ -101,6 +117,8 @@ async (page) => {
   }
   const box=await page.locator('#training-chart').boundingBox();await page.mouse.click(box.x+box.width*.7,box.y+box.height*.4);await sync();
   await page.screenshot({path:'output/playwright/p4-02-phone-final.png',fullPage:true});
+  await page.setViewportSize({width:320,height:844});await page.getByRole('button',{name:'3 months',exact:true}).click();
+  await geometry(true);assert((await read()).width<=320,'small phone has no horizontal overflow');
   await page.setViewportSize({width:1280,height:900});await page.getByRole('button',{name:'3 months',exact:true}).click();await sync();
   await page.screenshot({path:'output/playwright/p4-02-desktop-final.png',fullPage:true});
   const context=await page.context().browser().newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,timezoneId:'America/Los_Angeles'});
