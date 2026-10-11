@@ -262,6 +262,37 @@ COMMIT;
 """
 
 
+MIGRATION_9 = """
+BEGIN IMMEDIATE;
+CREATE TABLE planning_feedback (
+    day TEXT NOT NULL,
+    timezone TEXT NOT NULL,
+    legs TEXT NOT NULL CHECK(legs IN ('normal','heavy','unknown')),
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY(day, timezone)
+);
+CREATE TABLE planning_classifications (
+    activity_id TEXT PRIMARY KEY REFERENCES activities(activity_id),
+    category TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE TABLE planning_classification_cache (
+    activity_id TEXT PRIMARY KEY REFERENCES activities(activity_id),
+    input_signature TEXT NOT NULL,
+    result_json TEXT NOT NULL
+);
+CREATE TABLE planning_intents (
+    intent_id TEXT PRIMARY KEY,
+    day TEXT NOT NULL,
+    timezone TEXT NOT NULL,
+    confirmed_at TEXT NOT NULL,
+    recommendation_json TEXT NOT NULL
+);
+PRAGMA user_version = 9;
+COMMIT;
+"""
+
+
 def resolve_data_dir(data_dir=None) -> Path:
     """Resolve once; default does not depend on the working directory."""
     selected = data_dir if data_dir is not None else os.environ.get("RIDEWORKS_DATA_DIR", "~/.rideworks")
@@ -302,7 +333,7 @@ class Store:
         self.connection.execute("PRAGMA foreign_keys = ON")
         self.connection.execute("PRAGMA synchronous = FULL")
         version = self.connection.execute("PRAGMA user_version").fetchone()[0]
-        if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8):
+        if version not in (0, 1, 2, 3, 4, 5, 6, 7, 8, 9):
             self.close()
             raise RideWorksError(f"Unsupported RideWorks schema version: {version}")
         try:
@@ -329,6 +360,9 @@ class Store:
                 version = 7
             if version == 7:
                 self.connection.executescript(MIGRATION_8)
+                version = 8
+            if version == 8:
+                self.connection.executescript(MIGRATION_9)
             _sync_directory(self.data_dir)
         except BaseException:
             self.connection.rollback()

@@ -1,0 +1,38 @@
+{
+  "python_full_tests": 412,
+  "focused_planning_tests": 29,
+  "python_passed": true,
+  "chromium": {
+    "actual": {
+      "assertions": 144,
+      "script_errors": [],
+      "actual_post_sync": true,
+      "home_plan_review_parity": true,
+      "desktop_reference_hierarchy": true,
+      "mobile": [
+        390,
+        320
+      ],
+      "quick_race_correction": true,
+      "heavy_next_ride": true
+    },
+    "synthetic_before": {
+      "assertions": 12,
+      "before_ride": true,
+      "third_in_seven": true,
+      "explicit_intent": true,
+      "synthetic_only": true
+    },
+    "synthetic_stale": {
+      "assertions": 5,
+      "stale_disclosure": true,
+      "synthetic_only": true
+    }
+  },
+  "browser_assertions_total": 161,
+  "screenshots_inspected": true,
+  "public_screenshots_synthetic_only": true,
+  "jit_unchanged_by_dex": true,
+  "gate": "HARD \u2014 Analyst Gate 1",
+  "owner_gate": "pending"
+}

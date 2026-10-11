@@ -1,0 +1,26 @@
+{
+  "python_full_tests": 405,
+  "python_focused_planning_tests": 22,
+  "python_result": "passed",
+  "chromium": {
+    "assertions": 71,
+    "errors": [],
+    "desktop": true,
+    "mobile": [
+      390,
+      320
+    ],
+    "home_plan_parity": true,
+    "explicit_intent": true,
+    "correction_flow": true
+  },
+  "diff_check": "passed",
+  "jit_unchanged": true,
+  "source_policy_modules_unchanged": [
+    "rideworks/training_state.py",
+    "rideworks/performance.py"
+  ],
+  "gate": "HARD \u2014 Analyst Gate 1",
+  "owner_gate": "pending Analyst release",
+  "phase_5_accepted": false
+}

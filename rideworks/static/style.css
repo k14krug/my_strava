@@ -375,3 +375,82 @@ pre { overflow-x: auto; font-size: 13px; background: var(--background); padding:
 .training-tooltip .training-tooltip-title { color:var(--navy); margin-top:8px; }
 .training-hover-guide { stroke:var(--navy); stroke-width:1.2; }
 .training-hover-guide, .training-hover-point { pointer-events:none; }
+
+/* Rolling Plan v2 follows the approved milestone and compact rotation reference. */
+.plan-workspace { max-width:1150px; }
+.plan-header { display:flex; justify-content:space-between; align-items:end; gap:16px; margin-bottom:22px; }
+.plan-header p { font-size:12px; margin-top:6px; }
+.plan-summary { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.18fr); gap:16px; margin-bottom:18px; }
+.plan-summary > .next-recommended:only-child { grid-column:1/-1; }
+.next-recommended { border-left:4px solid var(--blue); }
+.plan-summary .next-recommended, .plan-completed { padding:22px 24px; }
+.plan-completed { border-left:4px solid #0b8074; }
+.plan-completed h3 { font-size:20px; margin:14px 0 6px; }
+.plan-completed p { font-size:13px; font-weight:600; margin:6px 0 12px; }
+.next-recommended h2 { margin:0 0 6px; }
+.next-ride-date { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:12px; margin-bottom:14px; }
+.next-recommended .recommended-type { font-size:27px; margin:0 0 8px; color:var(--navy); }
+.recommended-target { font-size:13px; font-weight:600; margin:6px 0; }
+.recommended-reason { font-size:13px; line-height:1.6; margin:8px 0 12px; }
+.plan-number { font-size:12px; font-weight:650; color:var(--blue); }
+.plan-caveat, .plan-intent-note { font-size:12px; margin:8px 0; }
+.next-recommended .plan-completed { border:0; border-top:1px solid var(--border); padding:12px 0 0; margin:14px 0 0; }
+.next-recommended .plan-completed h2 { font-size:13px; }
+.next-recommended .plan-completed h3 { font-size:15px; margin-top:8px; }
+.plan-context { margin:0 0 24px; padding:16px 20px; }
+.plan-context p { margin:6px 0; font-size:12px; line-height:1.6; }
+.plan-status { border-top:1px solid var(--border); padding-top:8px; }
+.plan-classification-exception { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 16px; margin:8px 0; }
+.plan-classification-exception p { flex:1 1 320px; margin:0; }
+.plan-milestones { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:13px; margin-bottom:24px; }
+.plan-milestone { display:block; color:var(--navy); border-top:4px solid var(--blue); padding:16px 18px; }
+.plan-milestone:hover { text-decoration:none; background:#f8faff; }
+.plan-milestone > span { color:var(--blue); font-size:12px; font-weight:650; }
+.plan-milestone h3 { font-size:19px; margin:6px 0; }
+.plan-milestone time, .plan-milestone p { font-size:12px; color:var(--muted); }
+.plan-milestone p { margin-top:8px; }
+.plan-section-heading { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:12px; }
+.plan-section-heading h2 { font-size:19px; }
+.plan-section-heading p { font-size:12px; }
+.plan-days, .plan-low-group ol { list-style:none; padding:0; margin:0; }
+.plan-days { display:grid; gap:12px; }
+.plan-hard { display:grid; grid-template-columns:180px minmax(0,1fr); gap:20px; padding:18px 20px; border:1px solid #bdd0ff; background:#f8faff; scroll-margin-top:72px; }
+.plan-hard h3 { font-size:19px; color:var(--blue); margin:0; }
+.plan-hard p { margin:6px 0; }
+.plan-date { display:flex; flex-direction:column; gap:8px; font-size:12px; }
+.plan-low-group ol { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.plan-low { border:1px solid var(--border); border-radius:6px; background:white; padding:12px 16px; display:flex; gap:12px; align-items:center; }
+.plan-low time { font-size:11px; width:135px; flex-shrink:0; color:var(--muted); }
+.plan-low strong { font-size:13px; }
+.plan-low p { font-size:12px; margin:3px 0 0; }
+.plan-footnote { font-size:12px; margin:20px 0; }
+.plan-feedback, .plan-correction { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:10px 0; }
+.plan-feedback select, .plan-correction select { max-width:100%; padding:8px; background:white; border:1px solid var(--border); border-radius:4px; font:inherit; font-size:13px; }
+.plan-feedback label, .plan-correction label { font-size:12px; }
+.plan-feedback button, .plan-correction button, .plan-intent button, .plan-quick-race button { padding:8px 12px; border:1px solid var(--blue); border-radius:5px; background:var(--blue); color:white; font:inherit; font-size:12px; cursor:pointer; min-height:36px; }
+.plan-feedback button:focus-visible, .plan-correction button:focus-visible, .plan-intent button:focus-visible, .plan-quick-race button:focus-visible, .plan-feedback select:focus-visible, .plan-correction select:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+.plan-history, .plan-help { margin:14px 0; }
+.plan-history-row { padding:14px 0; border-bottom:1px solid var(--border); overflow-wrap:anywhere; }
+.plan-history-row p { font-size:13px; margin:6px 0; }
+.plan-history-row:last-child { border-bottom:0; }
+.plan-help p { font-size:13px; line-height:1.6; margin:12px 0; }
+.activity-planning { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:18px 0; }
+.activity-plan-context p { margin:8px 0; font-size:13px; line-height:1.6; }
+.activity-planning .next-recommended .recommended-type { font-size:22px; }
+@media(max-width:1000px) {
+  .plan-summary, .activity-planning { grid-template-columns:minmax(0,1fr); }
+  .plan-low-group ol { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:620px) {
+  .plan-header { display:block; }
+  .plan-milestones { grid-template-columns:minmax(0,1fr); gap:10px; }
+  .plan-milestone { padding:12px 16px; }
+  .plan-hard { grid-template-columns:minmax(0,1fr); gap:10px; padding:15px; }
+  .plan-date { flex-direction:row; flex-wrap:wrap; }
+  .plan-low { display:block; padding:12px 15px; }
+  .plan-low time { display:block; width:auto; margin-bottom:6px; }
+  .plan-summary .next-recommended, .plan-completed { padding:18px; }
+  .next-recommended .recommended-type { font-size:24px; }
+  .plan-feedback label, .plan-correction label { width:100%; }
+  .plan-classification-exception { overflow-wrap:anywhere; }
+}

@@ -825,3 +825,30 @@ no HR stream exists. Defective HR streams are not bypassed using their summary.
 Verification tools accept private store paths; see `reports/P4-02/verification.md`.
 The Owner-approved Elevate reference is used only by the external comparison tool,
 never by the application, as calculation inputs, or as an initial seed.
+
+## Rolling Training Advisor (P5-01)
+
+Home, Plan and Activity Review share the current rider-local next recommendation.
+Before a ride, that can be today. After any cycling ride is recorded today, the
+primary recommendation advances to the first future date; completed today stays
+separate. Historic Activity Review labels this live suggestion **Current next
+ride**, without reconstructing an old plan. Plan extends through three upcoming
+hard recommendations, with hard milestones and all intervening daily targets.
+
+Two hard sessions in seven dates is a soft preference. After two supported
+recovery dates, the immediate quality opportunity may exceed it with an explicit
+frequency exception; later projections favor two. Heavy-leg feedback keeps the
+next ride light. Sync, actual rides and corrections recompute the plan on view;
+projections never contribute stress to Training State. Only past no-record dates
+covered by successful sync can count as assumed rest for planning.
+
+Trusted observed Virtual Ride power and dated FTP suggest workout stimulus.
+Explicit current Strava race metadata is source-reported, while a race title
+alone stays uncertain with quick confirmation. Corrections retain original
+measurements. **I plan to do this** records a separate pre-ride date-level intent;
+without it, Activity Review says **No recorded intent**. It never silently accepts
+a suggestion or assigns intent retrospectively.
+
+Schema 9 planning records remain local. No Training State, Performance, FTP or
+Strava access policy changes. See `reports/P5-01/review-followup.md` for JIT §10
+verification, limitations, source-neutral screenshots and reproducibility.
