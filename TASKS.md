@@ -454,13 +454,13 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### Phase 5 — Workout intent, outcome, and initial planning
 
-**Status:** in_progress — P5-01 implementation invoked 2026-10-10; not accepted. Design and JIT are committed; **P5-01 implementation invoked; no Phase 5 acceptance yet**. Phase 5 follows accepted Phase 4.
+**Status:** **done — Phase 5 v1 accepted 2026-10-10** with P5-01 accepted at HARD — Analyst Gate 1 and Owner Gate 2. [PR #26](https://github.com/k14krug/rideworks/pull/26). Later Phase 6 adaptation is separate and not started.
 
-**Design:** [Owner-approved P5-01 rolling training direction](docs/design/P5-01-rolling-training-plan.md) and [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md). Recommendations are rider-local and flexible: **Home suggests today's ride**; **Plan shows today and every intervening date through the next three upcoming hard-session recommendations**. Never recommend Rest/no ride. A past synced missing day can count as assumed rest *only for planning*. No Zwift file management or race discovery.
+**Accepted scope:** [Owner-approved rolling training direction](docs/design/P5-01-rolling-training-plan.md) and [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md). Home and Activity Review display the next *future* ride after one is already completed today; Plan shows daily recommendations and three upcoming hard milestones. Never recommend Rest/no ride. Synced skipped past dates count as assumed rest *only for planning*, not invented completed rides. Two hard days/seven is a soft guideline with a limited disclosed exception. No Zwift file management or race discovery.
 
 ### P5-01 — Rolling Training Advisor (Home, Plan and outcome context)
 
-**Status:** in_progress — **JIT §10 corrections implemented and ready for HARD — Analyst Gate 1 review, 2026-10-10**; existing draft [PR #26](https://github.com/k14krug/rideworks/pull/26), [issue #25](https://github.com/k14krug/rideworks/issues/25). Not accepted.
+**Status:** **done — accepted 2026-10-10**, after Analyst review of PR #26 v2 code/evidence and Owner positive running-app review. HARD — Analyst Gate 1 and HARD — Owner Gate 2 cleared. [PR #26](https://github.com/k14krug/rideworks/pull/26), [issue #25](https://github.com/k14krug/rideworks/issues/25).
 
 **Purpose:** Deliver explainable next-ride recommendations with Race / Threshold / VO2 / Z2 / Easy / Recovery rotation, current goal-aware coaching context, two-date post-hard recovery, rolling hard-day frequency guardrail, handling of unexpected rides and skipped days, and a dedicated Plan extending through three future hard sessions.
 
@@ -468,8 +468,8 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 **Allowed invocation:** `/TASK P5-01` or `/AUTOTASK P5-01`; HARD — Analyst Gate 1 and HARD — Owner Gate 2. Prepare/push review evidence before acceptance; no implied background execution.
 
-**Current review correction:** [JIT §10](docs/tasks/P5-01.md) and the new [editable Plan visual mockup](docs/mockups/plan-rotation-v2.html) supersede the initial page layout and rigid weekly cap. With a ride recorded today, **Next Recommended Ride** must be the first *future* suggestion (not an optional second spin today). The just-completed Activity Review should also show the next planned ride. Plan must foreground three hard milestones with compact complete daily rotation and nonrepeated caveats. The Owner's two prior skipped dates count toward recovery with current sync. A normal two-hard-days-per-seven target is a soft preference rather than an absolute veto when quality is otherwise appropriate; explain a third-in-seven exception. Rerun actual post-sync browser regressions and return to Gate 1. Keep draft PR.
+**Final acceptance:** [JIT §10](docs/tasks/P5-01.md) corrections and the [editable Plan mockup](docs/mockups/plan-rotation-v2.html) were implemented. Actual October 10 synced Recovery now advances the shared Home/Plan/Activity Review next ride to October 11 Race. Before the ride, an appropriate hard effort was eligible after two no-ride dates; limited third-in-seven exceptions are explained. Three hard milestones, compact daily rotation, optional quick race confirmation, heavy-legs feedback and distinct intent/actual semantics verified. [Final report](reports/P5-01/review-followup.md): Dex reported **412 Python tests, 161 browser assertions**, with original sources, historical FTP, Training State and Performance preserved. Analyst reviewed the pushed code and aggregate/browser evidence; Owner said the updated P5-01 looked good. Remaining source ambiguity stays disclosed rather than presented as definitive exercise classification.
 
 ### Phase 6 — Adaptive planning
 
-Unchanged; not started.
+**Status:** pending — adaptive planning is a separate future phase and has not been invoked. Do not start automatically.
