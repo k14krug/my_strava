@@ -1,4 +1,4 @@
-"""Home, rolling Plan and a narrow, evidence-aware Activity Review panel."""
+"""Shared next ride, compact milestone rotation and honest workout context."""
 from datetime import date
 from html import escape
 import json
@@ -6,94 +6,132 @@ from urllib.parse import urlencode
 
 from .goals import query_zone
 from .planning import CATEGORIES, activity_context, plan
-from .web import detail_rows, local_time, shell
+from .web import detail_rows, duration, local_time, shell
 
 
 def hidden(name,value):
     return f'<input type="hidden" name="{name}" value="{escape(str(value),quote=True)}">'
 
 
-def ride_content(rec):
-    return f'''<h3 class="recommended-type">{escape(rec['category'])}</h3><p class="recommended-target">{escape(rec['duration'])} · {escape(rec['power'])}</p><p class="recommended-reason">{escape(rec['reason'])}</p>'''
+def day_label(day, today):
+    offset=(date.fromisoformat(day)-date.fromisoformat(today)).days
+    relative='Today' if offset==0 else 'Tomorrow' if offset==1 else f'In {offset} days'
+    return relative+' · '+date.fromisoformat(day).strftime('%a, %b %d, %Y')
 
 
-def today_card(data,nonce=None,*,compact=False):
-    rec=data['days'][0]; zone=data['timezone']
-    provisional='<p class="plan-caveat">Provisional based on available history.</p>' if data['provisional'] else ''
-    if compact:
-        controls=f'<a href="/plan?{urlencode({"plan_tz":zone})}">View Plan</a>'
-    else:
+def ride_content(rec,*,reason=True):
+    explanation=f'<p class="recommended-reason">{escape(rec["reason"])}</p>' if reason else ''
+    return f'<h3 class="recommended-type">{escape(rec["category"])}</h3><p class="recommended-target">{escape(rec["duration"])} · {escape(rec["power"])}</p>{explanation}'
+
+
+def completed_card(data,*,compact=False):
+    if not data['today_actual']: return ''
+    rows=[]
+    for r in data['today_actual']:
+        avg='Average power unavailable' if r.get('average_power') is None else f'{r["average_power"]:g} W average'
+        rows.append(f'<article><h3>{escape(r["classification"]["category"])} ride logged</h3><p>{duration(r.get("duration"))} · {avg}</p><a href="/activities/{r["activity_id"]}">Review completed ride</a></article>')
+    heading='Completed today' if compact else 'Today’s completed activity'
+    return f'<section class="panel plan-completed"><h2>{heading} · <time datetime="{data["today"]}">{date.fromisoformat(data["today"]).strftime("%a, %b %d")}</time></h2>{"".join(rows)}</section>'
+
+
+def today_card(data,nonce=None,*,compact=False,label='Next Recommended Ride',identifier='next-recommended',show_status=True,include_completed=True):
+    """The shared primary recommendation is future-dated once today is ridden."""
+    rec=data['next_ride'];zone=data['timezone']
+    controls=f'<a class="plan-open" href="/plan?{urlencode({"plan_tz":zone})}#rotation-heading">View Plan</a>'
+    if not compact and not data['today_actual']:
         base=hidden('nonce',nonce)+hidden('tz',zone)+hidden('day',data['today'])
-        choices=''.join(f'<option value="{value}"{" selected" if data["legs"]==value else ""}>{label}</option>' for value,label in [('unknown','Not reported'),('normal','Normal'),('heavy','Unusually heavy')])
-        controls=f'''<form method="post" action="/plan/feedback" class="plan-feedback">{base}<label for="plan-legs">Legs today</label><select name="legs" id="plan-legs">{choices}</select><button type="submit">Update</button></form>'''
-        if not data['today_actual']:
-            controls+=f'<form method="post" action="/plan/intent" class="plan-intent">{base}{hidden("category",rec["category"])}<button type="submit">I plan to do this</button></form>'
+        controls=f'<form method="post" action="/plan/intent" class="plan-intent">{base}{hidden("category",rec["category"])}<button type="submit">I plan to do this</button></form>'
         if data['intent']:
             intended=json.loads(data['intent']['recommendation_json'])['recommendation']['category']
-            controls+=f'<p class="plan-intent-note">Recorded intent: {escape(intended)} · confirmed {local_time(data["intent"]["confirmed_at"],compact=True)}. This remains separate if today’s suggestion changes.</p>'
-        else:
-            controls+='<p class="plan-intent-note">No recorded intent. A suggestion does not mean you accepted it.</p>'
-    actual=''
-    if data['today_actual']:
-        links='; '.join(f'<a href="/activities/{r["activity_id"]}">{escape(r["classification"]["category"])}</a>' for r in data['today_actual'])
-        actual=f'<p class="plan-actual">Recorded today: {links}. Additional riding is optional.</p>'
-    display_date=date.fromisoformat(data['today']).strftime('%a, %b %d' if compact else '%a, %b %d, %Y')
-    return f'''<section class="panel next-recommended" data-recommended-day="{data['today']}" aria-labelledby="next-recommended-heading"><h2 id="next-recommended-heading">{'Next Recommended Ride' if compact else 'Today’s ride'} · <time datetime="{data['today']}">{display_date}</time></h2>{ride_content(rec)}{provisional}{actual}{controls}</section>'''
+            controls+=f'<p class="plan-intent-note">Recorded intent: {escape(intended)} · confirmed {local_time(data["intent"]["confirmed_at"],compact=True)}.</p>'
+        else: controls+='<p class="plan-intent-note">No recorded intent. This is a suggestion.</p>'
+    status='<p class="plan-caveat">Provisional; check sync and actual classifications in Plan.</p>' if show_status and data['provisional'] else ''
+    actual=completed_card(data,compact=True) if compact and label=='Next Recommended Ride' and include_completed else ''
+    # calendar-day, rather than recommendation-day, drives midnight reload.
+    number=f'<span class="plan-number">Hard day #{rec["hard_number"]}</span>' if rec['hard_number'] else ''
+    return f'<section class="panel next-recommended" data-recommended-day="{data["today"]}" data-next-day="{rec["day"]}" aria-labelledby="{identifier}-heading"><h2 id="{identifier}-heading">{escape(label)}</h2><p class="next-ride-date"><time datetime="{rec["day"]}">{day_label(rec["day"],data["today"])}</time>{number}</p>{ride_content(rec)}{status}{controls}{actual}</section>'
 
 
 def correction_form(ride,nonce,zone,*,back='plan'):
-    category=ride['classification']['category']
+    category=ride['classification']['category'];identity=ride['activity_id']
     options='<option value="automatic">Use source inference</option>'+''.join(f'<option value="{escape(c,quote=True)}"{" selected" if category==c and ride["classification"]["confidence"]=="rider confirmed" else ""}>{escape(c)}</option>' for c in CATEGORIES)
+    return f'<form method="post" action="/plan/classification" class="plan-correction">{hidden("nonce",nonce)}{hidden("tz",zone)}{hidden("activity_id",identity)}{hidden("back",back)}<label for="category-{identity}">Correct actual category</label><select id="category-{identity}" name="category">{options}</select><button type="submit">Save category</button></form>'
+
+
+def quick_race(ride,nonce,zone):
     identity=ride['activity_id']
-    return f'''<form method="post" action="/plan/classification" class="plan-correction">{hidden('nonce',nonce)}{hidden('tz',zone)}{hidden('activity_id',identity)}{hidden('back',back)}<label for="category-{identity}">Correct actual category</label><select id="category-{identity}" name="category">{options}</select><button type="submit">Save category</button></form>'''
+    return f'<form method="post" action="/plan/classification" class="plan-quick-race">{hidden("nonce",nonce)}{hidden("tz",zone)}{hidden("activity_id",identity)}{hidden("back","plan")}{hidden("category","Race")}<button type="submit">Confirm this was a race</button></form>'
+
+
+def rotation(data):
+    """One chronological sequence; adjacent low days share a compact group."""
+    blocks=[];low=[]
+    def flush():
+        if not low:return
+        rows=[]
+        for rec in low:
+            rows.append(f'<li class="plan-day plan-low" data-plan-day="{rec["day"]}"><time datetime="{rec["day"]}">{day_label(rec["day"],data["today"])}</time><div><strong>{escape(rec["category"])}</strong><p>{escape(rec["duration"])} · {escape(rec["power"])}</p></div></li>')
+        blocks.append('<li class="plan-low-group"><ol>'+''.join(rows)+'</ol></li>');low.clear()
+    for rec in data['days']:
+        if rec['offset']==0 and data['today_actual']: continue
+        if not rec['hard']:
+            low.append(rec);continue
+        flush()
+        blocks.append(f'<li class="panel plan-day plan-hard" id="hard-{rec["hard_number"]}" data-plan-day="{rec["day"]}" data-hard-number="{rec["hard_number"]}"><div class="plan-date"><time datetime="{rec["day"]}">{day_label(rec["day"],data["today"])}</time><span class="plan-number">Hard day #{rec["hard_number"]}</span></div><div>{ride_content(rec)}</div></li>')
+    flush()
+    return '<ol class="plan-days">'+''.join(blocks)+'</ol>'
 
 
 def plan_page(store,query='',nonce=''):
     zone=query_zone(query,'plan_tz')
     if zone is None:
-        return shell('Plan','<header><h1>Plan</h1></header><section class="panel" data-calendar-timezone="plan_tz"><p>Enable JavaScript to use your rider-local dates.</p></section>',active='plan')
-    data=plan(store,zone.key)
-    latest=data['latest_hard']
-    last=f'<a href="/activities/{latest["activity_id"]}">{escape(latest["classification"]["category"])}</a> · {latest["day"]} · {escape(latest["classification"]["confidence"])}' if latest else 'No classified hard session in available history.'
-    freshness='Synced today; completed prior dates without rides may count as assumed rest for planning.' if data['fresh'] else 'Sync is stale or unknown; today’s suggestion is provisional. Refresh from Settings before quality work.'
-    sync=local_time(data['sync_at'],compact=True) if data['sync_at'] else 'Never'
-    cards=[]
-    # Today is shown once at the top, with its hard number if applicable.
-    for rec in data['days']:
-        number=f' · Hard day #{rec["hard_number"]}' if rec['hard_number'] else ''
-        if rec['offset']==0:
-            today_number=f'<p class="plan-hard-number">Today{number}</p>'
-            continue
-        relative='Tomorrow' if rec['offset']==1 else f'In {rec["offset"]} days'
-        explicit=date.fromisoformat(rec['day']).strftime('%a, %b %d, %Y')
-        cards.append(f'''<li class="plan-day{" plan-hard" if rec['hard'] else ""}" data-plan-day="{rec['day']}" data-hard-number="{rec['hard_number'] or ''}"><div class="plan-date"><strong>{relative}{number}</strong><time datetime="{rec['day']}">{explicit}</time><span>Conditional projection</span></div><div>{ride_content(rec)}</div></li>''')
-    history=[]
-    for ride in reversed(data['history']):
-        c=ride['classification']
-        history.append(f'''<article class="plan-history-row"><p><time>{ride['day']}</time> · <a href="/activities/{ride['activity_id']}">{escape(ride['title'])}</a></p><p><strong>{escape(c['category'])}</strong> · {escape(c['confidence'])}</p><p>{escape(c['reason'])}</p>{correction_form(ride,nonce,zone.key)}</article>''')
-    recent=''.join(f'<li><time>{r["day"]}</time> — {escape(r["state"])}</li>' for r in data['recent_days'])
-    payload={k:v for k,v in data.items() if k!='history'}
+        return shell('Plan','<header><h1>Rolling Plan</h1></header><section class="panel" data-calendar-timezone="plan_tz"><p>Enable JavaScript to use your rider-local dates.</p></section>',active='plan')
+    data=plan(store,zone.key);latest=data['latest_hard']
+    last=f'<a href="/activities/{latest["activity_id"]}">{escape(latest["classification"]["category"])}</a> · {latest["day"]}' if latest else 'No classified hard session'
+    sync='Synced today' if data['fresh'] else 'Sync stale or unknown'
+    uncertain=[]
+    for r in data['recent_uncertain']:
+        c=r['classification'];race=c.get('title_hint')=='Race'
+        action=quick_race(r,nonce,zone.key) if race else f'<a href="/activities/{r["activity_id"]}">Review / correct category</a>'
+        uncertain.append(f'<div class="plan-classification-exception"><p><a href="/activities/{r["activity_id"]}">{escape(r["title"])}</a> · {r["day"]}: {"race label needs confirmation" if race else "training type uncertain"}. {"It may add a hard date to the weekly count." if race else "Check its actual stimulus before quality work."}</p>{action}</div>')
+    caveat='<p class="plan-status" role="status">Provisional: '+('refresh sync before quality work. ' if not data['fresh'] else '')+('Review the uncertain recent classifications below. ' if data['recent_uncertain'] else '')+('Recent activity dates are unresolved. ' if data['recent_undated'] else '')+'</p>' if (not data['fresh'] or data['recent_undated']) else ''
+    normal='Not reported; assess legs during warmup' if data['legs']=='unknown' else 'Unusually heavy today' if data['legs']=='heavy' else 'Normal today'
+    base=hidden('nonce',nonce)+hidden('tz',zone.key)+hidden('day',data['today'])
+    choices=''.join(f'<option value="{v}"{" selected" if data["legs"]==v else ""}>{s}</option>' for v,s in [('unknown','Not reported'),('normal','Normal'),('heavy','Unusually heavy')])
+    feedback=f'<form method="post" action="/plan/feedback" class="plan-feedback">{base}<label for="plan-legs">Legs today</label><select name="legs" id="plan-legs">{choices}</select><button type="submit">Update</button></form>'
+    exception=[r for r in data['days'] if r['frequency_exception']]
+    preference='Usually two hard sessions in seven dates. Two supported recovery dates can justify an immediate quality option above that target; future projections favor two.'
+    if exception:preference+=f' The next quality option would be hard date {exception[0]["hard_dates_in_window"]} in seven; this is an exception, conditional on normal legs.'
+    missing=[r['day'] for r in data['recent_days'] if 'assumed rest' in r['state']]
+    assumed=f'<p>Past synced dates without rides: {", ".join(missing)} · assumed rest for planning, not completed rides.</p>' if missing else ''
+    milestones=''.join(f'<a class="panel plan-milestone" href="#hard-{r["hard_number"]}"><span>Hard day #{r["hard_number"]}</span><h3>{escape(r["category"])}</h3><time datetime="{r["day"]}">{date.fromisoformat(r["day"]).strftime("%a, %b %d")}</time><p>{escape(r["power"])}</p></a>' for r in data['days'] if r['hard'])
+    history=''.join(f'<article class="plan-history-row"><p>{r["day"]} · <a href="/activities/{r["activity_id"]}">{escape(r["title"])}</a></p><p><strong>{escape(r["classification"]["category"])}</strong> · {escape(r["classification"]["confidence"])}</p><p>{escape(r["classification"]["reason"])}</p>{correction_form(r,nonce,zone.key)}</article>' for r in reversed(data['history']))
     from .home import safe_json
-    return shell('Plan',f'''<header data-calendar-timezone="plan_tz"><h1>Plan</h1><p>Today through the next three hard recommendations · {escape(zone.key)}</p></header><div class="plan-workspace">{today_number}{today_card(data,nonce)}
-<section class="panel plan-context"><h2>Actual training context</h2><p>Latest actual hard training: {last}</p><p>{data['recent_hard_dates']} actual hard dates in the current rolling seven · last successful sync: {sync}</p><p>{freshness} <a href="/settings">Settings / Sync now</a></p><p>{'Legs not reported: quality work is conditional on normal legs during warmup.' if data['legs']=='unknown' else 'Leg feedback applies only to today; future dates assume recovery and normal legs.'}</p><p>Current FTP goal: toward 195 W, eventually above 200 W. Approximate coaching targets are current context, not historical zones or a readiness diagnosis.</p>{'<p>Undated or timezone-unknown activity evidence remains excluded from date-based rotation.</p>' if data['undated'] else ''}</section>
-<section aria-labelledby="rotation-heading"><h2 id="rotation-heading">Upcoming rotation</h2><p class="plan-rotation-help">Projections assume the suggested hard rides occur and legs recover. Actual rides, skipped dates, sync and corrections recompute this rotation. Review uncertain classifications before relying on hard-day spacing.</p><ol class="plan-days">{''.join(cards)}</ol></section>
-<details class="panel plan-history"><summary>Recent actual rides · inspect or correct classification</summary>{''.join(history) or '<p>No completed cycling rides yet.</p>'}</details>
-<details class="panel plan-help"><summary>How recommendations differ from actual training</summary><p>A recommendation is a suggestion. “I plan to do this” records a separate, dated intent before a ride; it never changes activity evidence. Skipping a suggested day is not a failed workout. Future projections are not completed rides and do not contribute stress to Training State.</p><p>Race titles are hints; only your confirmation establishes a race category. Source inference describes observed power patterns against dated FTP, never HR stress alone. Short efforts suggest VO2; sustained efforts suggest threshold; correct these when you know the actual workout. Missing power can hide harder effort.</p><p>Two recovery calendar dates follow hard training. Missing prior dates are assumed rest for planning only when covered by successful sync; today is still unfinished. A hard day is generally eligible after these two dates, subject to the two-hard-dates-per-seven target and normal legs. Threshold is the initial structured choice for the FTP goal; recent threshold work suggests VO2 next. This is a working heuristic.</p><ul>{recent}</ul>{detail_rows([('Planner',data['version']),('Classification',data['classifier']),('As of',data['as_of']),('Current dated FTP',str(data['current_ftp'].get('value'))+' W'),('FTP provenance',data['current_ftp'].get('status')),('Total displayed dates',len(data['days']))])}</details>
-<script type="application/json" id="plan-data">{safe_json(payload)}</script><script src="/static/planning.js" defer></script></div>''',active='plan')
+    next_label='Next Recommended Ride' if data['today_actual'] else 'Today’s recommendation'
+    return shell('Plan',f'<header class="plan-header" data-calendar-timezone="plan_tz"><div><h1>Rolling Plan</h1><p>Through your next three hard days · {escape(zone.key)}</p></div><p>{sync} · <a href="/settings">Sync now</a></p></header><div class="plan-workspace"><div class="plan-summary">{completed_card(data)}{today_card(data,nonce,label=next_label,show_status=False)}</div><section class="panel plan-context"><h2>Why this plan?</h2><p><strong>Last hard:</strong> {last} · <strong>Hard dates in seven:</strong> {data["recent_hard_dates"]} · <strong>Legs:</strong> {normal}</p><p>{preference}</p>{assumed}{caveat}{"".join(uncertain)}{feedback}<a href="#plan-method">How the plan works</a></section><section aria-labelledby="milestones-heading"><div class="plan-section-heading"><h2 id="milestones-heading">Your next three hard days</h2><p>Projected · refreshed after actual rides</p></div><div class="plan-milestones">{milestones}</div></section><section aria-labelledby="rotation-heading"><div class="plan-section-heading"><h2 id="rotation-heading">Daily rotation</h2><p>Every intervening date · no fixed weekdays</p></div>{rotation(data)}</section><p class="plan-footnote">Future dates assume the suggested hard rides occur and legs recover. Actual rides, skipped dates and feedback can move them. Targets are approximate current coaching context, not historical zones or a readiness diagnosis.</p><details class="panel plan-history"><summary>Recent actual rides · evidence and category corrections</summary>{history or "<p>No recorded rides yet.</p>"}</details><details class="panel plan-help" id="plan-method"><summary>Method, intent and calendar evidence</summary><p>A suggestion is not a completed ride or confirmed intent. “I plan to do this” saves a separate pre-ride date-level intent. Skipping does not create a failed workout or reset recovery. Projected stress never contributes to Training State.</p><p>Two recovery calendar dates follow a hard day. Race follows structured quality; threshold supports the FTP goal, with VO2 considered after recent threshold work. Race metadata is source-reported; a title alone remains a hint. Observed-power classifications are approximate and correctable.</p><p>Last successful sync: {local_time(data["sync_at"],compact=True) if data["sync_at"] else "Never"}. Today is unfinished until a ride is recorded. Only past dates covered by sync can be assumed rest for planning.</p>{detail_rows([(r["day"],r["state"]) for r in data["recent_days"]])}{detail_rows([("Planner",data["version"]),("Classification",data["classifier"]),("As of",data["as_of"]),("Current dated FTP",data["current_ftp"].get("value")),("FTP provenance",data["current_ftp"].get("status"))])}</details><script type="application/json" id="plan-data">{safe_json({k:v for k,v in data.items() if k!="history"})}</script><script src="/static/planning.js" defer></script></div>',active='plan')
 
 
-def activity_panel(store,activity_id,nonce):
-    context=activity_context(store,activity_id); c=context['classification']; intent=context['intent']
+def activity_panel(store,activity_id,nonce,query=''):
+    context=activity_context(store,activity_id);c=context['classification'];intent=context['intent']
     message='No recorded intent. No prior recommendation is assigned retrospectively to this ride.'
     if intent:
-        rec=json.loads(intent['recommendation_json'])['recommendation']; intended=rec['category']
-        if c['confidence']=='uncertain' or c['category'] in ('Uncertain','Hard (type uncertain)'):
-            outcome='Actual stimulus is uncertain; confirm its category before comparing.'
-        elif c['category']==intended:
-            outcome='Actual category aligns with the confirmed intended stimulus; interval completion is not established by category alone.'
-        else:
-            outcome='Actual category differs from the confirmed intent. The recorded ride informs the next rotation; this is not a failed workout.'
-        message=f'Recorded date-level cycling intent: {escape(intended)} · confirmed {local_time(intent["confirmed_at"],compact=True)}. {outcome} This date-level context does not establish a unique activity match.'
-    # The review page obtains browser timezone before exposing correction controls.
+        intended=json.loads(intent['recommendation_json'])['recommendation']['category']
+        outcome='Actual stimulus is uncertain; confirm the category before comparing.' if c['category'] in ('Uncertain','Hard (type uncertain)') else 'Actual category aligns with the intended stimulus; interval completion is not established.' if c['category']==intended else 'Actual category differs from intent. This is not a failed workout.'
+        message=f'Recorded date-level cycling intent: {escape(intended)} · confirmed {local_time(intent["confirmed_at"],compact=True)}. {outcome} A unique activity match is not established.'
     correction=correction_form(dict(activity_id=activity_id,classification=c),nonce,'',back='activity') if context.get('cycling',True) else ''
-    return f'''<section class="panel activity-plan-context" aria-labelledby="activity-plan-heading"><h2 id="activity-plan-heading">Workout context</h2><p>Actual: <strong>{escape(c['category'])}</strong> · {escape(c['confidence'])}</p><p>{escape(c['reason'])}</p><p>{message}</p>{correction}<p><a href="/plan">View Plan</a></p><script src="/static/planning.js" defer></script></section>'''
+    next_panel=''
+    if context.get('cycling',True):
+        zone=query_zone(query,'plan_tz')
+        if zone:
+            # Keep Activity Review's read boundary: newly calculated replaceable
+            # caches can be used for this response without persisting mutations.
+            store.connection.execute('SAVEPOINT review_plan')
+            try:data=plan(store,zone.key)
+            finally:
+                store.connection.execute('ROLLBACK TO review_plan');store.connection.execute('RELEASE review_plan')
+            today_ids={r['activity_id'] for r in data['today_actual']}
+            label='Next Recommended Ride' if activity_id in today_ids else 'Current next ride'
+            next_panel=today_card(data,compact=True,label=label,identifier='review-next',include_completed=False)
+        else:
+            next_panel='<section class="panel" data-calendar-timezone="plan_tz"><h2>Current next ride</h2><p>Enable JavaScript for your rider-local next recommendation.</p></section>'
+    return f'<div class="activity-planning"><section class="panel activity-plan-context" aria-labelledby="activity-plan-heading"><h2 id="activity-plan-heading">Workout context</h2><p>Actual: <strong>{escape(c["category"])}</strong> · {escape(c["confidence"])}</p><p>{escape(c["reason"])}</p><p>{message}</p>{correction}<a href="/plan">View Plan</a></section>{next_panel}</div><script src="/static/planning.js" defer></script>'

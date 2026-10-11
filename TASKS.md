@@ -460,11 +460,11 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### P5-01 — Rolling Training Advisor (Home, Plan and outcome context)
 
-**Status:** in_progress — **HARD — Analyst Gate 1 changes required after Owner running-app review, 2026-10-10**; existing draft [PR #26](https://github.com/k14krug/rideworks/pull/26), [issue #25](https://github.com/k14krug/rideworks/issues/25). Not accepted.
+**Status:** in_progress — **JIT §10 corrections implemented and ready for HARD — Analyst Gate 1 review, 2026-10-10**; existing draft [PR #26](https://github.com/k14krug/rideworks/pull/26), [issue #25](https://github.com/k14krug/rideworks/issues/25). Not accepted.
 
 **Purpose:** Deliver explainable next-ride recommendations with Race / Threshold / VO2 / Z2 / Easy / Recovery rotation, current goal-aware coaching context, two-date post-hard recovery, rolling hard-day frequency guardrail, handling of unexpected rides and skipped days, and a dedicated Plan extending through three future hard sessions.
 
-**Scope and acceptance:** [P5-01 JIT](docs/tasks/P5-01.md) and [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md). Include Home/Plan consistent today recommendation, an honest initial Activity Review connection, minimal legs-heavy and ambiguous-classification handling, and real/synthetic behavioral checks. Preserve P4-02 Training State, dated FTP and original source records.
+**Scope and acceptance:** [P5-01 JIT](docs/tasks/P5-01.md) and [Phase 5 acceptance](docs/PHASE_5_ACCEPTANCE.md). Include Home/Plan consistent primary next recommendation, an honest initial Activity Review connection, minimal legs-heavy and ambiguous-classification handling, and real/synthetic behavioral checks. Preserve P4-02 Training State, dated FTP and original source records.
 
 **Allowed invocation:** `/TASK P5-01` or `/AUTOTASK P5-01`; HARD — Analyst Gate 1 and HARD — Owner Gate 2. Prepare/push review evidence before acceptance; no implied background execution.
 

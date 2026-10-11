@@ -579,19 +579,23 @@ class Application:
                     stream_reason=failure[0] if failure else None
                     fit_sources = [e for e in snapshots[0]['sources'] if e['source']['kind'] == 'file_fit']
                     if len(fit_sources) != 1:
-                        return 200, 'text/html', self.activity_page(store, thin_review_page(metadata,streams,stream_reason,recent_context(store,activity_id)),activity_id)
+                        return 200, 'text/html', self.activity_page(store, thin_review_page(metadata,streams,stream_reason,recent_context(store,activity_id)),activity_id,url.query)
                     try:
                         analysis = analyze_activity(store, activity_id)
                     except RideWorksError:
                         html = thin_review_page(metadata,streams,stream_reason)
                     else:
                         html = review_page(analysis, metadata, recent_context(store, activity_id),streams)
-                    return 200, 'text/html', self.activity_page(store, html,activity_id)
+                    return 200, 'text/html', self.activity_page(store, html,activity_id,url.query)
         return self.not_found()
 
-    def activity_page(self,store,html,activity_id):
+    def activity_page(self,store,html,activity_id,query=""):
         from .planning_page import activity_panel
-        html=html.replace('</main>',activity_panel(store,activity_id,self.settings.nonce)+'</main>',1)
+        panel=activity_panel(store,activity_id,self.settings.nonce,query)
+        if '<div class="review-layout">' in html:
+            html=html.replace('<div class="review-layout">',panel+'<div class="review-layout">',1)
+        else:
+            html=html.replace('</header>','</header>'+panel,1)
         return self.page(store,html)
 
     def post(self,path,body,origin):

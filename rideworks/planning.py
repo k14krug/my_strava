@@ -12,13 +12,14 @@ from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 from .goals import browser_zone
+from .dashboard import average_power
 from .history import presentation
 from .training_state import (epoch, ftp_history, ftp_on, FTP_CALENDAR, ride_results,
                              calculate_ride, hr_context, timer_scope)
 from .performance import input_signature
 
-VERSION = 'rolling-advisor-v1'
-CLASSIFIER = 'observed-stimulus-v1'
+VERSION = 'rolling-advisor-v2'
+CLASSIFIER = 'observed-stimulus-v2'
 CATEGORIES = ('Race', 'Threshold', 'VO2', 'Z2 endurance', 'Easy', 'Recovery')
 HARD = ('Race', 'Threshold', 'VO2', 'Hard (type uncertain)')
 # Initial engineering screens describe stimulus, not physiological readiness.
@@ -94,11 +95,19 @@ def classify_activity(store, snapshot, row, result, *, cache_result=True):
         outcome = stimulus(times,powers,result['ftp']['value'])
     title = row['title'].casefold()
     hint = 'Race' if re.search(r'\brace\b|\bracing\b',title) else 'VO2' if re.search(r'v[o0]2|30.?15',title) else 'Threshold' if 'threshold' in title else None
-    if hint == 'Race':
+    api=[s for s in snapshot['sources'] if s['source']['kind']=='strava_api' and s['source']['is_current']]
+    # Supplied ride classification, not proof of a measured physiological effort.
+    # Strava's published ride workout_type enum identifies 11 as race; a title
+    # does not fill missing metadata. No API call or source-policy change.
+    reported_race=len(api)==1 and api[0]['summary']['values'].get('workout_type')==11
+    if reported_race:
+        outcome=outcome | dict(category='Race',hard=True,reason='Current Strava ride metadata reports Race (workout_type 11). Source-reported category; correct it if inaccurate.')
+    elif hint == 'Race':
         outcome = outcome | dict(category='Hard (type uncertain)' if outcome['hard'] else 'Uncertain',
             reason=outcome['reason']+' Race title is a hint, not race evidence; confirm if this was a race.')
-    outcome=outcome | dict(confidence='inferred' if outcome['category']!='Uncertain' else 'uncertain',
-                          title_hint=hint,source=source,version=CLASSIFIER)
+    outcome=outcome | dict(confidence='source reported' if reported_race else 'inferred' if outcome['category']!='Uncertain' else 'uncertain',
+                          title_hint=hint,source=source,version=CLASSIFIER,
+                          race_metadata_source=api[0]['source']['source_id'] if reported_race else None)
     if cache_result:
         store.connection.execute('''INSERT INTO planning_classification_cache VALUES (?,?,?) ON CONFLICT(activity_id)
             DO UPDATE SET input_signature=excluded.input_signature,result_json=excluded.result_json''',
@@ -129,6 +138,7 @@ def completed_history(store, zone_name, *, as_of):
             uncertain_date(row); continue  # No assumed rider-local conversion of unknown source zones.
         history.append(dict(activity_id=row['activity_id'],day=result['day'],start_time=row['start_time'],
             title=row['title'],classification=classify_activity(store,snapshot,row,result),
+            duration=row['duration'],average_power=average_power(row)[0],
             stress=result['selected'],ftp=result['ftp']))
     return sorted(history,key=lambda r:(r['start_time'],r['activity_id'])), undated
 
@@ -155,44 +165,61 @@ def project(history, today, *, fresh=True, legs='unknown', unknown_dates=0, limi
     structured = [r['classification']['category'] for r in hard_actual if r['classification']['category'] in ('Threshold','VO2')]
     recent_uncertain = [r for r in actual if (today-date.fromisoformat(r['day'])).days < 7 and
                         r['classification']['category'] in ('Uncertain','Hard (type uncertain)')]
+    blocking_uncertain=[r for r in recent_uncertain if last_day is None or date.fromisoformat(r['day'])>last_day]
     today_actual = [r for r in actual if r['day']==today.isoformat()]
     days = []; upcoming = 0
+    next_offset=1 if today_actual else 0
+    # The immediate real opportunity can exceed the weekly preference after
+    # two supported recovery dates. The simulated tail retains ~two/week.
+    actual_by_day={r['day']:[] for r in actual}
+    for r in actual:actual_by_day[r['day']].append(r)
+    def recovered(day):
+        if not fresh or unknown_dates: return False
+        for n in (1,2):
+            recovered_day=day-timedelta(days=n)
+            if recovered_day>today: continue  # prospective low day, conditional
+            group=actual_by_day.get(recovered_day.isoformat(),[])
+            if any(r['classification']['hard'] or r['classification']['category']=='Uncertain' for r in group):
+                return False
+        return True
     for offset in range(limit):
         day = today+timedelta(days=offset)
         elapsed = (day-last_day).days if last_day else None
         count = sum(0 <= (day-d).days <= 6 for d in hard_dates)
-        if offset == 0 and legs == 'heavy':
-            rec = recommendation('Recovery','You reported unusually heavy legs today. Keep this spin light; quality work moves to a later date.')
+        if offset in (0,next_offset) and legs == 'heavy':
+            rec = recommendation('Recovery','You reported unusually heavy legs today. Keep the next ride light and reassess before quality work.')
         elif elapsed == 1:
             rec = recommendation('Recovery','First calendar date after hard training: an easy recovery spin. A skipped past synced day still counts as elapsed recovery.')
         elif elapsed == 2:
             rec = recommendation('Easy','Second calendar date after '+str(last_type)+': keep it easy, if legs feel normal during warmup.',second=last_type!='VO2')
         elif offset == 0 and today_actual:
             rec = recommendation('Recovery' if elapsed == 0 else 'Easy','A ride is already recorded today. If you want another spin, keep it light. Completed training is context, not an upcoming hard recommendation.')
-        elif offset == 0 and (not fresh or recent_uncertain or unknown_dates):
+        elif offset == 0 and (not fresh or blocking_uncertain or unknown_dates):
             rec = recommendation('Easy','Provisional: sync and review uncertain recent classifications before quality work. Missing or undated history does not establish recovery.')
-        elif count >= 2:
-            rec = recommendation('Z2 endurance','Two hard dates are already in this rolling seven-day window. Aerobic riding keeps the next quality day within the frequency target.')
+        elif count >= 2 and not (count==2 and offset==next_offset and elapsed is not None and elapsed>=3 and recovered(day) and legs!='heavy'):
+            rec = recommendation('Z2 endurance','Aerobic riding keeps the projected rotation near the usual two hard sessions per seven dates. An immediate quality opportunity after supported recovery can exceed this preference.')
         elif elapsed is None or elapsed >= 3:
             category = 'Race' if last_type in ('Threshold','VO2') else 'VO2' if structured and structured[-1]=='Threshold' else 'Threshold'
             why = ('Race follows structured quality.' if category=='Race' else
                    'Structured quality follows the race or starts the rotation; '+('VO2 adds a different stimulus after recent threshold work.' if category=='VO2' else 'Threshold supports the current FTP-improvement goal.'))
-            rec = recommendation(category,why+' Two recovery dates have passed where applicable; fewer than two hard dates remain in the rolling seven-day window. Only do this if legs feel normal during warmup.')
+            rec = recommendation(category,why+' Two recovery dates have passed where applicable. Only do this if legs feel normal during warmup.')
+            if count>=2:
+                rec['reason']+=f' This would be hard date {count+1} in seven: above the usual two. Two supported recovery dates make it an available quality option; keep the later rotation lighter.'
         else:
             rec = recommendation('Easy','Keep any additional riding light on the completed hard-session date.')
-        if offset>0 and (not fresh or recent_uncertain or unknown_dates):
-            rec['reason']='Conditional on sync and classification review confirming the available history. '+rec['reason']
         number = None
         if rec['hard']:
             upcoming += 1; number = upcoming
             hard_dates.add(day); last_day = day; last_type = rec['category']
             if last_type in ('Threshold','VO2'): structured.append(last_type)
         days.append(rec | dict(day=day.isoformat(),offset=offset,hard_number=number,
+                              frequency_exception=rec['hard'] and count>=2,
+                              hard_dates_in_window=count+(1 if rec['hard'] else 0),
                               status='recommendation' if offset==0 else 'conditional projection'))
         if upcoming == 3: break
     if upcoming != 3:
         raise ValueError('Cannot project three upcoming hard recommendations within the defensive limit.')
-    return dict(days=days,latest_hard=latest,today_actual=today_actual,recent_uncertain=recent_uncertain,
+    return dict(days=days,next_ride=days[next_offset],latest_hard=latest,today_actual=today_actual,recent_uncertain=recent_uncertain,
                 recent_hard_dates=sum(0 <= (today-d).days <= 6 for d in {date.fromisoformat(r['day']) for r in hard_actual}),
                 provisional=not fresh or bool(recent_uncertain) or bool(unknown_dates))
 

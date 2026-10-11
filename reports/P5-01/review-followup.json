@@ -1,0 +1,46 @@
+{
+  "planner": "rolling-advisor-v2",
+  "classifier": "observed-stimulus-v2",
+  "as_of": "2026-10-11T00:10:00+00:00",
+  "actual_owner_case_verified": true,
+  "assumed_recovery_dates_verified": 2,
+  "before_primary": {
+    "offset": 0,
+    "category": "Easy"
+  },
+  "after_primary": {
+    "offset": 1,
+    "category": "Race"
+  },
+  "home_plan_review_same_next": true,
+  "before_ride_quality_eligible": true,
+  "confirmed_race_third_in_seven": true,
+  "prior_rigid_cap_category": "Z2 endurance",
+  "after_soft_guideline_category": "Race",
+  "race_metadata_present": false,
+  "source_race_requires_confirmation": true,
+  "heavy_and_stale_verified": true,
+  "future_default_third_exceptions": 0,
+  "projected_days": 9,
+  "hard_offsets": [
+    1,
+    4,
+    8
+  ],
+  "training_state_same_digest": "66ca142e35c6792e999fc79b023fcf055125d86ffbfc30a329bc583cb8129ccb",
+  "performance_same_digest": "424b1ca6fd27f5e61f4a4a73b02875ecf8b4e44c763304492b1cc3ffa93f4c12",
+  "training_state_unchanged": true,
+  "performance_unchanged": true,
+  "repeat_restart_deterministic": true,
+  "preservation": {
+    "source_tables_preserved": 20,
+    "originals_preserved": 1422,
+    "integrity": "ok",
+    "foreign_key_violations": 0
+  },
+  "approved_dataset_hashes": {
+    "data/athlete/strava_ftp_history.csv": "cb990c18e969d0d12f1d524bea22cf8b596746171f179f6241748394b87ad073",
+    "rideworks/data/strava_ftp_history.csv": "cb990c18e969d0d12f1d524bea22cf8b596746171f179f6241748394b87ad073",
+    "data/reference/elevate/fitness_trend_export.2026.10.9-15.58.52.csv": "407cc7ac2105d5d0c5c8ce4c90775adcb7733957157c2dad6aaa0af05f1ebfb1"
+  }
+}

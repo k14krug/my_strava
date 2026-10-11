@@ -37,7 +37,11 @@ class RotationTests(TestCase):
         for r in hard:
             end=date.fromisoformat(r['day']);begin=end-timedelta(days=6)
             contributing=actual_dates|{h['day'] for h in hard if h['day']<=r['day']}
-            self.assertLessEqual(sum(begin.isoformat()<=d<=end.isoformat() for d in contributing),2)
+            count=sum(begin.isoformat()<=d<=end.isoformat() for d in contributing)
+            if r['frequency_exception']:
+                self.assertEqual(r,data['next_ride']);self.assertGreaterEqual(count,3)
+                self.assertIn('above the usual two',r['reason'])
+            else:self.assertLessEqual(count,2)
         self.assertTrue(all(r['category'] in ('Race','Threshold','VO2','Easy','Recovery','Z2 endurance') for r in days))
 
     def test_starting_on_quality_day_exact_hard_offsets_and_unfixed_horizon(self):
@@ -109,6 +113,51 @@ class RotationTests(TestCase):
     def test_defensive_failure_and_determinism(self):
         with self.assertRaises(ValueError):project([],TODAY,limit=3)
         self.assertEqual(project([actual(-2,'Race')],TODAY),project([actual(-2,'Race')],TODAY))
+
+    def test_owner_before_ride_third_in_seven_is_conditional_exception(self):
+        history=[actual(-6,'Race','race'),actual(-3,'VO2','intervals')]
+        data=project(history,TODAY);self.check(data,history)
+        self.assertEqual(data['next_ride']['category'],'Race')
+        self.assertEqual(data['next_ride']['day'],TODAY.isoformat())
+        self.assertTrue(data['next_ride']['frequency_exception'])
+        self.assertEqual(data['next_ride']['hard_dates_in_window'],3)
+        self.assertFalse(any(r['frequency_exception'] for r in data['days'][1:]))
+        self.assertIn('supported recovery',data['next_ride']['reason'])
+        heavy=project(history,TODAY,legs='heavy');self.assertEqual(heavy['next_ride']['category'],'Recovery')
+        stale=project(history,TODAY,fresh=False);self.assertEqual(stale['next_ride']['category'],'Easy')
+
+    def test_unknown_old_race_is_context_and_not_a_new_recovery_timer(self):
+        history=[actual(-6,'Uncertain','race'),actual(-3,'VO2','intervals')]
+        history[0]['classification']['title_hint']='Race'
+        data=project(history,TODAY)
+        self.assertTrue(data['next_ride']['hard']);self.assertTrue(data['provisional'])
+        self.assertEqual(len(data['recent_uncertain']),1)
+        history.append(actual(-1,'Uncertain','unknown-recent'))
+        self.assertEqual(project(history,TODAY)['next_ride']['category'],'Easy')
+
+    def test_owner_post_ride_next_advances_and_today_stays_completed_context(self):
+        history=[actual(-6,'Race','race'),actual(-3,'VO2','intervals'),actual(0,'Recovery','completed')]
+        data=project(history,TODAY);self.check(data,history)
+        self.assertEqual(data['next_ride']['day'],(TODAY+timedelta(days=1)).isoformat())
+        self.assertEqual(data['next_ride']['category'],'Race')
+        self.assertEqual(len(data['today_actual']),1)
+        self.assertEqual(len([r for r in data['days'] if r['hard']]),3)
+        heavy=project(history,TODAY,legs='heavy')
+        self.assertEqual(heavy['next_ride']['category'],'Recovery')
+        self.assertGreater(next(r['offset'] for r in heavy['days'] if r['hard']),1)
+
+    def test_frequency_exception_requires_classified_recovery_on_completed_today(self):
+        history=[actual(-5,'Race','race'),actual(-2,'VO2','intervals')]
+        uncertain=project(history+[actual(0,'Uncertain','today')],TODAY)
+        self.assertFalse(uncertain['next_ride']['frequency_exception'])
+        easy=project(history+[actual(0,'Recovery','today')],TODAY)
+        self.assertTrue(easy['next_ride']['frequency_exception'])
+
+    def test_third_date_exception_does_not_escalate_actual_excess_to_fourth(self):
+        history=[actual(-6,'Race','a'),actual(-4,'Threshold','b'),actual(-3,'VO2','c')]
+        data=project(history,TODAY)
+        self.assertEqual(data['next_ride']['category'],'Z2 endurance')
+        self.assertFalse(data['next_ride']['frequency_exception'])
 
 
 class ClassificationTests(TestCase):
@@ -194,6 +243,18 @@ class StorePlanningTests(TestCase):
             outcome=classify_activity(self.store,self.snapshot,row,unavailable)
             self.assertFalse(outcome['hard']);self.assertEqual(outcome['category'],'Uncertain')
 
+    def test_retained_explicit_ride_race_metadata_is_source_reported(self):
+        from rideworks.strava_api import apply_observations, normalize
+        item=normalize(dict(id=999,name='Synthetic source category',type='Ride',sport_type='VirtualRide',
+                            start_date='2026-10-09T12:00:00Z',elapsed_time=2400,moving_time=2400,workout_type=11))
+        apply_observations(self.store,[item],42,int(NOW.timestamp()))
+        identity=self.store.connection.execute("SELECT activity_id FROM strava_api_activities WHERE external_id='999'").fetchone()[0]
+        c=activity_context(self.store,identity,as_of=NOW)['classification']
+        self.assertEqual((c['category'],c['confidence'],c['hard']),('Race','source reported',True))
+        self.assertIsNotNone(c['race_metadata_source'])
+        set_classification(self.store,identity,'Easy')
+        self.assertEqual(activity_context(self.store,identity,as_of=NOW)['classification']['category'],'Easy')
+
     def test_noncycling_activity_does_not_gain_cycling_intent_or_category(self):
         self.store.connection.execute("UPDATE sessions SET sport='running',sub_sport=NULL")
         context=activity_context(self.store,self.identity,as_of=NOW)
@@ -204,7 +265,7 @@ class StorePlanningTests(TestCase):
         self.assertIsNone(activity_context(self.store,self.identity,as_of=NOW)['intent'])
         data=self.state();confirm_intent(self.store,'UTC',as_of=NOW,expected_day=data['today'],expected_category=data['days'][0]['category'])
         intent=self.store.connection.execute('SELECT * FROM planning_intents').fetchone()
-        snapshot=json.loads(intent['recommendation_json']);self.assertEqual(snapshot['version'],'rolling-advisor-v1')
+        snapshot=json.loads(intent['recommendation_json']);self.assertEqual(snapshot['version'],'rolling-advisor-v2')
         self.assertIsNone(activity_context(self.store,self.identity,as_of=NOW)['intent'])
         with self.assertRaises(ValueError):confirm_intent(self.store,'UTC',as_of=NOW,expected_day='2026-10-09',expected_category='Race')
         # Deliberate synthetic future ride on the same local date after confirmation.
@@ -233,6 +294,7 @@ class StorePlanningTests(TestCase):
         app=Application(self.store.data_dir)
         with patch('rideworks.dashboard.datetime') as clock,patch('rideworks.planning.datetime') as planner_clock:
             clock.now.return_value=NOW;clock.fromisoformat.side_effect=datetime.fromisoformat
+            clock.fromtimestamp.side_effect=datetime.fromtimestamp
             planner_clock.now.return_value=NOW;planner_clock.fromisoformat.side_effect=datetime.fromisoformat
             planner_clock.fromtimestamp.side_effect=datetime.fromtimestamp
             home=app.get('/?home_tz=UTC')[2].decode();page=app.get('/plan?plan_tz=UTC')[2].decode()
@@ -248,3 +310,29 @@ class StorePlanningTests(TestCase):
         self.assertEqual(app.post('/plan/feedback',body+b'&legs=normal','http://127.0.0.1:8765')[0],400)
         bad=body.replace(b'heavy',b'Rest');self.assertEqual(app.post('/plan/feedback',bad,'http://127.0.0.1:8765')[0],400)
         self.assertEqual(app.get('/static/planning.js')[0],200)
+
+    def test_revisit_after_new_sync_advances_home_plan_and_current_review(self):
+        from rideworks.strava_api import apply_observations,normalize
+        app=Application(self.store.data_dir);self.sync()
+        self.store.connection.execute("UPDATE strava_sync_state SET athlete_id='42'")
+        with patch('rideworks.dashboard.datetime') as clock,patch('rideworks.planning.datetime') as planner_clock:
+            clock.now.return_value=NOW;clock.fromisoformat.side_effect=datetime.fromisoformat
+            clock.fromtimestamp.side_effect=datetime.fromtimestamp
+            planner_clock.now.return_value=NOW;planner_clock.fromisoformat.side_effect=datetime.fromisoformat
+            planner_clock.fromtimestamp.side_effect=datetime.fromtimestamp
+            before=app.get('/?home_tz=UTC')[2].decode()
+            self.assertIn('data-next-day="2026-10-10"',before)
+            item=normalize(dict(id=1000,name='Synthetic recovery',type='Ride',sport_type='VirtualRide',
+                start_date='2026-10-10T17:00:00Z',moving_time=2400,elapsed_time=2400,average_watts=94))
+            apply_observations(self.store,[item],42,int(NOW.timestamp()))
+            identity=self.store.connection.execute("SELECT activity_id FROM strava_api_activities WHERE external_id='1000'").fetchone()[0]
+            set_classification(self.store,identity,'Recovery',as_of=NOW)
+            home=app.get('/?home_tz=UTC')[2].decode()
+            page=app.get('/plan?plan_tz=UTC')[2].decode()
+            review=app.get('/activities/'+identity+'?plan_tz=UTC')[2].decode()
+            for html in (home,page,review):self.assertIn('data-next-day="2026-10-11"',html)
+            self.assertIn('Completed today',home);self.assertIn('Today’s completed activity',page)
+            self.assertIn('No recorded intent',review)
+            self.assertLess(review.index('activity-planning'),review.index('Detailed RideWorks review unavailable'))
+            historic=app.get('/activities/'+self.identity+'?plan_tz=UTC')[2].decode()
+            self.assertIn('Current next ride',historic)

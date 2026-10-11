@@ -828,29 +828,27 @@ never by the application, as calculation inputs, or as an initial seed.
 
 ## Rolling Training Advisor (P5-01)
 
-Home and `/plan` share rider-local, deterministic recommendations. Plan includes
-all dates through three prospective hard recommendations; actual completed hard
-rides do not count toward those three. Projection assumes suggested hard work
-occurs and legs recover. It never writes predicted stress to Training State.
+Home, Plan and Activity Review share the current rider-local next recommendation.
+Before a ride, that can be today. After any cycling ride is recorded today, the
+primary recommendation advances to the first future date; completed today stays
+separate. Historic Activity Review labels this live suggestion **Current next
+ride**, without reconstructing an old plan. Plan extends through three upcoming
+hard recommendations, with hard milestones and all intervening daily targets.
 
-Sync today for current planning context. Past no-record dates covered by a
-successful sync can count as assumed rest for planning, while source history
-still says no recorded activity. Stale sync or uncertain recent classifications
-makes today's quality suggestion provisional/easier. Future cards remain
-conditional on sync/classification review. `Legs today` is optional and applies
-only to that local date; heavy legs select Recovery.
+Two hard sessions in seven dates is a soft preference. After two supported
+recovery dates, the immediate quality opportunity may exceed it with an explicit
+frequency exception; later projections favor two. Heavy-leg feedback keeps the
+next ride light. Sync, actual rides and corrections recompute the plan on view;
+projections never contribute stress to Training State. Only past no-record dates
+covered by successful sync can count as assumed rest for planning.
 
-Observed trusted Virtual Ride power plus dated FTP can suggest VO2, threshold or
-low-intensity stimulus. This is a versioned initial heuristic, not a validated
-physiological classifier. Race titles and HR stress alone never prove a race.
-Use **Correct actual category** in Plan or Activity Review when the workout type
-is known; **Use source inference** clears the separate correction. Original
-measurements and existing training-stress/Performance policies are unchanged.
+Trusted observed Virtual Ride power and dated FTP suggest workout stimulus.
+Explicit current Strava race metadata is source-reported, while a race title
+alone stays uncertain with quick confirmation. Corrections retain original
+measurements. **I plan to do this** records a separate pre-ride date-level intent;
+without it, Activity Review says **No recorded intent**. It never silently accepts
+a suggestion or assigns intent retrospectively.
 
-**I plan to do this** retains an explicit pre-ride, date-level intent and its
-recommendation/basis snapshot. Activity Review compares only with a same-local-date
-confirmation made before the activity start; it does not invent past suggestions
-or uniquely associate multiple same-day rides. Without that confirmation it says
-**No recorded intent**. Schema 9 adds only planning feedback, correction, intent
-and replaceable classification-cache tables. All such personal planning state
-stays in the ignored local data directory.
+Schema 9 planning records remain local. No Training State, Performance, FTP or
+Strava access policy changes. See `reports/P5-01/review-followup.md` for JIT §10
+verification, limitations, source-neutral screenshots and reproducibility.

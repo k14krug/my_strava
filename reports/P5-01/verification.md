@@ -1,4 +1,8 @@
-# P5-01 — Rolling Training Advisor verification
+# P5-01 — Initial Rolling Training Advisor verification
+
+**Historical v1 report.** Next-ride selection, weekly frequency and page layout
+are superseded by [the JIT §10 follow-up](review-followup.md). This initial report
+does not establish acceptance of the revised behavior.
 
 Implemented on `task/p5-01-rolling-advisor` for **HARD — Analyst Gate 1** review in
 [draft PR #26](https://github.com/k14krug/rideworks/pull/26); not accepted or merged.
