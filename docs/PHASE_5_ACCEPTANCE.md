@@ -1,6 +1,6 @@
 # Phase 5 Acceptance — Workout Intent, Outcome and Rolling Training Plan
 
-**Status:** Product direction established 2026-10-10; implementation not yet started.
+**Status:** **Phase 5 v1 accepted/complete 2026-10-10**, via accepted P5-01 after implemented JIT §10, code and behavioral verification, and the Owner's positive running-app assessment; [PR #26](https://github.com/k14krug/rideworks/pull/26).
 **Source of direction:** Owner's current FTP-oriented training description and explicit **"Plan should show the rotation from today through the next 3 planned hard days"** decision. [Design baseline](design/P5-01-rolling-training-plan.md).
 **Dependency:** [Phase 4 complete](PHASE_4_ACCEPTANCE.md).
 
@@ -45,4 +45,12 @@ The Owner observed a newly synced completed Recovery ride but Home still labeled
 
 **Visual acceptance:** use the [Plan v2 HTML reference](mockups/plan-rotation-v2.html), not the initial plain-text list layout. Include 3 prominent hard-session milestones, chronological compact easy-day rows, context/freshness once near the top, and consistent RideWorks design. Do not repeat the same provisional warning in every row. The owner expects the two synced unrecorded days after a VO2 workout to count toward recovery, and expects a quality recommendation to become eligible after that interval; if a third hard session falls in a rolling seven days, disclose this nonstandard load instead of treating the two-hard-session guideline as an automatic veto. Classification of a race title remains evidence-qualified, with easy rider confirmation.
 
-The current unaccepted implementation in draft PR #26 needs correction under [JIT §10](tasks/P5-01.md). Gate 1 remains open; no merge or final Owner Gate 2 acceptance.
+**Resolved:** JIT §10 was implemented in PR #26 and source/behavior/UI checks rerun. Both HARD — Analyst Gate 1 and HARD — Owner Gate 2 are accepted. The v2 Plan mockup direction was implemented; full adaptive planning remains a separate Phase 6 task.
+
+## 6. Final acceptance disposition — 2026-10-10
+
+**P5-01 / Phase 5 v1 accepted.** [Final behavior report](../reports/P5-01/review-followup.md) verifies shared first-future next-ride semantics on Home, Plan and recent Activity Review after today's synced ride; visible completed-ride context; every daily recommendation through three upcoming hard milestones; a compact redesigned Plan; source-qualified quick Race correction; explicit leg feedback and conditional hard-session frequency exceptions. October 7 VO2, two assumed-rest dates and October 10 Recovery lead to October 11 Race next. A before-ride counterfactual permits October 10 hard training after supported recovery, without mandating three hard days in every week. Nothing in the Plan's projections becomes a completed activity or observed Training State stress.
+
+Dex reported **412 passing Python tests and 161 browser assertions** (144 on the actual synced case, 12 synthetic before-ride, five stale-sync), verified no browser errors and source preservation of all 20 original tables, 1,422 original artifacts, unchanged FTP/reference and accepted Performance/Training State. Analyst reviewed pushed implementation and privacy-safe regression aggregates; the Owner reviewed the revised experience and said **P5-01 looks good**, resolving the product/visual gate. The actual private screenshots/store remain local to the implementation environment; no claim is made that Analyst independently reran the private store.
+
+**Known limitations:** The initial stimulus classifier is a fallible observed-power heuristic; some race-like titles lack independent evidence and require manual confirmation, and readiness suggestions are conditional on ordinary legs and sync accuracy. These are disclosed v1 limitations, not evidence of fully measured racing or physiological readiness. Phase 6 adaptive planning remains **pending**, not implicitly started or accepted.
