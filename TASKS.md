@@ -472,4 +472,4 @@ Phase 4 is now explicitly Owner-authorized. Phase 5 must not begin automatically
 
 ### Phase 6 — Adaptive planning
 
-**Status:** pending — adaptive planning is a separate future phase and has not been invoked. Do not start automatically.
+**Status:** deferred at Owner direction (2026-10-10) — adaptive planning remains a possible future phase, but the Owner wishes to skip it for now. No Phase 6 task/JIT/invocation; the next development priority is not yet selected.
