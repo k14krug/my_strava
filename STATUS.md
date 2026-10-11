@@ -2,11 +2,9 @@
 
 **Product:** RideWorks.
 **Current task:** P5-01 — Rolling Training Advisor.
-**State:** ready_for_review — stopped at HARD — Analyst Gate 1 under `/AUTOTASK P5-01`.
-**Branch:** `task/p5-01-rolling-advisor`; implementation commit `8dae035`.
-**PR:** [Draft #26](https://github.com/k14krug/rideworks/pull/26).
-**Implementation:** Shared Home/Plan advisor through three future hard recommendations; two-date recovery and rolling seven-day cap; optional heavy-leg feedback, separate category corrections and explicit pre-ride date-level intent; honest Activity Review context. Schema 9 contains planning-only additions.
-**Verification:** 405 Python / 22 focused tests; 71 Chromium assertions (desktop, 320/390 px, keyboard and Home/Plan parity); private representative VO2/race/Z2/source-uncertain checks, deterministic restart and source preservation. All 21 original tables, 1,422 originals, FTP/Elevate hashes and accepted Training State/Performance retained. [Report](reports/P5-01/verification.md).
-**Limits for review:** Initial classifier describes observed Virtual Ride stimulus; race titles and HR stress alone remain uncertain until rider correction. Stale sync keeps quality projections provisional; private screenshots/data stay ignored.
-**Running review copy:** `http://127.0.0.1:8773/plan` (disposable private store copy).
-**Next action:** Analyst reviews Gate 1. After explicit release, demonstrate Home/Plan/Activity Review for Owner Gate 2. TASKS remains in_progress; no acceptance, merge or Phase 6.
+**State:** **in_progress — CHANGES REQUIRED at HARD — Analyst Gate 1** after Owner's first running-app review (2026-10-10). PR #26 draft and unaccepted; no merge.
+**Branch:** `task/p5-01-rolling-advisor`; [draft PR #26](https://github.com/k14krug/rideworks/pull/26).
+**Review findings:** After the Owner synced a completed October 10 Recovery ride, Home still advertised an optional **same-day Easy** as **Next Recommended Ride**. Activity Review omitted the upcoming ride. Plan looked like a long unstructured list, with redundant uncertainty warnings. The previous hard limit of two in rolling seven incorrectly treated a normal training-frequency target as a rigid veto after two skipped/recovery dates.
+**Accepted correction:** [JIT §10](docs/tasks/P5-01.md) plus [visual HTML mockup](docs/mockups/plan-rotation-v2.html). With a ride already logged today, Home and Plan must foreground the **first future ride**, and Activity Review should expose the current next ride; today's recorded activity is a separate completed card. Plan must have three hard milestones, compact complete intervening rotation and nonrepetitive context disclosure. Two hard sessions per seven is a **soft guideline**, not an absolute ban; consider quality after two valid recovery dates and explain extra load. Preserve qualified race classification and provide clear quick correction.
+**Before-change verification:** Dex reported 405 Python tests and 71 browser assertions, original sources/FTP/Training State/Performance preserved. These tests do **not** establish revised behavioral/visual acceptance. No P5-01 implementation correction is yet verified.
+**Next action:** Dex refreshes/pulls current PR branch and continues existing P5-01 task, implements JIT §10, uses the mockup as the visual reference, verifies the Owner's actual post-sync case and before-ride scenario in Home/Plan/Activity Review, reruns focused/full + browser/preservation checks, posts changed screenshots/reports and stops at **HARD — Analyst Gate 1**. No Phase 5 acceptance or Phase 6 start.
